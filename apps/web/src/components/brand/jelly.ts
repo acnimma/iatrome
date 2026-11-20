@@ -176,12 +176,12 @@ export class JellyTablet {
     return [half(-1), half(1)] as const;
   }
 
-  /** The double helix springs up out of the crack while it is open. */
+  /** The double helix rises from deep inside the tablet while it is open. */
   get flash() {
     const o = clamp(this.open.x, 0, 1.4);
     return {
-      transform: `translate3d(0,${((1 - o) * 45).toFixed(2)}%,0) scale(${(0.25 + o * 0.75).toFixed(3)})`,
-      opacity: clamp(o * 2, 0, 1).toFixed(3),
+      transform: `translate3d(0,${((1 - o) * 70).toFixed(2)}%,0) scale(${(0.8 + o * 0.2).toFixed(3)})`,
+      opacity: clamp(o * 3, 0, 1).toFixed(3),
     };
   }
 }
