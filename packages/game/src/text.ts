@@ -1,10 +1,3 @@
-import {
-  DataSet,
-  RegExpMatcher,
-  englishDataset,
-  englishRecommendedTransformers,
-} from 'obscenity';
-
 // ── Normalising ──────────────────────────────────────────────────────────────
 
 /** Trim, collapse whitespace, strip control characters. Used on all player text. */
@@ -72,45 +65,4 @@ export function levenshtein(a: string, b: string): number {
     prev = row;
   }
   return prev[b.length];
-}
-
-// ── Content filter ───────────────────────────────────────────────────────────
-//
-// This is a medical game, so anatomy ("anus", "penis", "semen") is always allowed.
-// "standard" blocks slurs, hate and sexual violence. "clean" also blocks
-// profanity and explicit sexual terms.
-
-export type FilterLevel = 'standard' | 'clean';
-
-const ALWAYS_BLOCKED = new Set([
-  'abo', 'abeed', 'africoon', 'arabush', 'boonga', 'chingchong', 'chink', 'dyke', 'fag',
-  'kike', 'negro', 'nigger', 'retard', 'spastic', 'tranny', 'rape', 'incest', 'bestiality',
-]);
-
-const CLEAN_ALSO_BLOCKED = new Set([
-  'arse', 'ass', 'bastard', 'bitch', 'blowjob', 'bollocks', 'boob', 'buttplug', 'cock', 'cuck',
-  'cum', 'cunt', 'deepthroat', 'dick', 'dildo', 'doggystyle', 'double penetration', 'felch',
-  'fellatio', 'finger bang', 'fisting', 'fuck', 'gangbang', 'handjob', 'hentai', 'hooker',
-  'jerk off', 'jizz', 'lubejob', 'masturbate', 'orgasm', 'orgy', 'porn', 'prick', 'pussy',
-  'scat', 'shit', 'slut', 'tit', 'twat', 'wank', 'whore',
-]);
-
-function buildMatcher(blocked: Set<string>) {
-  const dataset = new DataSet<{ originalWord: string }>()
-    .addAll(englishDataset)
-    .removePhrasesIf((phrase) => !blocked.has(phrase.metadata?.originalWord ?? ''));
-  return new RegExpMatcher({ ...dataset.build(), ...englishRecommendedTransformers });
-}
-
-const matchers: Partial<Record<FilterLevel, RegExpMatcher>> = {};
-
-function matcherFor(level: FilterLevel): RegExpMatcher {
-  return (matchers[level] ??= buildMatcher(
-    level === 'clean' ? new Set([...ALWAYS_BLOCKED, ...CLEAN_ALSO_BLOCKED]) : ALWAYS_BLOCKED,
-  ));
-}
-
-/** True when the text is fine to show on the shared screen. */
-export function isAllowed(text: string, level: FilterLevel): boolean {
-  return !matcherFor(level).hasMatch(text);
 }

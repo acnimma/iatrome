@@ -27,7 +27,7 @@ export function SketchController({ view, game }: { view: RoomView; game: SketchV
   switch (game.phase.name) {
     case 'intro':
       return (
-        <PhoneMessage emoji="✏️" title="Sketch">
+        <PhoneMessage icon="pencil" title="Sketch">
           When it’s your turn, draw. Otherwise, guess fast!
         </PhoneMessage>
       );
@@ -48,7 +48,7 @@ export function SketchController({ view, game }: { view: RoomView; game: SketchV
           ))}
         </PhoneStack>
       ) : (
-        <PhoneMessage emoji="🤔" title={`${drawerName} is choosing…`}>
+        <PhoneMessage icon="thinking" title={`${drawerName} is choosing…`}>
           Get your guessing thumbs ready.
         </PhoneMessage>
       );
@@ -58,7 +58,7 @@ export function SketchController({ view, game }: { view: RoomView; game: SketchV
       const mine = game.solved.find((s) => s.playerId === me);
       return (
         <PhoneStack>
-          <PhoneMessage emoji={mine ? '🎯' : drawing ? '🎨' : '🫠'} title={`It was “${game.term}”`}>
+          <PhoneMessage icon={mine ? 'target' : drawing ? 'palette' : 'melt'} title={`It was “${game.term}”`}>
             {mine ? `+${mine.points} points` : drawing ? `+${game.drawerPoints} for your art` : 'You’ll get the next one.'}
           </PhoneMessage>
           <ReactionBar />
@@ -76,14 +76,14 @@ function Drawer({ view, game }: { view: RoomView; game: SketchView }) {
     <div className={styles.phoneDraw}>
       <div className={styles.phoneHead}>
         <div>
-          <span className={styles.label}>Draw this — no letters!</span>
+          <span className={styles.label}>Draw this. No letters!</span>
           <h2 className={styles.term}>{game.term}</h2>
         </div>
         <TimerRing phase={game.phase} pausedAt={view.pausedAt} size={52} />
       </div>
       <DrawPad onOp={(op) => room.command({ type: 'draw', op })} />
       <p className={styles.solvedCount}>
-        {game.solved.length} guessed it {game.solved.length ? '🎉' : ''}
+        {game.solved.length} guessed it
       </p>
     </div>
   );
@@ -101,7 +101,7 @@ function Guesser({ view, game }: { view: RoomView; game: SketchView }) {
   useEffect(() => {
     const n = snap.feedback?.notice;
     if (n === 'close') {
-      setHint('So close! 🔥');
+      setHint('So close!');
       haptic('tap');
     }
     if (n === 'correct') {
@@ -121,7 +121,7 @@ function Guesser({ view, game }: { view: RoomView; game: SketchView }) {
       <DrawingView drawing={drawing} label="The drawing" />
       {game.youSolved ? (
         <motion.p className={styles.gotIt} initial={{ scale: 0.6 }} animate={{ scale: 1 }}>
-          You got it! ✓
+          You got it!
         </motion.p>
       ) : playing ? (
         <form
@@ -140,7 +140,7 @@ function Guesser({ view, game }: { view: RoomView; game: SketchView }) {
           </Button>
         </form>
       ) : (
-        <p className={styles.solvedCount}>Watching — guesses are for players.</p>
+        <p className={styles.solvedCount}>You’re watching. Guesses are for players.</p>
       )}
       {hint && <p className={styles.close}>{hint}</p>}
     </div>

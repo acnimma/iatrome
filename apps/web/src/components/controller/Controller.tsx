@@ -14,7 +14,9 @@ import { GrandRoundsController } from '@/games/grand-rounds/GrandRoundsControlle
 import { SketchController } from '@/games/sketch/SketchController';
 import { SurviveController } from '@/games/survive/SurviveController';
 import { PoisonController } from '@/games/poison/PoisonController';
+import { DidacticsController } from '@/games/didactics/DidacticsController';
 import { JoinForm } from './JoinForm';
+import { PhoneMessage } from './Phone';
 import { ControllerLobby, ControllerResults } from './ControllerLobby';
 import styles from './Controller.module.css';
 
@@ -52,7 +54,7 @@ function InRoom({ view, reconnecting }: { view: RoomView; reconnecting: boolean 
       <header className={styles.header}>
         {me && <Avatar avatar={me.avatar} size={36} />}
         <span className={styles.me}>{me?.name}</span>
-        {watching && <span className={styles.tag}>Audience</span>}
+        {watching && <span className={styles.tag}>Next game</span>}
         <span className={styles.code}>{view.code}</span>
       </header>
       {reconnecting && <div className={styles.reconnecting}>Reconnecting…</div>}
@@ -67,7 +69,14 @@ function InRoom({ view, reconnecting }: { view: RoomView; reconnecting: boolean 
             transition={{ duration: 0.25 }}
           >
             {view.stage === 'lobby' && <ControllerLobby view={view} />}
-            {view.stage === 'playing' && <ControllerGame view={view} />}
+            {view.stage === 'playing' &&
+              (watching ? (
+                <PhoneMessage icon="hourglass" title="You’re in for the next game">
+                  A game is already going. Watch the big screen, you’ll be dealt in when it ends.
+                </PhoneMessage>
+              ) : (
+                <ControllerGame view={view} />
+              ))}
             {view.stage === 'over' && view.result && <ControllerResults view={view} result={view.result} />}
           </motion.div>
         </AnimatePresence>
@@ -87,6 +96,8 @@ function ControllerGame({ view }: { view: RoomView }) {
       return <SurviveController view={view} game={view.game} />;
     case 'poison':
       return <PoisonController view={view} game={view.game} />;
+    case 'didactics':
+      return <DidacticsController view={view} game={view.game} />;
     default:
       return null;
   }
@@ -97,7 +108,7 @@ function FeedbackToast({ feedback }: { feedback: Snapshot['feedback'] }) {
   useEffect(() => {
     if (!feedback) return;
     // "correct"/"close" are handled by the guessing screen itself.
-    const text = feedback.error ?? (feedback.notice && !['correct', 'close'].includes(feedback.notice) ? `🩺 Beep wrote: “${feedback.notice}”` : null);
+    const text = feedback.error ?? (feedback.notice && !['correct', 'close'].includes(feedback.notice) ? `Beep wrote: “${feedback.notice}”` : null);
     if (!text) return;
     if (feedback.error) haptic('error');
     setShown({ text, at: feedback.at, error: Boolean(feedback.error) });
@@ -152,7 +163,7 @@ function useWakeLock(active: boolean) {
       try {
         lock = await navigator.wakeLock.request('screen');
       } catch {
-        // denied (battery saver etc.) — not critical
+        // denied (battery saver etc.): not critical
       }
     };
     const onVisible = () => document.visibilityState === 'visible' && acquire();

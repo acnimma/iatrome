@@ -7,6 +7,11 @@
   gap: 18px;
 }
 
+.topBar {
+  align-self: stretch;
+  display: flex;
+}
+
 .me {
   display: flex;
   flex-direction: column;

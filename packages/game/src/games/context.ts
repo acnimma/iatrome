@@ -22,7 +22,7 @@ export interface GameContext {
 export type Viewer = { kind: 'stage' } | { kind: 'player' | 'audience'; id: string };
 
 export interface ActionOutcome {
-  /** Private feedback for the acting player (e.g. "Filtered — try different words"). */
+  /** Private feedback for the acting player (e.g. "Too late!"). */
   error?: string;
   notice?: string;
 }
@@ -50,6 +50,8 @@ export interface GameModule<S extends BaseGameState, A extends { type: string },
   /** The game is over when this returns a result. */
   result(state: S, ctx: GameContext): GameResult | null;
   view(state: S, ctx: GameContext, viewer: Viewer): V;
+  /** Games that take late arrivals (team trivia) seat them here. */
+  addPlayer?(state: S, ctx: GameContext, playerId: string): void;
   /** Dev bots: act if there's something to do. Return true if the bot did something. */
   bot(state: S, ctx: GameContext, botId: string): boolean;
 }

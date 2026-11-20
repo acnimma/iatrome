@@ -8,6 +8,7 @@ import { Toggle } from '@/components/ui/Toggle';
 import { unlockAudio } from '@/lib/sound';
 import type { StagePrefs } from './Stage';
 import styles from './HostControls.module.css';
+import { Icon } from '@/components/icons/Icon';
 
 /** The host's tucked-away control pill + drawer. Never in the way of the show. */
 export function HostControls({ view, prefs, onPrefs }: { view: RoomView; prefs: StagePrefs; onPrefs: (p: Partial<StagePrefs>) => void }) {
@@ -82,10 +83,10 @@ export function HostControls({ view, prefs, onPrefs }: { view: RoomView; prefs: 
               aria-label={view.paused ? 'Resume' : 'Pause'}
               title={view.paused ? 'Resume' : 'Pause'}
             >
-              {view.paused ? '▶' : '❚❚'}
+              <Icon name={view.paused ? 'play' : 'pause'} size={26} />
             </button>
             <button type="button" className={styles.icon} onClick={() => room.host({ type: 'skip' })} aria-label="Skip ahead" title="Skip ahead">
-              ⏭
+              <Icon name="skip" size={26} />
             </button>
           </>
         )}
@@ -100,7 +101,7 @@ export function HostControls({ view, prefs, onPrefs }: { view: RoomView; prefs: 
           aria-label="Host controls"
           title="Host controls"
         >
-          ⚙
+          <Icon name="settings" size={26} />
         </button>
       </div>
     </div>

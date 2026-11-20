@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import { motion } from 'motion/react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -8,6 +7,7 @@ import { type CreateRoomResponse, ROOM, type RoomSettings, defaultSettings } fro
 import { realtimeHttpUrl } from '@/realtime/config';
 import { rememberHost, rememberPassword } from '@/realtime/identity';
 import { Backdrop } from '@/components/ui/Backdrop';
+import { BackButton } from '@/components/ui/BackButton';
 import { Button } from '@/components/ui/Button';
 import { TextInput } from '@/components/ui/Field';
 import { GamePicker, RoomOptions } from '@/components/room/GameSettings';
@@ -32,7 +32,7 @@ export function HostSetup() {
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ settings, password: password.trim() || undefined }),
       });
-      if (res.status === 429) throw new Error('You’ve opened a lot of rooms — wait a few minutes and try again.');
+      if (res.status === 429) throw new Error('You’ve opened a lot of rooms. Wait a few minutes and try again.');
       if (!res.ok) throw new Error('Couldn’t open a room. Try again in a moment.');
       const { code, hostToken } = (await res.json()) as CreateRoomResponse;
       rememberHost(code, hostToken);
@@ -48,17 +48,23 @@ export function HostSetup() {
     <main className={styles.page}>
       <Backdrop />
       <motion.div className={styles.card} initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}>
-        <Link href="/" className={styles.logoLink} aria-label="iatrome home">
+        <div className={styles.top}>
+          <BackButton href="/" />
           <img src="/brand/wordmark.svg" alt="iatrome" className={styles.logo} />
-        </Link>
+        </div>
         <div>
           <h1 className={styles.title}>Host a game</h1>
-          <p className={styles.sub}>Open this on the screen everyone can see — a TV, a laptop, or a Zoom screen share. Everyone plays on their phones.</p>
+          <p className={styles.sub}>Open this on the screen everyone can see: a TV, a laptop or a video call. Everyone plays on their phone.</p>
         </div>
 
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>Pick a game</h2>
           <GamePicker value={settings.game} onChange={(game) => setSettings((s) => ({ ...s, game }))} />
+        </section>
+
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>Who’s playing</h2>
+          <RoomOptions settings={settings} onChange={(patch) => setSettings((s) => ({ ...s, ...patch }))} />
         </section>
 
         <section className={styles.section}>
@@ -72,11 +78,6 @@ export function HostSetup() {
             placeholder="e.g. scrubs"
           />
         </section>
-
-        <details className={styles.more}>
-          <summary>More options</summary>
-          <RoomOptions settings={settings} onChange={(patch) => setSettings((s) => ({ ...s, ...patch }))} />
-        </details>
 
         {error && (
           <p className={styles.error} role="alert">

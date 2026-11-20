@@ -29,6 +29,23 @@ p {
   margin: 0;
 }
 
+/* Even line lengths everywhere: no lonely one- or two-word last lines. */
+h1,
+h2,
+h3,
+h4,
+button,
+blockquote,
+label {
+  text-wrap: balance;
+}
+
+p,
+li,
+span {
+  text-wrap: pretty;
+}
+
 button {
   font: inherit;
   color: inherit;

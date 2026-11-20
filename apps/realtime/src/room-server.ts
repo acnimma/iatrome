@@ -56,7 +56,7 @@ export class Room extends Server<Env> {
   private persistedDrawings = new Set<string>();
   private dirtyDrawings = new Set<string>();
   private flushTimer: ReturnType<typeof setTimeout> | null = null;
-  /** Drawings each connection already has (rebuilt after hibernation — a resend is harmless). */
+  /** Drawings each connection already has (rebuilt after hibernation: a resend is harmless). */
   private sentDrawings = new Map<string, Set<string>>();
   private lastReaction = new Map<string, number>();
   private passwordFailures = new Map<string, number>();

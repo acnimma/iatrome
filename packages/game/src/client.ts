@@ -1,6 +1,6 @@
 /**
  * Browser-safe entry: constants, types, drawing helpers and game info.
- * No content packs, filters or validation — those stay on the server.
+ * No content packs, filters or validation: those stay on the server.
  */
 export * from './constants';
 export * from './types';
@@ -14,3 +14,4 @@ export type { GrandRoundsView, MatchupView, EntryView, TaskView, MatchupResult, 
 export type { SketchView } from './games/sketch';
 export type { SurviveView } from './games/survive';
 export type { PoisonView } from './games/poison';
+export type { DidacticsView, Team } from './games/didactics';

@@ -7,11 +7,13 @@ import { useRoom } from '@/realtime/use-room';
 import { roomPassword } from '@/realtime/identity';
 import { siteDisplayHost } from '@/realtime/config';
 import { Avatar } from '@/components/ui/Avatar';
+import { BackButton } from '@/components/ui/BackButton';
 import { Button } from '@/components/ui/Button';
 import { GamePicker, RoomOptions } from '@/components/room/GameSettings';
 import { JoinQr, Pill, RoomCode } from '@/components/room/RoomBits';
 import { unlockAudio } from '@/lib/sound';
 import styles from './StageLobby.module.css';
+import { Icon } from '@/components/icons/Icon';
 
 export function StageLobby({ view, hideCode }: { view: RoomView; hideCode: boolean }) {
   const room = useRoom();
@@ -30,11 +32,16 @@ export function StageLobby({ view, hideCode }: { view: RoomView; hideCode: boole
   const audience = view.people.filter((p) => p.role === 'audience');
   const ready = players.filter((p) => p.connected).length;
   const needed = Math.max(0, info.min - ready);
+  // Shrink the bubbles as the room fills (team trivia takes up to 40).
+  const bubble = players.length > 20 ? 40 : players.length > 10 ? 52 : 64;
   const joinUrl = site ? `${window.location.protocol}//${window.location.host}/${view.code}` : '';
 
   return (
     <div className={styles.lobby}>
       <section className={styles.join}>
+        <div className={styles.home}>
+          <BackButton href="/" label="Home" />
+        </div>
         <img src="/brand/wordmark.svg" alt="iatrome" className={styles.wordmark} />
         <p className={styles.lead}>Grab your phone and go to</p>
         <p className={styles.site}>{site}</p>
@@ -44,7 +51,9 @@ export function StageLobby({ view, hideCode }: { view: RoomView; hideCode: boole
           <div className={styles.joinNotes}>
             {password && (
               <button type="button" className={styles.password} onClick={() => setShowPassword((s) => !s)}>
-                <Pill tone="gold">🔒 Password</Pill>
+                <Pill tone="gold">
+                  <Icon name="lock" size={18} /> Password
+                </Pill>
                 <span className={styles.passwordText}>{showPassword ? password : 'tap to reveal'}</span>
               </button>
             )}
@@ -82,7 +91,7 @@ export function StageLobby({ view, hideCode }: { view: RoomView; hideCode: boole
           {audience.length > 0 && <Pill>+{audience.length} watching</Pill>}
         </div>
 
-        <ul className={styles.players}>
+        <ul className={styles.players} style={{ '--bubble': `${bubble}px` } as React.CSSProperties}>
           <AnimatePresence>
             {players.map((p) => (
               <motion.li
@@ -94,7 +103,7 @@ export function StageLobby({ view, hideCode }: { view: RoomView; hideCode: boole
                 exit={{ scale: 0, opacity: 0 }}
                 transition={{ type: 'spring', stiffness: 420, damping: 16 }}
               >
-                <Avatar avatar={p.avatar} size={64} name={p.name} dim={!p.connected} badge={view.vip === p.id ? '★' : undefined} />
+                <Avatar avatar={p.avatar} size={bubble} name={p.name} dim={!p.connected} badge={view.vip === p.id ? <Icon name="star" size={Math.round(bubble * 0.32)} label="VIP" /> : undefined} />
                 <span className={styles.playerActions}>
                   <button type="button" onClick={() => room.host({ type: 'kick', id: p.id })} aria-label={`Kick ${p.name}`}>
                     Kick
@@ -122,15 +131,15 @@ export function StageLobby({ view, hideCode }: { view: RoomView; hideCode: boole
               room.host({ type: 'start' });
             }}
           >
-            {needed > 0 ? `Waiting for ${needed} more player${needed === 1 ? '' : 's'}` : 'Everybody’s in — start!'}
+            {needed > 0 ? `Waiting for ${needed} more player${needed === 1 ? '' : 's'}` : 'Everybody’s in. Start!'}
           </Button>
           <div className={styles.secondary}>
             <Button tone="ghost" onClick={() => room.host({ type: view.locked ? 'unlock' : 'lock' })}>
-              {view.locked ? '🔓 Unlock room' : '🔒 Lock room'}
+              <Icon name="lock" size={22} /> {view.locked ? 'Unlock room' : 'Lock room'}
             </Button>
             {view.devMode && (
               <Button tone="ghost" onClick={() => room.host({ type: 'add-bot' })}>
-                🤖 Add a bot
+                <Icon name="robot" size={22} /> Add a bot
               </Button>
             )}
           </div>

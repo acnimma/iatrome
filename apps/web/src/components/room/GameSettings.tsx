@@ -1,23 +1,36 @@
 'use client';
 
 import { motion } from 'motion/react';
-import { type GameId, type RoomSettings, gameInfo } from '@iatrome/game/client';
+import { type ContentMode, type GameId, type RoomSettings, gameInfo } from '@iatrome/game/client';
+import { Icon } from '@/components/icons/Icon';
+import type { IconName } from '@/components/icons/icons';
 import { Toggle } from '@/components/ui/Toggle';
 import styles from './GameSettings.module.css';
 
-const GAME_ICONS: Record<GameId, string> = { 'grand-rounds': '🎤', sketch: '✏️', survive: '☕', poison: '🧪' };
+const GAME_ICONS: Record<GameId, IconName> = {
+  didactics: 'game-didactics',
+  'grand-rounds': 'game-rounds',
+  sketch: 'game-sketch',
+  survive: 'game-survive',
+  poison: 'game-poison',
+};
+
 const GAME_TONES: Record<GameId, string> = {
+  didactics: 'var(--royal-gold)',
   'grand-rounds': 'var(--rose-kiss)',
   sketch: 'var(--cool-sky)',
   survive: 'var(--royal-gold)',
   poison: 'var(--sky-blue)',
 };
 
+/** The flagship first, then the big-group party game. */
+const ORDER: GameId[] = ['grand-rounds', 'didactics', 'sketch', 'survive', 'poison'];
+
 /** Pick a game. */
 export function GamePicker({ value, onChange, compact }: { value: GameId; onChange: (g: GameId) => void; compact?: boolean }) {
   return (
     <div className={`${styles.games} ${compact ? styles.compact : ''}`} role="radiogroup" aria-label="Game">
-      {(Object.keys(gameInfo) as GameId[]).map((id) => {
+      {ORDER.map((id) => {
         const info = gameInfo[id];
         const picked = id === value;
         return (
@@ -29,16 +42,17 @@ export function GamePicker({ value, onChange, compact }: { value: GameId; onChan
             className={`${styles.game} ${picked ? styles.picked : ''}`}
             style={{ '--tone': GAME_TONES[id] } as React.CSSProperties}
             onClick={() => onChange(id)}
-            whileTap={{ scale: 0.96 }}
-            animate={{ y: picked ? -4 : 0 }}
+            whileTap={{ scale: 0.97 }}
           >
-            <span className={styles.icon}>{GAME_ICONS[id]}</span>
+            <span className={styles.icon}>
+              <Icon name={GAME_ICONS[id]} size={compact ? 30 : 38} />
+            </span>
             <span className={styles.gameText}>
               <span className={styles.gameTitle}>{info.title}</span>
-              {!compact && <span className={styles.tagline}>{info.tagline}</span>}
-              <span className={styles.meta}>
-                {info.min}–{info.max} players · ~{info.minutes} min
-              </span>
+              <span className={styles.tagline}>{info.tagline}</span>
+            </span>
+            <span className={styles.meta}>
+              {info.min}–{info.max}
             </span>
           </motion.button>
         );
@@ -47,59 +61,31 @@ export function GamePicker({ value, onChange, compact }: { value: GameId; onChan
   );
 }
 
-/** Room options. Only shows what matters for the chosen game. */
+const MODES: { id: ContentMode; title: string; blurb: string }[] = [
+  { id: 'normal', title: 'Normal', blurb: 'Anyone can play' },
+  { id: 'pro', title: 'Pro', blurb: 'For healthcare people' },
+];
+
+/** The only options: who it's for, and how much time. */
 export function RoomOptions({ settings, onChange }: { settings: RoomSettings; onChange: (patch: Partial<RoomSettings>) => void }) {
   return (
     <div className={styles.options}>
-      {settings.game === 'grand-rounds' && (
-        <>
-          <Toggle
-            label="Inside jokes"
-            hint="Some prompts are about the players: “Why is Sam in the ER at 3 a.m.?”"
-            checked={settings.insideJokes}
-            onChange={(insideJokes) => onChange({ insideJokes })}
-          />
-          <Toggle label="Doodle prompts" hint="Round 2 mixes in drawing duels." checked={settings.doodles} onChange={(doodles) => onChange({ doodles })} />
-        </>
-      )}
-      {settings.game === 'sketch' && (
-        <Toggle
-          label="Everyone draws twice"
-          hint="Longer game, more chaos."
-          checked={settings.sketchTurns === 2}
-          onChange={(on) => onChange({ sketchTurns: on ? 2 : 1 })}
-        />
-      )}
-      <Toggle
-        label="Extended timers"
-        hint="×1.5 time to write and vote. Use this on Zoom."
-        checked={settings.extendedTimers}
-        onChange={(extendedTimers) => onChange({ extendedTimers })}
-      />
-      <Toggle
-        label="Clinical-life prompts"
-        hint="Adds jokes that land best with ward or clinic time."
-        checked={settings.breadth === 'all'}
-        onChange={(on) => onChange({ breadth: on ? 'all' : 'universal' })}
-      />
-      <Toggle
-        label="Clean mode"
-        hint="Also blocks swearing (slurs are always blocked)."
-        checked={settings.filter === 'clean'}
-        onChange={(on) => onChange({ filter: on ? 'clean' : 'standard' })}
-      />
-      <Toggle
-        label="Audience"
-        hint="Late joiners can watch and vote."
-        checked={settings.audience}
-        onChange={(audience) => onChange({ audience })}
-      />
-      <Toggle
-        label="First player can start"
-        hint="Handy when the stage is a TV."
-        checked={settings.playersCanStart}
-        onChange={(playersCanStart) => onChange({ playersCanStart })}
-      />
+      <div className={styles.modes} role="radiogroup" aria-label="Who’s playing">
+        {MODES.map((m) => (
+          <button
+            key={m.id}
+            type="button"
+            role="radio"
+            aria-checked={settings.mode === m.id}
+            className={`${styles.mode} ${settings.mode === m.id ? styles.modePicked : ''}`}
+            onClick={() => onChange({ mode: m.id })}
+          >
+            <span className={styles.modeTitle}>{m.title}</span>
+            <span className={styles.modeBlurb}>{m.blurb}</span>
+          </button>
+        ))}
+      </div>
+      <Toggle label="More time" hint="Slower timers. Great on video calls." checked={settings.extendedTimers} onChange={(extendedTimers) => onChange({ extendedTimers })} />
     </div>
   );
 }

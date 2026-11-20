@@ -1,11 +1,11 @@
 import { type Dilemma, dilemmas } from '@iatrome/content';
 import { LIMITS, POISON as PO } from '../constants';
-import { cleanText, isAllowed } from '../text';
+import { cleanText } from '../text';
 import type { GameResult, Phase } from '../types';
 import { type ActionOutcome, type BaseGameState, type GameContext, type GameModule, setPhase, standings } from './context';
 
 /**
- * Pick Your Poison — would you rather. Pick a side AND predict the majority.
+ * Pick Your Poison: would you rather. Pick a side AND predict the majority.
  * Correct predictions score; one of the minority defends their choice on stage.
  */
 
@@ -80,7 +80,6 @@ export const poison: GameModule<PoisonState, PoisonAction, PoisonView> = {
       if (state.phase.name !== 'defend' || playerId !== state.defender) return;
       const text = cleanText(action.text, LIMITS.defence);
       if (!text) return { error: 'Say something in your defence!' };
-      if (!isAllowed(text, ctx.room.settings.filter)) return { error: 'The room’s filter blocked that — try different words.' };
       state.defence = text;
       showDefence(state, ctx);
       return;

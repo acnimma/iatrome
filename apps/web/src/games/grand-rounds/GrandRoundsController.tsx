@@ -14,18 +14,19 @@ import { haptic } from '@/lib/haptics';
 import { play } from '@/lib/sound';
 import { ROUND_NAMES } from './rounds';
 import styles from './GrandRounds.module.css';
+import { Icon } from '@/components/icons/Icon';
 
 export function GrandRoundsController({ view, game }: { view: RoomView; game: GrandRoundsView }) {
   const playing = view.you?.inGame;
   switch (game.phase.name) {
     case 'intro':
       return (
-        <PhoneMessage emoji={['💬', '✏️', '📋'][game.round]} title={`Round ${game.round + 1}: ${ROUND_NAMES[game.round]}`}>
+        <PhoneMessage icon={(['speech', 'pencil', 'clipboard'] as const)[game.round]} title={`Round ${game.round + 1}: ${ROUND_NAMES[game.round]}`}>
           {game.multiplier > 1 ? `${game.multiplier}× points. ` : ''}Eyes on the big screen.
         </PhoneMessage>
       );
     case 'write':
-      return playing ? <WriteTasks view={view} game={game} /> : <PhoneMessage emoji="✍️" title="Players are writing…">You’ll vote on their answers in a moment.</PhoneMessage>;
+      return playing ? <WriteTasks view={view} game={game} /> : <PhoneMessage icon="pencil" title="Players are writing…">You’ll vote on their answers in a moment.</PhoneMessage>;
     case 'present':
     case 'vote':
     case 'results':
@@ -35,7 +36,7 @@ export function GrandRoundsController({ view, game }: { view: RoomView; game: Gr
       const rank = ranked.findIndex(([id]) => id === view.you?.id) + 1;
       return (
         <PhoneStack>
-          <PhoneMessage emoji="📊" title={rank ? `You’re #${rank}` : 'Scores are up'}>
+          <PhoneMessage icon="list" title={rank ? `You’re #${rank}` : 'Scores are up'}>
             {rank ? `${(game.scores[view.you!.id] ?? 0).toLocaleString()} points so far.` : 'Check the big screen.'}
           </PhoneMessage>
           <ReactionBar />
@@ -58,7 +59,7 @@ function WriteTasks({ view, game }: { view: RoomView; game: GrandRoundsView }) {
     const others = game.waitingOn.length;
     return (
       <PhoneStack>
-        <PhoneMessage emoji="✅" title="All locked in!">
+        <PhoneMessage icon="check" title="All locked in!">
           {others ? `Waiting on ${others} other${others === 1 ? '' : 's'}…` : 'Here we go!'}
         </PhoneMessage>
         <ReactionBar />
@@ -143,7 +144,7 @@ function QuipTask({ task, onSkip }: { task: TaskView; onSkip?: () => void }) {
           room.command({ type: 'curbside', matchupId: task.matchupId });
         }}
       >
-        🩺 Stuck? Curbside consult (half points)
+        <Icon name="stethoscope" size={26} /> Stuck? Curbside consult (half points)
       </Button>
     </form>
   );
@@ -231,11 +232,11 @@ function MatchupPhone({ view, game, matchup }: { view: RoomView; game: GrandRoun
 
   if (phase === 'present') {
     return matchup.yours !== null ? (
-      <PhoneMessage emoji="🤫" title="This one’s yours">
+      <PhoneMessage icon="shush" title="This one’s yours">
         Look innocent. Don’t give it away.
       </PhoneMessage>
     ) : (
-      <PhoneMessage emoji="👀" title="Get ready to vote">
+      <PhoneMessage icon="eye" title="Get ready to vote">
         {matchup.prompt}
       </PhoneMessage>
     );
@@ -244,11 +245,11 @@ function MatchupPhone({ view, game, matchup }: { view: RoomView; game: GrandRoun
   if (phase === 'vote') {
     if (matchup.yours !== null)
       return (
-        <PhoneMessage emoji="😬" title="Votes are coming in…">
+        <PhoneMessage icon="sweat" title="Votes are coming in…">
           Keep a straight face.
         </PhoneMessage>
       );
-    if (!matchup.canVote) return <PhoneMessage emoji="🍿" title="Watch the big screen" />;
+    if (!matchup.canVote) return <PhoneMessage icon="popcorn" title="Watch the big screen" />;
     return (
       <PhoneStack>
         <PhonePrompt label="Vote for the best" prompt={matchup.prompt} phase={game.phase} pausedAt={view.pausedAt} />
@@ -268,7 +269,7 @@ function MatchupPhone({ view, game, matchup }: { view: RoomView; game: GrandRoun
             <VoteContent matchup={matchup} side={side} />
           </Choice>
         ))}
-        {matchup.myVote !== null && <p className={styles.taskNav}>Vote locked in ✓</p>}
+        {matchup.myVote !== null && <p className={styles.taskNav}>Vote locked in</p>}
       </PhoneStack>
     );
   }
@@ -280,7 +281,7 @@ function MatchupPhone({ view, game, matchup }: { view: RoomView; game: GrandRoun
     const won = r.winner === matchup.yours;
     return (
       <PhoneStack>
-        <PhoneMessage emoji={r.outcome === 'duplicate' ? '🙃' : won ? (r.consensus ? '🏆' : '🎉') : '🫠'} title={r.outcome === 'duplicate' ? 'Duplicate order!' : won ? 'You won the room!' : 'Not this time'}>
+        <PhoneMessage icon={r.outcome === 'duplicate' ? 'upside-down' : won ? (r.consensus ? 'trophy' : 'party') : 'melt'} title={r.outcome === 'duplicate' ? 'Duplicate order!' : won ? 'You won the room!' : 'Not this time'}>
           <span className={styles.outcome}>+{mine.toLocaleString()}</span>
         </PhoneMessage>
         <ReactionBar />
@@ -289,7 +290,7 @@ function MatchupPhone({ view, game, matchup }: { view: RoomView; game: GrandRoun
   }
   return (
     <PhoneStack>
-      <PhoneMessage emoji="🥁" title="The results are in" />
+      <PhoneMessage icon="drum" title="The results are in" />
       <ReactionBar />
     </PhoneStack>
   );

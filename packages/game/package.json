@@ -13,7 +13,6 @@
   },
   "dependencies": {
     "@iatrome/content": "*",
-    "obscenity": "^0.4.6",
     "zod": "^4.6.7"
   },
   "devDependencies": {

@@ -20,7 +20,7 @@ export function PoisonStage({ view, game }: { view: RoomView; game: PoisonView }
   }, [phase, game.number]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (phase === 'intro')
-    return <IntroCard eyebrow="Up next" title="Pick Your Poison" body="Pick your side — then guess which side the room picked. The minority has to defend themselves." />;
+    return <IntroCard eyebrow="Up next" title="Pick Your Poison" body="Pick your side, then guess which side the room picked. The minority has to defend themselves." />;
 
   const players = view.people.filter((p) => p.inGame).map((p) => p.id);
   const revealed = game.counts !== null;

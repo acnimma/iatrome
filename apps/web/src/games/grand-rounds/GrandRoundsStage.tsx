@@ -9,6 +9,7 @@ import { Avatar } from '@/components/ui/Avatar';
 import { TimerRing } from '@/components/ui/TimerRing';
 import { AvatarRow, CountUp, IntroCard, Pill, Scoreboard, Stamp, nameOf, usePeople } from '@/components/room/RoomBits';
 import { play } from '@/lib/sound';
+import { Icon } from '@/components/icons/Icon';
 import { speak } from '@/lib/speech';
 import { ROUND_NAMES, ROUND_BLURBS } from './rounds';
 import styles from './GrandRounds.module.css';
@@ -73,7 +74,8 @@ function Matchup({ view, game, matchup }: { view: RoomView; game: GrandRoundsVie
     <div className={styles.matchup}>
       <div className={styles.matchupTop}>
         <Pill>
-          {matchup.kind === 'doodle' ? '✏️ Doodle' : matchup.kind === 'differential' ? '📋 Differential' : '💬 Quip'} · {matchup.index + 1} of {matchup.total}
+          <Icon name={matchup.kind === 'doodle' ? 'pencil' : matchup.kind === 'differential' ? 'list' : 'speech'} size={20} />
+          {matchup.kind === 'doodle' ? 'Doodle' : matchup.kind === 'differential' ? 'Differential' : 'Quip'} · {matchup.index + 1} of {matchup.total}
         </Pill>
         {phase === 'vote' && <TimerRing phase={game.phase} pausedAt={view.pausedAt} size={72} ticks />}
       </div>
@@ -164,7 +166,6 @@ function AnswerCard({ view, matchup, side, phase, delay, lineGap, replayMs }: { 
                 </motion.span>
               ) : null;
             })}
-            {result.audienceVotes[side] > 0 && <Pill>+{result.audienceVotes[side]} audience</Pill>}
           </div>
           <div className={styles.shareBar}>
             <motion.span initial={{ width: 0 }} animate={{ width: `${share}%` }} transition={{ delay: 0.4, duration: 1, ease: [0.22, 1, 0.36, 1] }} />
@@ -172,7 +173,7 @@ function AnswerCard({ view, matchup, side, phase, delay, lineGap, replayMs }: { 
           </div>
           <motion.div className={styles.author} initial={{ rotateX: 90, opacity: 0 }} animate={{ rotateX: 0, opacity: 1 }} transition={{ delay: 1.6, type: 'spring', stiffness: 300, damping: 20 }}>
             {entry.author === 'beep' ? (
-              <span className={styles.authorName}>🤖 Beep</span>
+              <span className={styles.authorName}>Beep, your host</span>
             ) : author ? (
               <>
                 <Avatar avatar={author.avatar} size={40} />
@@ -198,10 +199,12 @@ function AnswerCard({ view, matchup, side, phase, delay, lineGap, replayMs }: { 
 
 function AnswerContent({ entry, kind, replayMs, delay, lineGap }: { entry: EntryView; kind: MatchupView['kind']; replayMs: number; delay: number; lineGap: number }) {
   const drawing = useDrawing(entry.drawingId);
-  if (entry.hidden) return <p className={styles.missing}>🙈 Hidden by the host</p>;
-  if (kind === 'doodle') return entry.drawingId ? <DrawingView drawing={drawing} replayMs={replayMs > 300 ? replayMs : undefined} className={styles.doodle} /> : <p className={styles.missing}>😴 No drawing</p>;
+  if (entry.hidden) return <p className={styles.missing}>
+        <Icon name="eye-closed" size={44} /> Hidden by the host
+      </p>;
+  if (kind === 'doodle') return entry.drawingId ? <DrawingView drawing={drawing} replayMs={replayMs > 300 ? replayMs : undefined} className={styles.doodle} /> : <p className={styles.missing}>No drawing</p>;
   if (kind === 'differential') {
-    if (!entry.items) return <p className={styles.missing}>😴 No answer</p>;
+    if (!entry.items) return <p className={styles.missing}>No answer</p>;
     return (
       <ol className={styles.list}>
         {entry.items.map((item, i) => (
@@ -212,13 +215,13 @@ function AnswerContent({ entry, kind, replayMs, delay, lineGap }: { entry: Entry
       </ol>
     );
   }
-  return entry.text ? <p className={styles.quip}>{entry.text}</p> : <p className={styles.missing}>😴 No answer</p>;
+  return entry.text ? <p className={styles.quip}>{entry.text}</p> : <p className={styles.missing}>No answer</p>;
 }
 
 function ResultBanner({ result }: { result: NonNullable<MatchupView['result']> }) {
   const stamp =
     result.outcome === 'duplicate'
-      ? { text: 'Duplicate order!', tone: 'ink' as const, note: 'Same answer twice — both cancelled.' }
+      ? { text: 'Duplicate order!', tone: 'ink' as const, note: 'Same answer twice, so both are cancelled.' }
       : result.outcome === 'forfeit'
         ? { text: 'Forfeit', tone: 'gold' as const, note: 'No answer means the other side takes it all.' }
         : result.outcome === 'empty'

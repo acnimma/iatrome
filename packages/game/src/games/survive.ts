@@ -4,7 +4,7 @@ import type { GameResult, Phase } from '../types';
 import { type ActionOutcome, type BaseGameState, type GameContext, type GameModule, setPhase, standings, tidy } from './context';
 
 /**
- * Survive the Shift — elimination trivia. Everyone starts with two coffees; a wrong or
+ * Survive the Shift: elimination trivia. Everyone starts with two coffees; a wrong or
  * missing answer costs one. Out of coffee = clocked out (keep answering for ghost points).
  * If every survivor misses the same question, nobody loses a coffee.
  */

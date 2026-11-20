@@ -6,8 +6,9 @@
  *  - Punch at medicine, training culture, history and wordplay — never at patients
  *    or people living with a condition.
  *  - Generic drug names only. No real hospitals, brands or living people.
- *  - `breadth: 'universal'` = any first-year healthcare student (med, nursing, PA,
- *    dental, pharmacy) gets it. `'clinical'` = needs some ward/clinic time.
+ *  - `breadth: 'universal'` = Normal mode: anyone gets it, including people with no
+ *    healthcare background (think a family party). `'clinical'` = Pro mode: for
+ *    people who work or train in healthcare; jargon and in-jokes welcome.
  */
 
 export type Breadth = 'universal' | 'clinical';
@@ -93,8 +94,15 @@ export const hostEvents = [
   'poisonIntro', // Pick Your Poison begins
   'poisonUnanimous', // everyone picked the same side
   'poisonMinority', // calling out the minority before their defence
+  'didacticsIntro', // Didactics Mode (team trivia) begins
+  'didacticsLightning', // the double-points lightning round is next
+  'didacticsStumped', // no team got the question right
 ] as const;
 
 export type HostEvent = (typeof hostEvents)[number];
 
-export type HostLines = Record<HostEvent, string[]>;
+/** Didactics Mode lines live in their own pack. */
+export type DidacticsHostEvent = 'didacticsIntro' | 'didacticsLightning' | 'didacticsStumped';
+
+/** The main host-lines pack covers every event except Didactics Mode's. */
+export type HostLines = Record<Exclude<HostEvent, DidacticsHostEvent>, string[]>;

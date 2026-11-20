@@ -15,6 +15,7 @@ import { GrandRoundsStage } from '@/games/grand-rounds/GrandRoundsStage';
 import { SketchStage } from '@/games/sketch/SketchStage';
 import { SurviveStage } from '@/games/survive/SurviveStage';
 import { PoisonStage } from '@/games/poison/PoisonStage';
+import { DidacticsStage } from '@/games/didactics/DidacticsStage';
 import { StageLobby } from './StageLobby';
 import { HostControls } from './HostControls';
 import { Podium } from './Podium';
@@ -26,7 +27,7 @@ export interface StagePrefs {
   readAloud: boolean;
 }
 
-/** The shared screen — on a TV, a laptop, or screen-shared on Zoom. */
+/** The shared screen: on a TV, a laptop, or screen-shared on Zoom. */
 export function Stage({ code }: { code: string }) {
   const client = useRoomConnection(code, true);
   const snap = useSnapshot(client);
@@ -110,6 +111,8 @@ function StageGame({ view }: { view: RoomView }) {
       return <SurviveStage view={view} game={view.game} />;
     case 'poison':
       return <PoisonStage view={view} game={view.game} />;
+    case 'didactics':
+      return <DidacticsStage view={view} game={view.game} />;
     default:
       return null;
   }
@@ -141,7 +144,7 @@ function StageProblem({ code, error }: { code: string; error: string | null }) {
       <h1>{gone ? 'This room has closed' : 'This screen isn’t the host'}</h1>
       <p>
         {gone
-          ? 'Rooms close after 30 minutes with nobody in them. Start a fresh one — it takes seconds.'
+          ? 'Rooms close after 30 minutes with nobody in them. Start a fresh one in seconds.'
           : 'Only the browser that created the room can run its stage. Want to play instead?'}
       </p>
       <div className={styles.problemActions}>

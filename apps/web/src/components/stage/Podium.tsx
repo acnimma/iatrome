@@ -7,18 +7,21 @@ import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { Confetti } from '@/components/ui/Confetti';
 import { CountUp, nameOf, usePeople } from '@/components/room/RoomBits';
+import { teamTone } from '@/games/didactics/teams';
 import styles from './Podium.module.css';
+import { Icon } from '@/components/icons/Icon';
 
 const PLACES = [
-  { place: 2, height: '62%', medal: '🥈', tone: 'var(--sky-blue)' },
-  { place: 1, height: '86%', medal: '🥇', tone: 'var(--royal-gold)' },
-  { place: 3, height: '46%', medal: '🥉', tone: 'var(--rose-kiss)' },
+  { place: 2, height: '62%', medal: 'medal', tone: 'var(--sky-blue)' },
+  { place: 1, height: '86%', medal: 'trophy', tone: 'var(--royal-gold)' },
+  { place: 3, height: '46%', medal: 'medal', tone: 'var(--rose-kiss)' },
 ];
 
 /** Final standings: podium, the rest, and the night's highlights. */
 export function Podium({ view, result }: { view: RoomView; result: GameResult }) {
   const room = useRoom();
   const people = usePeople(view);
+  if (result.teams) return <TeamPodium view={view} result={result} />;
   const byRank = (rank: number) => result.standings.filter((s) => s.rank === rank);
   const rest = result.standings.filter((s) => s.rank > 3);
 
@@ -53,7 +56,9 @@ export function Podium({ view, result }: { view: RoomView; result: GameResult })
                 animate={{ height }}
                 transition={{ delay: 0.2 + i * 0.15, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
               >
-                <span className={styles.medal}>{medal}</span>
+                <span className={styles.medal}>
+                  <Icon name={medal as 'medal' | 'trophy'} size={56} />
+                </span>
               </motion.div>
             </div>
           );
@@ -89,6 +94,65 @@ export function Podium({ view, result }: { view: RoomView; result: GameResult })
       )}
 
       <motion.div className={styles.actions} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 3 }}>
+        <Button tone="rose" size="lg" onClick={() => room.host({ type: 'again' })}>
+          Play again
+        </Button>
+        <Button tone="card" size="lg" onClick={() => room.host({ type: 'lobby' })}>
+          Pick another game
+        </Button>
+      </motion.div>
+    </div>
+  );
+}
+
+/** Team games: the teams take the podium, with everyone on them. */
+function TeamPodium({ view, result }: { view: RoomView; result: GameResult }) {
+  const room = useRoom();
+  const people = usePeople(view);
+  const teams = result.teams!;
+  const top = Math.max(1, teams[0]?.score ?? 1);
+  return (
+    <div className={styles.podium}>
+      <Confetti />
+      <span className={styles.eyebrow}>{gameInfo[result.game].title} · final results</span>
+      <motion.h2 className={styles.teamWinner} initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring', stiffness: 260, damping: 14, delay: 0.3 }}>
+        {teams.filter((t) => t.rank === 1).map((t) => t.name).join(' & ')} win!
+      </motion.h2>
+      <ol className={styles.teamList}>
+        {teams.map((team, i) => (
+          <motion.li
+            key={team.name}
+            className={styles.teamRow}
+            style={{ '--tone': teamTone(team.color) } as React.CSSProperties}
+            initial={{ x: -40, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ delay: 0.7 + i * 0.2, type: 'spring', stiffness: 280, damping: 22 }}
+          >
+            <span className={styles.teamMedal}>{['1st', '2nd', '3rd', '4th'][team.rank - 1]}</span>
+            <span className={styles.teamInfo}>
+              <span className={styles.teamTitle}>{team.name}</span>
+              <span className={styles.teamMembers}>
+                {team.members.map((id) => {
+                  const p = people.get(id);
+                  return p ? <Avatar key={id} avatar={p.avatar} size={28} /> : null;
+                })}
+              </span>
+            </span>
+            <span className={styles.teamBar}>
+              <motion.span initial={{ width: 0 }} animate={{ width: `${(team.score / top) * 100}%` }} transition={{ delay: 1 + i * 0.2, duration: 1, ease: [0.22, 1, 0.36, 1] }} />
+            </span>
+            <CountUp className={styles.score} value={team.score} duration={1400} />
+          </motion.li>
+        ))}
+      </ol>
+      {result.highlights.map((h) => (
+        <motion.div key={h.title} className={styles.highlight} initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 2 }}>
+          <span className={styles.highlightTitle}>{h.title}</span>
+          <span className={styles.highlightWho}>{nameOf(people, h.playerId)}</span>
+          <span className={styles.highlightDetail}>{h.detail}</span>
+        </motion.div>
+      ))}
+      <motion.div className={styles.actions} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2.4 }}>
         <Button tone="rose" size="lg" onClick={() => room.host({ type: 'again' })}>
           Play again
         </Button>

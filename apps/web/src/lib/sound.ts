@@ -1,5 +1,5 @@
 /**
- * Sound effects, synthesized with WebAudio — no files, no licensing, instant.
+ * Sound effects, synthesized with WebAudio: no files, no licensing, instant.
  * Browsers only allow audio after a user gesture; call `unlockAudio()` from a click.
  */
 

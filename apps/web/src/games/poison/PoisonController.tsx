@@ -18,20 +18,20 @@ export function PoisonController({ view, game }: { view: RoomView; game: PoisonV
 
   if (phase === 'intro')
     return (
-      <PhoneMessage emoji="🧪" title="Pick Your Poison">
+      <PhoneMessage icon="game-poison" title="Pick Your Poison">
         Pick a side, then read the room.
       </PhoneMessage>
     );
 
   if (phase === 'choose') {
-    if (!playing) return <PhoneMessage emoji="🍿" title="Watch the big screen" />;
+    if (!playing) return <PhoneMessage icon="popcorn" title="Watch the big screen" />;
     const mine = game.mine ?? { side: null, predict: null };
     const options = [
       { side: 'a' as const, text: game.a, tone: 'rose' as const },
       { side: 'b' as const, text: game.b, tone: 'sky' as const },
     ];
     const step = mine.side ? 'predict' : 'pick';
-    if (mine.side && mine.predict) return <PhoneMessage emoji="🔒" title="Locked in">Waiting for everyone else…</PhoneMessage>;
+    if (mine.side && mine.predict) return <PhoneMessage icon="lock" title="Locked in">Waiting for everyone else…</PhoneMessage>;
     return (
       <PhoneStack>
         <PhonePrompt
@@ -62,7 +62,7 @@ export function PoisonController({ view, game }: { view: RoomView; game: PoisonV
   if (phase === 'defend' || phase === 'defence')
     return (
       <PhoneStack>
-        <PhoneMessage emoji="🎤" title={phase === 'defend' ? 'The minority speaks…' : 'Judge them'} />
+        <PhoneMessage icon="mic" title={phase === 'defend' ? 'The minority speaks…' : 'Judge them'} />
         <ReactionBar />
       </PhoneStack>
     );
@@ -71,7 +71,7 @@ export function PoisonController({ view, game }: { view: RoomView; game: PoisonV
   const earned = game.earned[me];
   return (
     <PhoneStack>
-      <PhoneMessage emoji={earned ? '🧠' : game.majority === 'tie' ? '⚖️' : '🙈'} title={earned ? 'You read the room!' : game.majority === 'tie' ? 'Dead even' : 'Misread the room'}>
+      <PhoneMessage icon={earned ? 'brain' : game.majority === 'tie' ? 'scales' : 'see-no-evil'} title={earned ? 'You read the room!' : game.majority === 'tie' ? 'Dead even' : 'Misread the room'}>
         {earned ? `+${earned} points` : ''}
       </PhoneMessage>
       <ReactionBar />

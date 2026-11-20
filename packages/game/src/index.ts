@@ -3,7 +3,7 @@ export * from './types';
 export * from './protocol';
 export * from './room';
 export * from './drawing';
-export { matchGuess, sameAnswer, isAllowed, cleanText } from './text';
+export { matchGuess, sameAnswer, cleanText } from './text';
 export { games, type GameState, type GameView, type GameAction } from './games/registry';
 export { gameInfo } from './games/info';
 export type { Viewer } from './games/context';
@@ -11,3 +11,4 @@ export type { GrandRoundsView, MatchupView, EntryView, TaskView, MatchupResult, 
 export type { SketchView } from './games/sketch';
 export type { SurviveView } from './games/survive';
 export type { PoisonView } from './games/poison';
+export type { DidacticsView, Team } from './games/didactics';

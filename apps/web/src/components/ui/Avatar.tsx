@@ -1,4 +1,5 @@
 import { AVATARS } from '@iatrome/game/client';
+import { Icon } from '@/components/icons/Icon';
 import styles from './Avatar.module.css';
 
 /** Avatar badge colours cycle through the palette. */
@@ -15,12 +16,12 @@ interface Props {
   className?: string;
 }
 
-/** An emoji on a glossy coloured badge. */
+/** A brand icon on a glossy coloured badge. */
 export function Avatar({ avatar, size = 48, name, dim, badge, className }: Props) {
   return (
     <span className={`${styles.wrap} ${dim ? styles.dim : ''} ${className ?? ''}`} style={{ '--size': `${size}px` } as React.CSSProperties}>
       <span className={styles.badge} style={{ background: avatarTone(avatar) }} aria-hidden>
-        <span className={styles.emoji}>{AVATARS[avatar % AVATARS.length]}</span>
+        <Icon name={AVATARS[avatar % AVATARS.length]} size={Math.round(size * 0.66)} />
         {badge && <span className={styles.corner}>{badge}</span>}
       </span>
       {name && <span className={styles.name}>{name}</span>}

@@ -109,7 +109,7 @@ function Feed({ view, game }: { view: RoomView; game: SketchView }) {
             >
               {p && <Avatar avatar={p.avatar} size={28} />}
               <span className={styles.feedName}>{p?.name ?? 'Someone'}</span>
-              <span className={styles.feedText}>{f.kind === 'correct' ? 'got it! ✓' : f.text}</span>
+              <span className={styles.feedText}>{f.kind === 'correct' ? 'got it!' : f.text}</span>
             </motion.div>
           );
         })}

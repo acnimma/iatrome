@@ -23,11 +23,6 @@
   box-shadow: var(--gloss), var(--shadow-sm);
 }
 
-.emoji {
-  font-size: calc(var(--size) * 0.52);
-  line-height: 1;
-}
-
 .corner {
   position: absolute;
   right: -6px;

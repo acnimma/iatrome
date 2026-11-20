@@ -1,5 +1,5 @@
 /**
- * "Read aloud" for the stage — reads prompts and answers so remote players on a
+ * "Read aloud" for the stage: reads prompts and answers so remote players on a
  * laggy Zoom share can follow along. Uses the browser's built-in voices.
  */
 

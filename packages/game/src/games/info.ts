@@ -1,4 +1,4 @@
-import { GRAND_ROUNDS, POISON, SKETCH, SURVIVE } from '../constants';
+import { DIDACTICS, GRAND_ROUNDS, POISON, SKETCH, SURVIVE } from '../constants';
 import type { GameId } from '../types';
 
 export interface GameInfo {
@@ -11,27 +11,27 @@ export interface GameInfo {
   max: number;
 }
 
-/** Display info for each game — safe to import on the client (no content packs). */
+/** Display info for each game, safe to import on the client (no content packs). */
 export const gameInfo: Record<GameId, GameInfo> = {
   'grand-rounds': {
     title: 'Grand Rounds',
-    tagline: 'Head-to-head quips and doodles. The room votes.',
-    howTo: 'Answer prompts on your phone. Two answers face off — everyone else votes.',
+    tagline: 'Funny answers, head to head',
+    howTo: 'Answer prompts on your phone. Two answers face off and everyone else votes.',
     minutes: 15,
     min: GRAND_ROUNDS.minPlayers,
     max: GRAND_ROUNDS.maxPlayers,
   },
   sketch: {
     title: 'Sketch',
-    tagline: 'One draws, everyone races to guess.',
-    howTo: 'Draw your secret term. Everyone else races to guess it.',
+    tagline: 'One draws, everyone guesses',
+    howTo: 'Draw your secret word. Everyone else races to guess it.',
     minutes: 10,
     min: SKETCH.minPlayers,
     max: SKETCH.maxPlayers,
   },
   survive: {
     title: 'Survive the Shift',
-    tagline: 'Trivia elimination. Two coffees. Last one on shift wins.',
+    tagline: 'Trivia, last one standing',
     howTo: 'Wrong answers cost a coffee. Run out and you clock out.',
     minutes: 8,
     min: SURVIVE.minPlayers,
@@ -39,10 +39,18 @@ export const gameInfo: Record<GameId, GameInfo> = {
   },
   poison: {
     title: 'Pick Your Poison',
-    tagline: 'Would you rather — and can you read the room?',
-    howTo: 'Pick your side, then predict what the room picked.',
+    tagline: 'Would you rather, read the room',
+    howTo: 'Pick your side, then guess what most people picked.',
     minutes: 8,
     min: POISON.minPlayers,
     max: POISON.maxPlayers,
+  },
+  didactics: {
+    title: 'Didactics Mode',
+    tagline: 'Team trivia for the whole crowd',
+    howTo: 'Random teams. Everyone answers on their phone. Your team scores when you get it right.',
+    minutes: 12,
+    min: DIDACTICS.minPlayers,
+    max: DIDACTICS.maxPlayers,
   },
 };

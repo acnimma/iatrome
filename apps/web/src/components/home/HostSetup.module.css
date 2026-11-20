@@ -18,12 +18,15 @@
   box-shadow: var(--shadow-lg);
 }
 
-.logoLink {
-  align-self: flex-start;
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .logo {
-  height: 40px;
+  height: 36px;
   width: auto;
 }
 
@@ -51,12 +54,6 @@
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--ink-soft);
-}
-
-.more summary {
-  font-weight: 800;
-  cursor: pointer;
-  padding: 6px 0 12px;
 }
 
 .error {

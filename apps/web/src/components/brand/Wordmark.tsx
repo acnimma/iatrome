@@ -27,11 +27,11 @@ const { pivot, radius, tilt } = W.tablet;
 const pct = (n: number) => `${(n * 100).toFixed(2)}%`;
 /** The hinge the tablet's halves open around (the bottom of its score line), relative to its box. */
 const hinge = `${pct((pivot.x - tabletBox.x) / tabletBox.width)} ${pct((pivot.y - tabletBox.y) / tabletBox.height)}`;
-/** The palette flash inside the crack: a sliver standing on the hinge, along the score line. */
+/** The double helix inside the crack, standing on the hinge along the score line. */
 const flashPlacement = {
-  left: pct((pivot.x - radius * 0.16 - tabletBox.x) / tabletBox.width),
-  top: pct((pivot.y - radius * 1.7 - tabletBox.y) / tabletBox.height),
-  width: pct((radius * 0.32) / tabletBox.width),
+  left: pct((pivot.x - radius * 0.34 - tabletBox.x) / tabletBox.width),
+  top: pct((pivot.y - radius * 1.75 - tabletBox.y) / tabletBox.height),
+  width: pct((radius * 0.68) / tabletBox.width),
   height: pct((radius * 1.7) / tabletBox.height),
   rotate: `${tilt}deg`,
 };
@@ -290,7 +290,9 @@ export function Wordmark({ className }: { className?: string }) {
           <span ref={(el) => void (glyphs.current[i] = el)} className={styles.glyph} style={{ transformOrigin: seat(box) }}>
             {i === W.tablet.index ? (
               <>
-                <span ref={flashRef} className={styles.flash} style={flashPlacement} />
+                <span ref={flashRef} className={styles.flash} style={flashPlacement}>
+                  <Helix />
+                </span>
                 {parts.map((d, k) => (
                   <span key={d} ref={(el) => void (halves.current[k] = el)} className={styles.half} style={{ transformOrigin: hinge }}>
                     <svg viewBox={viewBox(box)} aria-hidden>
@@ -308,5 +310,27 @@ export function Wordmark({ className }: { className?: string }) {
         </span>
       ))}
     </span>
+  );
+}
+
+/** The surprise inside the tablet: a double helix in the palette. */
+function Helix() {
+  return (
+    <svg viewBox="0 0 40 100" className={styles.helix} aria-hidden>
+      <line x1="29.7" y1="7.5" x2="10.3" y2="7.5" stroke="var(--royal-gold)" strokeWidth="4.5" strokeLinecap="round" />
+      <line x1="35.0" y1="17.5" x2="5.0" y2="17.5" stroke="var(--sky-blue)" strokeWidth="4.5" strokeLinecap="round" />
+      <line x1="27.8" y1="27.5" x2="12.2" y2="27.5" stroke="var(--bright-snow)" strokeWidth="4.5" strokeLinecap="round" />
+      <line x1="14.3" y1="37.5" x2="25.7" y2="37.5" stroke="var(--rose-kiss)" strokeWidth="4.5" strokeLinecap="round" />
+      <line x1="5.4" y1="47.5" x2="34.6" y2="47.5" stroke="var(--cool-sky)" strokeWidth="4.5" strokeLinecap="round" />
+      <line x1="8.6" y1="57.5" x2="31.4" y2="57.5" stroke="var(--royal-gold)" strokeWidth="4.5" strokeLinecap="round" />
+      <line x1="21.2" y1="67.5" x2="18.8" y2="67.5" stroke="var(--sky-blue)" strokeWidth="4.5" strokeLinecap="round" />
+      <line x1="32.8" y1="77.5" x2="7.2" y2="77.5" stroke="var(--bright-snow)" strokeWidth="4.5" strokeLinecap="round" />
+      <line x1="33.9" y1="87.5" x2="6.1" y2="87.5" stroke="var(--rose-kiss)" strokeWidth="4.5" strokeLinecap="round" />
+      <line x1="23.5" y1="97.5" x2="16.5" y2="97.5" stroke="var(--cool-sky)" strokeWidth="4.5" strokeLinecap="round" />
+      <path d="M20.0 0.0L23.5 2.5L26.8 5.0L29.7 7.5L32.1 10.0L33.9 12.5L34.8 15.0L35.0 17.5L34.3 20.0L32.8 22.5L30.6 25.0L27.8 27.5L24.6 30.0L21.2 32.5L17.7 35.0L14.3 37.5L11.2 40.0L8.6 42.5L6.6 45.0L5.4 47.5L5.0 50.0L5.4 52.5L6.6 55.0L8.6 57.5L11.2 60.0L14.3 62.5L17.7 65.0L21.2 67.5L24.6 70.0L27.8 72.5L30.6 75.0L32.8 77.5L34.3 80.0L35.0 82.5L34.8 85.0L33.9 87.5L32.1 90.0L29.7 92.5L26.8 95.0L23.5 97.5L20.0 100.0" fill="none" stroke="#1f2a4d" strokeWidth="7" strokeLinecap="round" />
+      <path d="M20.0 0.0L23.5 2.5L26.8 5.0L29.7 7.5L32.1 10.0L33.9 12.5L34.8 15.0L35.0 17.5L34.3 20.0L32.8 22.5L30.6 25.0L27.8 27.5L24.6 30.0L21.2 32.5L17.7 35.0L14.3 37.5L11.2 40.0L8.6 42.5L6.6 45.0L5.4 47.5L5.0 50.0L5.4 52.5L6.6 55.0L8.6 57.5L11.2 60.0L14.3 62.5L17.7 65.0L21.2 67.5L24.6 70.0L27.8 72.5L30.6 75.0L32.8 77.5L34.3 80.0L35.0 82.5L34.8 85.0L33.9 87.5L32.1 90.0L29.7 92.5L26.8 95.0L23.5 97.5L20.0 100.0" fill="none" stroke="var(--rose-kiss)" strokeWidth="4" strokeLinecap="round" />
+      <path d="M20.0 0.0L16.5 2.5L13.2 5.0L10.3 7.5L7.9 10.0L6.1 12.5L5.2 15.0L5.0 17.5L5.7 20.0L7.2 22.5L9.4 25.0L12.2 27.5L15.4 30.0L18.8 32.5L22.3 35.0L25.7 37.5L28.8 40.0L31.4 42.5L33.4 45.0L34.6 47.5L35.0 50.0L34.6 52.5L33.4 55.0L31.4 57.5L28.8 60.0L25.7 62.5L22.3 65.0L18.8 67.5L15.4 70.0L12.2 72.5L9.4 75.0L7.2 77.5L5.7 80.0L5.0 82.5L5.2 85.0L6.1 87.5L7.9 90.0L10.3 92.5L13.2 95.0L16.5 97.5L20.0 100.0" fill="none" stroke="#1f2a4d" strokeWidth="7" strokeLinecap="round" />
+      <path d="M20.0 0.0L16.5 2.5L13.2 5.0L10.3 7.5L7.9 10.0L6.1 12.5L5.2 15.0L5.0 17.5L5.7 20.0L7.2 22.5L9.4 25.0L12.2 27.5L15.4 30.0L18.8 32.5L22.3 35.0L25.7 37.5L28.8 40.0L31.4 42.5L33.4 45.0L34.6 47.5L35.0 50.0L34.6 52.5L33.4 55.0L31.4 57.5L28.8 60.0L25.7 62.5L22.3 65.0L18.8 67.5L15.4 70.0L12.2 72.5L9.4 75.0L7.2 77.5L5.7 80.0L5.0 82.5L5.2 85.0L6.1 87.5L7.9 90.0L10.3 92.5L13.2 95.0L16.5 97.5L20.0 100.0" fill="none" stroke="var(--cool-sky)" strokeWidth="4" strokeLinecap="round" />
+    </svg>
   );
 }

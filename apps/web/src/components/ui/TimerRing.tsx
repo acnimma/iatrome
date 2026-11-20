@@ -14,7 +14,7 @@ interface Props {
   ticks?: boolean;
 }
 
-/** A countdown ring driven by server time — every screen shows the same second. */
+/** A countdown ring driven by server time: every screen shows the same second. */
 export function TimerRing({ phase, pausedAt, size = 64, ticks = false }: Props) {
   const room = useRoom();
   const [remaining, setRemaining] = useState(0);

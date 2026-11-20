@@ -70,39 +70,32 @@ describe('scoring', () => {
   const none: [boolean, boolean] = [false, false];
 
   it('splits the pool by vote share and gives the winner a bonus', () => {
-    const r = scoreVotes({ players: [3, 1], audience: [0, 0], multiplier: 1, curbside: none });
+    const r = scoreVotes({ votes: [3, 1], multiplier: 1, curbside: none });
     expect(r.winner).toBe(0);
     expect(r.consensus).toBe(false);
     expect(r.points).toEqual([850, 250]);
   });
 
   it('awards the consensus bonus for a unanimous win with 2+ voters', () => {
-    const r = scoreVotes({ players: [4, 0], audience: [0, 0], multiplier: 2, curbside: none });
+    const r = scoreVotes({ votes: [4, 0], multiplier: 2, curbside: none });
     expect(r.consensus).toBe(true);
     expect(r.points).toEqual([2500, 0]);
   });
 
   it('does not call a single vote a consensus', () => {
-    const r = scoreVotes({ players: [1, 0], audience: [0, 0], multiplier: 1, curbside: none });
+    const r = scoreVotes({ votes: [1, 0], multiplier: 1, curbside: none });
     expect(r.consensus).toBe(false);
     expect(r.points).toEqual([1100, 0]);
   });
 
   it('splits evenly on a tie with no bonus', () => {
-    const r = scoreVotes({ players: [2, 2], audience: [0, 0], multiplier: 1, curbside: none });
+    const r = scoreVotes({ votes: [2, 2], multiplier: 1, curbside: none });
     expect(r.winner).toBeNull();
     expect(r.points).toEqual([500, 500]);
   });
 
-  it('caps the audience at a third of the matchup', () => {
-    // 1 player vote for A, 100 audience votes for B: audience weight is capped at 1/3.
-    const r = scoreVotes({ players: [1, 0], audience: [0, 100], multiplier: 1, curbside: none });
-    expect(r.shares[0]).toBeCloseTo(2 / 3);
-    expect(r.winner).toBe(0);
-  });
-
   it('halves curbside consult points', () => {
-    const r = scoreVotes({ players: [3, 1], audience: [0, 0], multiplier: 1, curbside: [true, false] });
+    const r = scoreVotes({ votes: [3, 1], multiplier: 1, curbside: [true, false] });
     expect(r.points).toEqual([430, 250]);
   });
 

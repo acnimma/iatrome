@@ -7,7 +7,7 @@ import styles from './Beep.module.css';
 
 const SHOW_MS = 7_000;
 
-/** Beep — the host. A pager with a face who reacts to everything that happens. */
+/** Beep: the host. A pager with a face who reacts to everything that happens. */
 export function Beep({ line, size = 120, compact = false }: { line: HostLine | null; size?: number; compact?: boolean }) {
   const [visible, setVisible] = useState<HostLine | null>(null);
 

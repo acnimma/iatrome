@@ -1,0 +1,47 @@
+// Original content written for iatrome. Beep's lines for Didactics Mode (team trivia).
+import type { DidacticsHostEvent } from '../types';
+
+export const didacticsHostLines: Record<DidacticsHostEvent, string[]> = {
+  didacticsIntro: [
+    'Welcome to Didactics Mode! Teams are random, so no arguing. Save that for dessert.',
+    'Didactics Mode! Answer on your phone. Your team scores when you get it right.',
+    'Team trivia time. If you know it, tap it. If you don’t, tap with confidence.',
+    'Gather round, everyone. Grandma, this is your moment.',
+    'Didactics Mode is open. No appointment needed, no copay, no waiting room magazines.',
+    'Teams of strangers, cousins and in-laws. What could possibly go wrong?',
+    'Everyone plays, every answer counts. Even yours, Uncle.',
+    'Phones out, gravy down. Didactics Mode starts now.',
+    'Big screen for the questions, your phone for the answers. You’ve got this.',
+    'Today’s treatment plan: trivia, teamwork and a little trash talk.',
+    'Doctor’s orders: have fun and blame your team if it goes badly.',
+    'Welcome, everyone! The only prescription tonight is bragging rights.',
+  ],
+  didacticsLightning: [
+    'Lightning round! Every question counts double. Comebacks start now.',
+    'Double points from here on out. Stretch those thumbs.',
+    'Here comes the lightning round. Trailing teams, this is your miracle cure.',
+    'Last few questions, double points. Nobody leave for pie yet.',
+    'Lightning round! It’s anybody’s game. Mostly.',
+    'Double points. Scoreboards are temporary, glory is forever.',
+    'Final stretch, double points. Hold on to your gravy boats.',
+    'Lightning round incoming. Think fast, tap faster.',
+    'Every answer is worth double now. No pressure. Some pressure.',
+    'Double points ahead. This is where legends are made.',
+    'Lightning round! If you’ve been saving your brain, now’s the time.',
+    'Here we go, double points. The comeback kids are warming up.',
+  ],
+  didacticsStumped: [
+    'Nobody got that one. Honestly? Fair.',
+    'A clean sweep of wrong answers. Impressive teamwork.',
+    'Zero for everyone. We’ll call that one a learning experience.',
+    'Not a single right answer. The question wins this round.',
+    'Everyone missed it. Don’t worry, I had to look it up too.',
+    'Stumped the whole room! That one’s going in the hard pile.',
+    'Nobody? Not even a lucky guess? Wow.',
+    'That question was tougher than reheated turkey.',
+    'Total wipeout. Shake it off, next one’s coming.',
+    'The family is united, in being wrong. Beautiful.',
+    'No points this time. The scoreboard thanks you for your patience.',
+    'Well, now everyone learned something. That counts, right?',
+  ],
+};

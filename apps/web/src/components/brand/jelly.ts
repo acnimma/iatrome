@@ -176,7 +176,7 @@ export class JellyTablet {
     return [half(-1), half(1)] as const;
   }
 
-  /** The palette flash glimpsed inside while it is open. */
+  /** The double helix glimpsed inside while it is open. */
   get flash() {
     const o = clamp(this.open.x, 0, 1.4);
     return { transform: `scale(${(0.4 + o * 0.6).toFixed(3)})`, opacity: clamp(o * 1.6, 0, 1).toFixed(3) };

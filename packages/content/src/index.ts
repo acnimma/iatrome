@@ -7,4 +7,8 @@ export { differentials } from './packs/differentials';
 export { dilemmas } from './packs/dilemmas';
 export { sketchTerms } from './packs/sketch-terms';
 export { trivia } from './packs/trivia';
-export { hostLines } from './packs/host-lines';
+import { hostLines as coreHostLines } from './packs/host-lines';
+import { didacticsHostLines } from './packs/host-lines-didactics';
+import type { HostEvent } from './types';
+
+export const hostLines: Record<HostEvent, string[]> = { ...coreHostLines, ...didacticsHostLines };

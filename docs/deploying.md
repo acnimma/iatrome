@@ -38,7 +38,7 @@ Redeploy after adding them (they’re baked in at build time).
 
 ## 3. Domain → Namecheap DNS
 
-In Vercel: **Settings → Domains → Add** `iatrome.com` and `www.iatrome.com`. Vercel shows the exact records to create — use those values. They are typically:
+In Vercel: **Settings → Domains → Add** `iatrome.com` and `www.iatrome.com`. Vercel shows the exact records to create: use those values. They are typically:
 
 | Type | Host | Value |
 |---|---|---|
@@ -51,7 +51,7 @@ In Namecheap: **Domain List → iatrome.com → Advanced DNS** → delete the de
 
 1. Open `https://iatrome.com/host` on a laptop → Create room.
 2. Join from two phones on mobile data (not Wi-Fi) via the QR code.
-3. Bots are disabled in production (`DEV_MODE=false`) — you need 3 real people for Grand Rounds, 2 for Survive the Shift.
+3. Bots are disabled in production (`DEV_MODE=false`): you need 3 real people for Grand Rounds, 2 for Survive the Shift.
 
 ## Costs & limits (free tiers)
 

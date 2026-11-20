@@ -8,9 +8,9 @@
   text-align: center;
 }
 
-.emoji {
-  font-size: 3.4rem;
-  line-height: 1;
+.icon {
+  display: grid;
+  filter: drop-shadow(0 8px 12px rgb(31 42 77 / 0.18));
 }
 
 .title {

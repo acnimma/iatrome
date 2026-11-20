@@ -9,6 +9,7 @@ import { IntroCard, Pill, Stamp, usePeople } from '@/components/room/RoomBits';
 import { play } from '@/lib/sound';
 import { speak } from '@/lib/speech';
 import styles from './Survive.module.css';
+import { Icon } from '@/components/icons/Icon';
 
 export const LETTERS = ['A', 'B', 'C', 'D'];
 export const OPTION_TONES = ['blue', 'rose', 'gold', 'sky'] as const;
@@ -59,7 +60,7 @@ export function SurviveStage({ view, game }: { view: RoomView; game: SurviveView
           {game.fact}
         </motion.div>
       )}
-      {revealed && game.last?.mercy && <Stamp tone="sky">Mercy rule — everyone keeps their coffee</Stamp>}
+      {revealed && game.last?.mercy && <Stamp tone="sky">Mercy rule: everyone keeps their coffee</Stamp>}
       <Roster view={view} game={game} />
     </div>
   );
@@ -77,10 +78,10 @@ function Roster({ view, game }: { view: RoomView; game: SurviveView }) {
         const out = id in game.clockedOut;
         return (
           <motion.div key={id} className={`${styles.person} ${out ? styles.out : ''}`} animate={lost.has(id) ? { x: [0, -8, 8, -6, 6, 0] } : {}} transition={{ duration: 0.5 }}>
-            <Avatar avatar={p.avatar} size={48} badge={game.phase.name === 'question' && answered.has(id) ? '✓' : undefined} />
+            <Avatar avatar={p.avatar} size={48} badge={game.phase.name === 'question' && answered.has(id) ? <Icon name="check" size={16} /> : undefined} />
             <span className={styles.name}>{p.name}</span>
             <span className={styles.coffees} aria-label={`${game.coffees[id]} coffees left`}>
-              {out ? 'clocked out' : '☕'.repeat(Math.max(0, game.coffees[id]))}
+              {out ? 'clocked out' : Array.from({ length: Math.max(0, game.coffees[id]) }, (_, k) => <Icon key={k} name="coffee" size={22} />)}
             </span>
           </motion.div>
         );

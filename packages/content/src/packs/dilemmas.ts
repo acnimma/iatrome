@@ -4,14 +4,14 @@ import type { Dilemma } from '../types';
 export const dilemmas: Dilemma[] = [
   {
     id: "wyr-001",
-    a: "chart in Comic Sans forever",
+    a: "write every note at work in Comic Sans forever",
     b: "have your pager go off every time you sit down to eat",
     breadth: "universal",
   },
   {
     id: "wyr-002",
     a: "only communicate in medical abbreviations",
-    b: "have everyone call you \"the nurse,\" whatever your actual job",
+    b: "have everyone call you “the nurse,” whatever your actual job",
     breadth: "universal",
   },
   {
@@ -42,13 +42,13 @@ export const dilemmas: Dilemma[] = [
     id: "wyr-007",
     a: "sleep in a call room with a clanking radiator",
     b: "sleep in a supply closet with a motion-sensor light",
-    breadth: "universal",
+    breadth: "clinical",
   },
   {
     id: "wyr-008",
     a: "memorize every cranial nerve backwards",
     b: "memorize all 206 bones in alphabetical order",
-    breadth: "universal",
+    breadth: "clinical",
   },
   {
     id: "wyr-009",
@@ -59,7 +59,7 @@ export const dilemmas: Dilemma[] = [
   {
     id: "wyr-010",
     a: "have your stomach growl the answers during exams",
-    b: "have your knee kick every time you're wrong",
+    b: "have your knee kick every time you’re wrong",
     breadth: "universal",
   },
   {
@@ -96,7 +96,7 @@ export const dilemmas: Dilemma[] = [
     id: "wyr-016",
     a: "have autocorrect turn every word into Latin anatomy",
     b: "have every song you hear be about the Krebs cycle",
-    breadth: "universal",
+    breadth: "clinical",
   },
   {
     id: "wyr-017",
@@ -130,8 +130,8 @@ export const dilemmas: Dilemma[] = [
   },
   {
     id: "wyr-022",
-    a: "have your knuckles crack every time you're right",
-    b: "have your knees creak every time you're wrong",
+    a: "have your knuckles crack every time you’re right",
+    b: "have your knees creak every time you’re wrong",
     breadth: "universal",
   },
   {
@@ -167,12 +167,12 @@ export const dilemmas: Dilemma[] = [
   {
     id: "wyr-028",
     a: "eat lunch in four minutes standing up",
-    b: "eat a leisurely lunch, but it's only jello",
+    b: "eat a leisurely lunch, but it’s only jello",
     breadth: "universal",
   },
   {
     id: "wyr-029",
-    a: "get unlimited free coffee, but it's all decaf",
+    a: "get unlimited free coffee, but it’s all decaf",
     b: "get unlimited naps, but only inside a running MRI",
     breadth: "universal",
   },
@@ -190,7 +190,7 @@ export const dilemmas: Dilemma[] = [
   },
   {
     id: "wyr-032",
-    a: "have all your notes written by Galen: confident but wrong",
+    a: "have all your notes written by an ancient Roman doctor: confident but wrong",
     b: "have all your notes written by a squirrel: right but scattered",
     breadth: "universal",
   },
@@ -215,7 +215,7 @@ export const dilemmas: Dilemma[] = [
   {
     id: "wyr-036",
     a: "be a white blood cell during flu season",
-    b: "be a liver cell on New Year's Day",
+    b: "be a liver cell on New Year’s Day",
     breadth: "universal",
   },
   {
@@ -256,8 +256,8 @@ export const dilemmas: Dilemma[] = [
   },
   {
     id: "wyr-043",
-    a: "have every lecture permanently play at 3x speed",
-    b: "have every lecture permanently play at 0.5x speed",
+    a: "have every lecture play at triple speed",
+    b: "have every lecture play at half speed",
     breadth: "universal",
   },
   {
@@ -318,7 +318,7 @@ export const dilemmas: Dilemma[] = [
     id: "wyr-053",
     a: "live with the four humours as roommates",
     b: "rent from Galen as your landlord",
-    breadth: "universal",
+    breadth: "clinical",
   },
   {
     id: "wyr-054",
@@ -335,19 +335,19 @@ export const dilemmas: Dilemma[] = [
   {
     id: "wyr-056",
     a: "have a tiny obscure bone named after you",
-    b: "have a mnemonic made about you",
+    b: "have a memory trick for exams made up about you",
     breadth: "universal",
   },
   {
     id: "wyr-057",
-    a: "be the face of \"normal anatomy\" in every textbook",
+    a: "be the face of “normal anatomy” in every textbook",
     b: "be the voice of every exam timer announcement",
     breadth: "universal",
   },
   {
     id: "wyr-058",
     a: "have every snack you eat announced on the overhead speaker",
-    b: "have to chart every snack you eat in triplicate",
+    b: "have to write down every snack you eat, in triplicate",
     breadth: "universal",
   },
   {
@@ -358,7 +358,7 @@ export const dilemmas: Dilemma[] = [
   },
   {
     id: "wyr-060",
-    a: "instantly read any doctor's handwriting",
+    a: "instantly read any doctor’s handwriting",
     b: "instantly fix any hospital printer",
     breadth: "universal",
   },
@@ -425,7 +425,7 @@ export const dilemmas: Dilemma[] = [
   {
     id: "wyr-071",
     a: "be a platelet always cleaning up messes",
-    b: "be a macrophage that has to eat everything",
+    b: "be a white blood cell that has to eat every germ it meets",
     breadth: "universal",
   },
   {
@@ -437,7 +437,7 @@ export const dilemmas: Dilemma[] = [
   {
     id: "wyr-073",
     a: "retake the same exam every year forever",
-    b: "retake it just once, in a language you don't speak",
+    b: "retake it just once, in a language you don’t speak",
     breadth: "universal",
   },
   {
@@ -508,7 +508,7 @@ export const dilemmas: Dilemma[] = [
   },
   {
     id: "wyr-085",
-    a: "be a phlebotomist for vampires",
+    a: "draw blood for vampires",
     b: "be a dentist for sharks",
     breadth: "universal",
   },
@@ -521,7 +521,7 @@ export const dilemmas: Dilemma[] = [
   {
     id: "wyr-087",
     a: "be a chiropractor for giraffes",
-    b: "be a podiatrist for centipedes",
+    b: "be a foot doctor for centipedes",
     breadth: "universal",
   },
   {
@@ -545,8 +545,8 @@ export const dilemmas: Dilemma[] = [
   {
     id: "wyr-091",
     a: "recite the brachial plexus on demand at every party",
-    b: "get asked \"can you look at this rash?\" at every party",
-    breadth: "universal",
+    b: "get asked “can you look at this rash?” at every party",
+    breadth: "clinical",
   },
   {
     id: "wyr-092",
@@ -569,7 +569,7 @@ export const dilemmas: Dilemma[] = [
   {
     id: "wyr-095",
     a: "have every pen you own be out of ink",
-    b: "have every pen you own turn out to be someone else's",
+    b: "have every pen you own turn out to be someone else’s",
     breadth: "universal",
   },
   {
@@ -593,19 +593,19 @@ export const dilemmas: Dilemma[] = [
   {
     id: "wyr-099",
     a: "use the dental drill sound as your ringtone",
-    b: "use the IV pump alarm as your doorbell",
+    b: "use a beeping hospital IV pump as your doorbell",
     breadth: "universal",
   },
   {
     id: "wyr-100",
-    a: "get all your feedback in emojis",
+    a: "get all your feedback as smiley faces",
     b: "get all your feedback in Latin",
     breadth: "universal",
   },
   {
     id: "wyr-101",
     a: "have your exam score printed on your ID badge",
-    b: "have your class rank set as everyone's ringtone",
+    b: "have your class rank set as everyone’s ringtone",
     breadth: "universal",
   },
   {
@@ -622,15 +622,15 @@ export const dilemmas: Dilemma[] = [
   },
   {
     id: "wyr-104",
-    a: "have your ears turn red whenever you say \"I'm fine\"",
-    b: "have your nose grow when you say \"I did the reading\"",
+    a: "have your ears turn red whenever you say “I’m fine”",
+    b: "have your nose grow when you say “I did the reading”",
     breadth: "universal",
   },
   {
     id: "wyr-105",
     a: "join a study group with the four humours (they disagree on everything)",
     b: "join a study group with the 12 cranial nerves (nobody remembers their order)",
-    breadth: "universal",
+    breadth: "clinical",
   },
   {
     id: "wyr-106",
@@ -676,7 +676,7 @@ export const dilemmas: Dilemma[] = [
   },
   {
     id: "wyr-113",
-    a: "have a laugh that sounds like a pulse oximeter",
+    a: "have a laugh that sounds like a hospital heart monitor",
     b: "have a sneeze that sounds like a fax machine",
     breadth: "universal",
   },
@@ -690,7 +690,7 @@ export const dilemmas: Dilemma[] = [
     id: "wyr-115",
     a: "get logged out of every computer after 30 seconds",
     b: "get a static shock from every doorknob",
-    breadth: "clinical",
+    breadth: "universal",
   },
   {
     id: "wyr-116",
@@ -702,7 +702,7 @@ export const dilemmas: Dilemma[] = [
     id: "wyr-117",
     a: "have the Krebs cycle as your recurring dream",
     b: "have the brachial plexus as your recurring nightmare",
-    breadth: "universal",
+    breadth: "clinical",
   },
   {
     id: "wyr-118",
@@ -730,21 +730,21 @@ export const dilemmas: Dilemma[] = [
   },
   {
     id: "wyr-122",
-    a: "have to say \"lub-dub\" out loud every time you climb stairs",
-    b: "have to say \"inhale\" and \"exhale\" out loud for an hour daily",
+    a: "have to say “lub-dub” out loud every time you climb stairs",
+    b: "have to say “inhale” and “exhale” out loud for an hour daily",
     breadth: "universal",
   },
   {
     id: "wyr-123",
-    a: "go back in time and tell Galen he's wrong",
+    a: "go back in time and tell Galen he’s wrong",
     b: "go back in time and tell a 1950s doctor to stop smoking in clinic",
     breadth: "universal",
   },
   {
     id: "wyr-124",
-    a: "only use a microscope that's always slightly out of focus",
+    a: "only use a microscope that’s always slightly out of focus",
     b: "only use a centrifuge that walks across the bench",
-    breadth: "universal",
+    breadth: "clinical",
   },
   {
     id: "wyr-125",
@@ -762,7 +762,7 @@ export const dilemmas: Dilemma[] = [
     id: "wyr-127",
     a: "share a call room with a sleep-talking skeleton model",
     b: "share a call room with a cricket that never stops chirping",
-    breadth: "universal",
+    breadth: "clinical",
   },
   {
     id: "wyr-128",
@@ -773,13 +773,13 @@ export const dilemmas: Dilemma[] = [
   {
     id: "wyr-129",
     a: "have to diagnose your houseplants",
-    b: "have to take your houseplants' blood pressure daily",
+    b: "have to take your houseplants’ blood pressure daily",
     breadth: "universal",
   },
   {
     id: "wyr-130",
     a: "get every vending machine snack stuck",
-    b: "get every vending machine snack for free but it's always raisins",
+    b: "get every vending machine snack for free but it’s always raisins",
     breadth: "universal",
   },
 ];

@@ -6,6 +6,7 @@ import QRCode from 'qrcode';
 import { type PersonView, REACTIONS, type RoomView, gameInfo, type GameId } from '@iatrome/game/client';
 import { useRoom } from '@/realtime/use-room';
 import { Avatar } from '@/components/ui/Avatar';
+import { Icon } from '@/components/icons/Icon';
 import { haptic } from '@/lib/haptics';
 import styles from './RoomBits.module.css';
 
@@ -77,7 +78,7 @@ export function ReactionLayer({ view }: { view: RoomView }) {
             animate={{ y: -420, opacity: [0, 1, 1, 0], scale: [0.4, 1.3, 1, 1], rotate: [0, -8, 8, 0] }}
             transition={{ duration: 2.5, ease: 'easeOut' }}
           >
-            {REACTIONS[f.e]}
+            <Icon name={REACTIONS[f.e]} size={64} />
           </motion.span>
         ))}
       </AnimatePresence>
@@ -90,9 +91,9 @@ export function ReactionBar() {
   const room = useRoom();
   return (
     <div className={styles.reactionBar} role="group" aria-label="React">
-      {REACTIONS.map((emoji, i) => (
+      {REACTIONS.map((reaction, i) => (
         <motion.button
-          key={emoji}
+          key={reaction}
           type="button"
           className={styles.reactionButton}
           whileTap={{ scale: 1.35 }}
@@ -100,9 +101,9 @@ export function ReactionBar() {
             haptic('tap');
             room.react(i);
           }}
-          aria-label={`React ${emoji}`}
+          aria-label={`React: ${reaction.replace('react-', '')}`}
         >
-          {emoji}
+          <Icon name={reaction} size={34} />
         </motion.button>
       ))}
     </div>
@@ -219,7 +220,7 @@ export function AvatarRow({ ids, view, size = 52, done }: { ids: string[]; view:
               exit={{ scale: 0 }}
               transition={{ scale: { type: 'spring', stiffness: 500, damping: 18 }, y: { duration: 0.45, ease: 'easeOut' } }}
             >
-              <Avatar avatar={p.avatar} size={size} name={p.name} dim={done ? !isDone : !p.connected} badge={isDone ? '✓' : undefined} />
+              <Avatar avatar={p.avatar} size={size} name={p.name} dim={done ? !isDone : !p.connected} badge={isDone ? <Icon name="check" size={Math.round(size * 0.3)} label="Done" /> : undefined} />
             </motion.span>
           );
         })}

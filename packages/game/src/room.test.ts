@@ -48,6 +48,9 @@ function actFor(room: RoomState, id: string, now: number, i: number) {
     case 'survive':
       if (g.phase.name === 'question' && g.myAnswer === null) playerCommand(room, id, { type: 'pick-option', option: i % 4 }, now);
       return;
+    case 'didactics':
+      if (g.phase.name === 'question' && g.myAnswer === null) playerCommand(room, id, { type: 'pick-option', option: i % 4 }, now);
+      return;
     case 'poison':
       if (g.phase.name === 'choose' && !(g.mine?.side && g.mine.predict)) {
         playerCommand(room, id, { type: 'pick', side: i % 3 === 0 ? 'b' : 'a' }, now);
@@ -73,6 +76,9 @@ describe('full games', () => {
     ['sketch', 4],
     ['survive', 6],
     ['poison', 5],
+    ['didactics', 4],
+    ['didactics', 12],
+    ['didactics', 40],
   ];
   for (const [game, n] of cases) {
     it(`${game} with ${n} players runs from start to final standings`, () => {
@@ -87,7 +93,7 @@ describe('full games', () => {
   }
 
   it('finishes every game even when nobody does anything', () => {
-    for (const game of ['grand-rounds', 'sketch', 'survive', 'poison'] as GameId[]) {
+    for (const game of ['grand-rounds', 'sketch', 'survive', 'poison', 'didactics'] as GameId[]) {
       const { room, ids, clock } = setup(4, { game });
       hostCommand(room, { type: 'start' }, clock.now);
       playToEnd(room, ids, clock, false);
@@ -96,14 +102,14 @@ describe('full games', () => {
   });
 
   it('bots can play a whole game on their own in dev mode', () => {
-    for (const game of ['grand-rounds', 'sketch', 'survive', 'poison'] as GameId[]) {
+    for (const game of ['grand-rounds', 'sketch', 'survive', 'poison', 'didactics'] as GameId[]) {
       const clock = { now: START };
       const room = createRoom({ code: 'BOTBOT', seed: 3, now: clock.now, devMode: true, settings: { game, speed: 0.05 } });
       for (let i = 0; i < 4; i++) expect(hostCommand(room, { type: 'add-bot' }, clock.now)).toBeUndefined();
       hostCommand(room, { type: 'start' }, clock.now);
       for (let i = 0; i < 5000 && room.stage === 'playing'; i++) step(room, clock);
       expect(room.stage).toBe('over');
-      // Bots answer quickly — a whole game at 5% speed should take minutes, not hours.
+      // Bots answer quickly: a whole game at 5% speed should take minutes, not hours.
       expect(clock.now - START).toBeLessThan(30 * 60_000);
     }
   });
@@ -203,22 +209,45 @@ describe('Grand Rounds rules', () => {
     expect(personal).toBeGreaterThan(20);
   });
 
-  it('leaves players out of the prompts when inside jokes are off', () => {
-    const { room, clock } = setup(5, { game: 'grand-rounds', insideJokes: false });
-    hostCommand(room, { type: 'start' }, clock.now);
-    const game = room.game!;
-    if (game.game !== 'grand-rounds') throw new Error('wrong game');
-    for (const m of game.matchups) for (const p of room.people) expect(m.prompt).not.toContain(p.name);
+});
+
+describe('Didactics Mode', () => {
+  it('splits players into balanced random teams', () => {
+    for (const [n, teams] of [[4, 2], [7, 2], [8, 3], [15, 3], [16, 4], [40, 4]] as const) {
+      const { room, clock } = setup(n, { game: 'didactics' });
+      hostCommand(room, { type: 'start' }, clock.now);
+      const game = room.game!;
+      if (game.game !== 'didactics') throw new Error('wrong game');
+      expect(game.teams).toHaveLength(teams);
+      const sizes = game.teams.map((t) => t.members.length);
+      expect(Math.max(...sizes) - Math.min(...sizes)).toBeLessThanOrEqual(1);
+      expect(sizes.reduce((a, b) => a + b, 0)).toBe(n);
+    }
   });
 
-  it('rejects filtered answers with a nudge instead of masking them', () => {
-    const { room, ids, clock } = setup(3, { game: 'grand-rounds', filter: 'clean' });
+  it('seats late arrivals straight into the smallest team', () => {
+    const { room, clock } = setup(5, { game: 'didactics' });
     hostCommand(room, { type: 'start' }, clock.now);
-    step(room, clock); // intro → write
-    const g = viewFor(room, { kind: 'player', id: ids[0] }, clock.now).game;
-    if (g?.game !== 'grand-rounds') throw new Error('wrong game');
-    const out = playerCommand(room, ids[0], { type: 'answer', matchupId: g.tasks[0].matchupId, text: 'oh shit', final: true }, clock.now);
-    expect(out?.error).toMatch(/filter/);
+    const late = join(room, { deviceId: 'late', name: 'Grandpa', now: clock.now });
+    if (!late.ok) throw new Error(late.error);
+    expect(late.person.role).toBe('player');
+    const game = room.game!;
+    if (game.game !== 'didactics') throw new Error('wrong game');
+    expect(game.teams.map((t) => t.members.length).sort()).toEqual([3, 3]);
+    expect(game.playerIds).toContain(late.person.id);
+  });
+
+  it('scores teams by share of members right, so small teams aren’t punished', () => {
+    const { room, ids, clock } = setup(6, { game: 'didactics' });
+    hostCommand(room, { type: 'start' }, clock.now);
+    const game = room.game!;
+    if (game.game !== 'didactics') throw new Error('wrong game');
+    while (room.game?.phase.name !== 'question') step(room, clock);
+    const answer = game.questions[game.index].answer;
+    // Everyone right: every team gets the full pool.
+    ids.forEach((id) => playerCommand(room, id, { type: 'pick-option', option: answer }, clock.now));
+    expect(room.game?.phase.name).toBe('reveal');
+    for (const t of game.teams) expect(game.last?.perTeam[t.id].points).toBe(1000);
   });
 });
 
@@ -232,11 +261,15 @@ describe('joining and moderation', () => {
     expect(join(room, { deviceId: 'x2', name: 'Latecomer', now: clock.now })).toEqual({ ok: false, error: 'locked' });
   });
 
-  it('turns late joiners into audience and lets them vote', () => {
-    const { room, clock } = setup(3, { game: 'grand-rounds' });
+  it('seats late joiners for the next game (they can’t vote mid-game)', () => {
+    const { room, ids, clock } = setup(3, { game: 'grand-rounds' });
     hostCommand(room, { type: 'start' }, clock.now);
     const late = join(room, { deviceId: 'late', name: 'Late', now: clock.now });
-    expect(late.ok && late.person.role).toBe('audience');
+    if (!late.ok) throw new Error(late.error);
+    expect(late.person.role).toBe('audience');
+    playToEnd(room, ids, clock);
+    hostCommand(room, { type: 'again' }, clock.now);
+    expect(room.game?.playerIds).toContain(late.person.id);
   });
 
   it('keeps going when a player drops out mid-game', () => {
@@ -245,6 +278,13 @@ describe('joining and moderation', () => {
     setConnected(room, ids[3], false, clock.now);
     playToEnd(room, ids.slice(0, 3), clock);
     expect(room.stage).toBe('over');
+  });
+
+  it('lets a player leave, freeing their name and seat', () => {
+    const { room, ids, clock } = setup(3);
+    playerCommand(room, ids[2], { type: 'leave' }, clock.now);
+    expect(room.people).toHaveLength(2);
+    expect(join(room, { deviceId: 'x', name: 'Player 3', now: clock.now }).ok).toBe(true);
   });
 
   it('only the VIP can start from their phone', () => {

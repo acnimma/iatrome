@@ -6,6 +6,7 @@ import { ROOM } from '@iatrome/game/client';
 import { useRoom } from '@/realtime/use-room';
 import type { Snapshot } from '@/realtime/room-client';
 import { lastName, rememberName } from '@/realtime/identity';
+import { BackButton } from '@/components/ui/BackButton';
 import { Button } from '@/components/ui/Button';
 import { TextInput } from '@/components/ui/Field';
 import { unlockAudio } from '@/lib/sound';
@@ -17,10 +18,8 @@ const ERRORS: Record<string, string> = {
   banned: 'This device was banned from the room.',
   locked: 'The host locked this room.',
   full: 'This room is full.',
-  'in-progress': 'A game is in progress and the audience is off. Hang tight!',
-  'name-taken': 'Someone already has that name — try another.',
+  'name-taken': 'Someone already has that name. Try another.',
   'name-invalid': 'Pick a name with at least one letter or number.',
-  'name-blocked': 'That name isn’t allowed. Try another.',
 };
 
 export function JoinForm({ code, snap }: { code: string; snap: Snapshot }) {
@@ -50,6 +49,7 @@ export function JoinForm({ code, snap }: { code: string; snap: Snapshot }) {
 
   return (
     <motion.form className={styles.form} onSubmit={submit} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+      <BackButton href="/" label="Home" />
       <img src="/brand/wordmark.svg" alt="iatrome" className={styles.logo} />
       <p className={styles.room}>
         Joining room <strong>{code}</strong>
@@ -84,7 +84,7 @@ export function JoinForm({ code, snap }: { code: string; snap: Snapshot }) {
       <Button tone="rose" size="xl" block type="submit" disabled={joining}>
         {joining ? 'Scrubbing in…' : 'Join game'}
       </Button>
-      <p className={styles.fine}>No real patients. No identifiers. Be kind — we’re all tired.</p>
+      <p className={styles.fine}>No real patients. No identifiers. Be kind, we’re all tired.</p>
     </motion.form>
   );
 }

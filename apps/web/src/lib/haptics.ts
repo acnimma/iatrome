@@ -15,6 +15,6 @@ export function haptic(kind: Haptic) {
   try {
     navigator.vibrate(patterns[kind] as VibratePattern);
   } catch {
-    // some browsers throw when called without a user gesture — ignore
+    // some browsers throw when called without a user gesture: ignore
   }
 }

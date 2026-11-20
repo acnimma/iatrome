@@ -4,8 +4,8 @@ export const ROOM = {
   /** Room codes: 6 letters, no I or O (easy to read aloud and type on a phone). */
   codeAlphabet: 'ABCDEFGHJKLMNPQRSTUVWXYZ',
   codeLength: 6,
-  maxPeople: 24, // players + audience connected to one room
-  maxPlayers: 20, // most players any game supports
+  maxPeople: 44, // everyone connected to one room
+  maxPlayers: 40, // most players any game supports
   maxNameLength: 16,
   maxPasswordLength: 32,
   /** A dropped player still counts as present this long (phones sleep, tunnels happen). */
@@ -38,8 +38,6 @@ export const GRAND_ROUNDS = {
   pool: 1_000,
   winBonus: 100,
   consensusBonus: 250,
-  /** Audience votes never count for more than this share of a matchup. */
-  audienceShareCap: 1 / 3,
   multipliers: [1, 2, 3] as const,
 } as const;
 
@@ -85,10 +83,30 @@ export const POISON = {
   defendPoints: 50,
 } as const;
 
+export const DIDACTICS = {
+  minPlayers: 4,
+  maxPlayers: 40,
+  intro: 6_000,
+  teams: 8_000,
+  question: 20_000,
+  reveal: 7_000,
+  standings: 7_000,
+  questions: 12,
+  /** Show the team standings after every this many questions. */
+  standingsEvery: 3,
+  /** The last questions are worth double. */
+  lightning: 3,
+  /** Each question splits this many points per team by share of members right. */
+  pool: 1_000,
+  /** Individual points (for the MVP): base + up to speedBonus for a fast right answer. */
+  base: 100,
+  speedBonus: 100,
+} as const;
+
 /** Final standings screen. */
 export const PODIUM = 9_000;
 
 export const EXTENDED_TIMERS_FACTOR = 1.5;
 
 /** Quick reactions players can fling at the stage. */
-export const REACTIONS = ['😂', '🔥', '👏', '😱', '🫠', '💯'] as const;
+export const REACTIONS = ['react-laugh', 'react-fire', 'react-clap', 'react-gasp', 'react-cringe', 'react-heart'] as const;

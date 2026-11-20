@@ -130,3 +130,74 @@
   display: flex;
   gap: 12px;
 }
+
+/* ── Team podium ─────────────────────────────────────── */
+.teamWinner {
+  font-family: var(--font-display);
+  font-size: clamp(2.6rem, 6vw, 4.6rem);
+  font-weight: 400;
+  color: var(--royal-gold);
+  -webkit-text-stroke: 2px var(--ink);
+  paint-order: stroke fill;
+  text-align: center;
+}
+
+.teamList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: min(900px, 100%);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.teamRow {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 320px) 1fr 110px;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 20px;
+  border: var(--outline);
+  border-radius: 26px;
+  background: color-mix(in srgb, var(--tone) 22%, var(--card));
+  box-shadow: var(--shadow-md);
+}
+
+.teamMedal {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  text-align: center;
+}
+
+.teamInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.teamTitle {
+  font-size: 1.3rem;
+  font-weight: 900;
+}
+
+.teamMembers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.teamBar {
+  height: 16px;
+  overflow: hidden;
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--card) 70%, transparent);
+}
+
+.teamBar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--tone);
+}

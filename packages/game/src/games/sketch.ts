@@ -1,12 +1,12 @@
 import { type SketchTerm, sketchTerms } from '@iatrome/content';
 import { LIMITS, SKETCH as SK } from '../constants';
 import { type DrawOp, applyDrawOp } from '../drawing';
-import { cleanText, isAllowed, matchGuess } from '../text';
+import { cleanText, matchGuess } from '../text';
 import type { GameResult, Phase } from '../types';
 import { type ActionOutcome, type BaseGameState, type GameContext, type GameModule, setPhase, standings, tidy } from './context';
 
 /**
- * Sketch — one player draws a secret term live; everyone races to guess.
+ * Sketch: one player draws a secret term live; everyone races to guess.
  */
 
 type PhaseName = 'intro' | 'choose' | 'draw' | 'reveal' | 'done';
@@ -44,7 +44,7 @@ export interface SketchView {
   turn: number;
   turns: number;
   drawer: string | null;
-  /** The secret — only for the drawer while drawing, and for everyone at the reveal. */
+  /** The secret: only for the drawer while drawing, and for everyone at the reveal. */
   term: string | null;
   /** "_ _ _ _   _ _ _" with hint letters filled in over time. */
   mask: string;
@@ -65,7 +65,7 @@ export const sketch: GameModule<SketchState, SketchAction, SketchView> = {
 
   start(ctx, playerIds) {
     const order = ctx.rng.shuffle(playerIds);
-    const turns = Array.from({ length: ctx.room.settings.sketchTurns }, () => order).flat();
+    const turns = order;
     const state: SketchState = {
       game: 'sketch',
       playerIds,
@@ -253,7 +253,7 @@ function guess(state: SketchState, ctx: GameContext, playerId: string, raw: stri
     if (guessers.every((id) => state.solved.some((s) => s.playerId === id))) reveal(state, ctx);
     return { notice: 'correct' };
   }
-  if (isAllowed(text, ctx.room.settings.filter)) state.feed.push({ playerId, kind: 'guess', text });
+  state.feed.push({ playerId, kind: 'guess', text });
   if (state.feed.length > 40) state.feed.splice(0, state.feed.length - 40);
   if (outcome === 'close') return { notice: 'close' };
 }

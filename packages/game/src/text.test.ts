@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cleanText, isAllowed, matchGuess, sameAnswer } from './text';
+import { cleanText, matchGuess, sameAnswer } from './text';
 
 describe('cleanText', () => {
   it('collapses whitespace, strips invisible characters and truncates', () => {
@@ -34,22 +34,5 @@ describe('matchGuess', () => {
   it('rejects wrong guesses', () => {
     expect(matchGuess('kneecap', answers)).toBe('wrong');
     expect(matchGuess('', answers)).toBe('wrong');
-  });
-});
-
-describe('content filter', () => {
-  it('always allows anatomy — this is a medical game', () => {
-    for (const word of ['anus', 'penis', 'vagina', 'semen', 'rectal exam', 'butt dial']) {
-      expect(isAllowed(word, 'standard')).toBe(true);
-      expect(isAllowed(word, 'clean')).toBe(true);
-    }
-  });
-  it('blocks slurs on every level', () => {
-    expect(isAllowed('what a fag', 'standard')).toBe(false);
-    expect(isAllowed('retard', 'standard')).toBe(false);
-  });
-  it('blocks profanity only on clean', () => {
-    expect(isAllowed('holy shit', 'standard')).toBe(true);
-    expect(isAllowed('holy shit', 'clean')).toBe(false);
   });
 });

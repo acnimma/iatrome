@@ -1,42 +1,25 @@
 import type { HostEvent } from '@iatrome/content';
 import type { RngState } from './rng';
-import type { FilterLevel } from './text';
 import type { GameState } from './games/registry';
 
-export type GameId = 'grand-rounds' | 'sketch' | 'survive' | 'poison';
+export type GameId = 'grand-rounds' | 'sketch' | 'survive' | 'poison' | 'didactics';
+
+/** Normal: anyone can play, no healthcare knowledge needed. Pro: for people who work in healthcare. */
+export type ContentMode = 'normal' | 'pro';
 
 export interface RoomSettings {
   game: GameId;
-  /** Content filter for player text. */
-  filter: FilterLevel;
-  /** 'universal' keeps prompts any first-year gets; 'all' adds clinical-life prompts. */
-  breadth: 'universal' | 'all';
-  /** ×1.5 on writing/drawing/voting timers — recommended when the stage is shared on Zoom. */
+  mode: ContentMode;
+  /** ×1.5 on writing, drawing and voting timers. Handy on Zoom or with slower typers. */
   extendedTimers: boolean;
-  /** Let late joiners in as voting audience. */
-  audience: boolean;
-  /** The VIP (first player) can start the game from their phone. */
-  playersCanStart: boolean;
-  /** Grand Rounds: include doodle prompts in round 2. */
-  doodles: boolean;
-  /** Grand Rounds: prompts about the players themselves ("Why is {player} in the ER?"). */
-  insideJokes: boolean;
-  /** Sketch: how many times everyone draws. */
-  sketchTurns: 1 | 2;
   /** Dev/test only: multiplies every timer (e.g. 0.05 for end-to-end tests). */
   speed: number;
 }
 
 export const defaultSettings: RoomSettings = {
   game: 'grand-rounds',
-  filter: 'standard',
-  breadth: 'universal',
+  mode: 'normal',
   extendedTimers: false,
-  audience: true,
-  playersCanStart: true,
-  doodles: true,
-  insideJokes: true,
-  sketchTurns: 1,
   speed: 1,
 };
 
@@ -78,9 +61,19 @@ export interface Highlight {
   detail: string;
 }
 
+export interface TeamStanding {
+  name: string;
+  color: number;
+  score: number;
+  rank: number;
+  members: string[];
+}
+
 export interface GameResult {
   game: GameId;
   standings: Standing[];
+  /** Team games rank teams first. */
+  teams?: TeamStanding[];
   highlights: Highlight[];
 }
 
@@ -130,5 +123,8 @@ export const DRAW_COLORS = ['#1f2a4d', '#cc4e73', '#4988b8', '#ccb64a', '#67a1c6
 export const DRAW_SIZES = [6, 14, 32] as const;
 export const CANVAS_SIZE = 1000;
 
-/** Avatars: an emoji on a coloured badge. */
-export const AVATARS = ['🦷', '🫀', '🧠', '🦴', '👁️', '🫁', '💊', '🩺', '💉', '🩹', '🦠', '🧬', '🌡️', '🧪', '🩻', '🔬'] as const;
+/** Avatars: a brand icon on a coloured badge (names match the web app's icon set). */
+export const AVATARS = [
+  'tooth', 'heart', 'brain', 'bone', 'eye', 'lungs', 'pill', 'stethoscope',
+  'syringe', 'bandage', 'microbe', 'dna', 'thermometer', 'flask', 'xray', 'microscope',
+] as const;

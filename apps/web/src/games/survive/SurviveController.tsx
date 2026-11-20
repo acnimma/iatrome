@@ -16,13 +16,13 @@ export function SurviveController({ view, game }: { view: RoomView; game: Surviv
 
   if (game.phase.name === 'intro')
     return (
-      <PhoneMessage emoji="☕☕" title="Survive the Shift">
+      <PhoneMessage icon="coffee" title="Survive the Shift">
         Two coffees. Don’t run out.
       </PhoneMessage>
     );
 
   if (game.phase.name === 'question') {
-    if (!playing) return <PhoneMessage emoji="🍿" title="Watch the big screen" />;
+    if (!playing) return <PhoneMessage icon="popcorn" title="Watch the big screen" />;
     return (
       <PhoneStack>
         <PhonePrompt label={out ? 'Ghost mode · half points' : `Question ${game.number}`} prompt={game.question ?? ''} phase={game.phase} pausedAt={view.pausedAt} />
@@ -54,18 +54,18 @@ export function SurviveController({ view, game }: { view: RoomView; game: Surviv
   return (
     <PhoneStack>
       {!playing ? (
-        <PhoneMessage emoji="📋" title={`Answer: ${LETTERS[game.answer ?? 0]}`} />
+        <PhoneMessage icon="clipboard" title={`Answer: ${LETTERS[game.answer ?? 0]}`} />
       ) : justOut ? (
-        <PhoneMessage emoji="🫥" title="You clocked out">
+        <PhoneMessage icon="ghost" title="You clocked out">
           Keep answering as a ghost for half points.
         </PhoneMessage>
       ) : right ? (
-        <PhoneMessage emoji="🎯" title="Correct!">
+        <PhoneMessage icon="target" title="Correct!">
           +{points ?? 0} points
         </PhoneMessage>
       ) : (
-        <PhoneMessage emoji={lostCoffee ? '💔' : '😅'} title={lostCoffee ? 'Lost a coffee' : 'Missed it'}>
-          {lostCoffee ? `${game.coffees[me]} left.` : game.last?.mercy ? 'Mercy rule — nobody loses a coffee.' : out ? 'Ghosts don’t lose coffee.' : ''}
+        <PhoneMessage icon={lostCoffee ? 'heart-broken' : 'sweat'} title={lostCoffee ? 'Lost a coffee' : 'Missed it'}>
+          {lostCoffee ? `${game.coffees[me]} left.` : game.last?.mercy ? 'Mercy rule: nobody loses a coffee.' : out ? 'Ghosts don’t lose coffee.' : ''}
         </PhoneMessage>
       )}
       <ReactionBar />

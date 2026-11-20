@@ -23,6 +23,7 @@ const drawOp = z.discriminatedUnion('op', [
 
 const playerCommand = z.discriminatedUnion('type', [
   z.object({ type: z.literal('start') }),
+  z.object({ type: z.literal('leave') }),
   z.object({ type: z.literal('avatar'), avatar: z.number().int().min(0).max(63) }),
   // Grand Rounds
   z.object({ type: z.literal('answer'), matchupId: id, text: text(LIMITS.quip), final: z.boolean() }),
@@ -44,15 +45,9 @@ const playerCommand = z.discriminatedUnion('type', [
 
 const settings = z
   .object({
-    game: z.enum(['grand-rounds', 'sketch', 'survive', 'poison']),
-    filter: z.enum(['standard', 'clean']),
-    breadth: z.enum(['universal', 'all']),
+    game: z.enum(['grand-rounds', 'sketch', 'survive', 'poison', 'didactics']),
+    mode: z.enum(['normal', 'pro']),
     extendedTimers: z.boolean(),
-    audience: z.boolean(),
-    playersCanStart: z.boolean(),
-    doodles: z.boolean(),
-    insideJokes: z.boolean(),
-    sketchTurns: z.union([z.literal(1), z.literal(2)]),
     speed: z.number().min(0.02).max(1),
   })
   .partial();

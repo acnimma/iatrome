@@ -2,17 +2,19 @@
 
 import { motion } from 'motion/react';
 import type { Phase } from '@iatrome/game/client';
+import { Icon } from '@/components/icons/Icon';
+import type { IconName } from '@/components/icons/icons';
 import { TimerRing } from '@/components/ui/TimerRing';
 import styles from './Phone.module.css';
 
 /** Shared building blocks for every game's phone screens. */
 
-export function PhoneMessage({ emoji, title, children }: { emoji?: string; title: string; children?: React.ReactNode }) {
+export function PhoneMessage({ icon, title, children }: { icon?: IconName; title: string; children?: React.ReactNode }) {
   return (
     <motion.div className={styles.message} initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring', stiffness: 400, damping: 22 }}>
-      {emoji && (
-        <motion.span className={styles.emoji} animate={{ rotate: [0, -8, 8, 0] }} transition={{ repeat: Infinity, duration: 2.4, ease: 'easeInOut' }}>
-          {emoji}
+      {icon && (
+        <motion.span className={styles.icon} animate={{ rotate: [0, -6, 6, 0], y: [0, -4, 0] }} transition={{ repeat: Infinity, duration: 2.6, ease: 'easeInOut' }}>
+          <Icon name={icon} size={88} />
         </motion.span>
       )}
       <h2 className={styles.title}>{title}</h2>

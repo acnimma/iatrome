@@ -25,7 +25,7 @@ function write(key: string, value: string | null) {
     if (value === null) localStorage.removeItem(key);
     else localStorage.setItem(key, value);
   } catch {
-    // private mode / storage full — the game still works, it just won't remember you
+    // private mode / storage full: the game still works, it just won't remember you
   }
 }
 

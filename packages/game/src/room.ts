@@ -3,7 +3,7 @@ import { EXTENDED_TIMERS_FACTOR, ROOM } from './constants';
 import type { ActionOutcome, GameContext, Viewer } from './games/context';
 import { type GameAction, type GameView, games } from './games/registry';
 import { createRng } from './rng';
-import { cleanText, comparable, isAllowed } from './text';
+import { cleanText, comparable } from './text';
 import {
   AVATARS,
   type GameId,
@@ -16,7 +16,7 @@ import {
 } from './types';
 
 /**
- * The room: lobby, people, moderation and the current game. Server-authoritative —
+ * The room: lobby, people, moderation and the current game. Server-authoritative , 
  * the realtime server calls these functions, persists the state and broadcasts views.
  * Everything takes `now` explicitly so the engine is deterministic and testable.
  */
@@ -60,7 +60,7 @@ export const isRoomCode = (s: string) => new RegExp(`^[${ROOM.codeAlphabet}]{${R
 
 // ── People ───────────────────────────────────────────────────────────────────
 
-export type JoinError = 'banned' | 'locked' | 'full' | 'in-progress' | 'name-taken' | 'name-invalid' | 'name-blocked';
+export type JoinError = 'banned' | 'locked' | 'full' | 'name-taken' | 'name-invalid';
 
 export type JoinResult = { ok: true; person: Person } | { ok: false; error: JoinError };
 
@@ -71,12 +71,12 @@ export function join(room: RoomState, opts: { deviceId: string; name: string; no
 
   const name = cleanText(opts.name, ROOM.maxNameLength);
   if (!name || !comparable(name)) return { ok: false, error: 'name-invalid' };
-  if (!isAllowed(name, room.settings.filter)) return { ok: false, error: 'name-blocked' };
   if (room.people.some((p) => comparable(p.name) === comparable(name))) return { ok: false, error: 'name-taken' };
 
   const playing = room.stage === 'playing';
-  if (playing && !room.settings.audience) return { ok: false, error: 'in-progress' };
   const playerCount = room.people.filter((p) => p.role === 'player').length;
+  // Mid-game, people wait for the next game, unless this game takes late arrivals (team trivia).
+  const lateEntry = playing && room.game && games[room.game.game].addPlayer && playerCount < games[room.game.game].maxPlayers;
 
   const rng = createRng(room.rng);
   const usedAvatars = new Set(room.people.map((p) => p.avatar));
@@ -87,13 +87,14 @@ export function join(room: RoomState, opts: { deviceId: string; name: string; no
     deviceId: opts.deviceId,
     name,
     avatar: free.length ? rng.pick(free) : rng.int(AVATARS.length),
-    role: playing || playerCount >= ROOM.maxPlayers ? 'audience' : 'player',
+    role: (playing && !lateEntry) || playerCount >= ROOM.maxPlayers ? 'audience' : 'player',
     connected: true,
     disconnectedAt: null,
     joinedAt: opts.now,
     isBot: opts.isBot ?? false,
   };
   room.people.push(person);
+  if (lateEntry && room.game) games[room.game.game].addPlayer!(room.game, context(room, opts.now), person.id);
   return { ok: true, person };
 }
 
@@ -115,7 +116,7 @@ export function setAvatar(room: RoomState, personId: string, avatar: number) {
   p.avatar = avatar;
 }
 
-/** The VIP is the earliest-joined present player — they can start the game from their phone. */
+/** The VIP is the earliest-joined present player: they can start the game from their phone. */
 export function vipId(room: RoomState): string | null {
   return room.people.filter((p) => p.role === 'player' && p.connected && !p.isBot).sort((a, b) => a.joinedAt - b.joinedAt)[0]?.id ?? null;
 }
@@ -247,17 +248,25 @@ function checkFinished(room: RoomState, now: number) {
 
 // ── Player actions ───────────────────────────────────────────────────────────
 
-export type PlayerCommand = GameAction | { type: 'start' } | { type: 'avatar'; avatar: number };
+export type PlayerCommand = GameAction | { type: 'start' } | { type: 'leave' } | { type: 'avatar'; avatar: number };
 
 export function playerCommand(room: RoomState, personId: string, cmd: PlayerCommand, now: number): ActionOutcome | void {
   const person = room.people.find((p) => p.id === personId);
   if (!person) return { error: 'You’re not in this room.' };
+  if (cmd.type === 'leave') {
+    room.people = room.people.filter((p) => p.id !== personId);
+    if (room.game) {
+      games[room.game.game].settle(room.game, context(room, now));
+      checkFinished(room, now);
+    }
+    return;
+  }
   if (cmd.type === 'avatar') {
     if (room.stage !== 'playing') setAvatar(room, personId, cmd.avatar);
     return;
   }
   if (cmd.type === 'start') {
-    if (!room.settings.playersCanStart || vipId(room) !== personId) return { error: 'Only the host can start.' };
+    if (vipId(room) !== personId) return { error: 'Only the host can start.' };
     const err = startGame(room, now);
     return err ? { error: err } : undefined;
   }
@@ -270,6 +279,8 @@ export function playerCommand(room: RoomState, personId: string, cmd: PlayerComm
 // ── Time ─────────────────────────────────────────────────────────────────────
 
 const BOT_TICK = 900;
+/** Share of Pro-mode content drawn from the clinical pool. */
+const PRO_SHARE = 0.7;
 
 /** When the server should next call `advance`. */
 export function nextWake(room: RoomState, now: number): number | null {
@@ -337,18 +348,24 @@ function context(room: RoomState, now: number): GameContext {
     scale: (ms, kind = 'show') =>
       Math.round(ms * room.settings.speed * (kind === 'input' && room.settings.extendedTimers ? EXTENDED_TIMERS_FACTOR : 1)),
     draw: (pool, count) => {
-      const allowed = pool.filter((item) => room.settings.breadth === 'all' || item.breadth === 'universal');
-      const used = new Set(room.usedContent);
-      let fresh = allowed.filter((item) => !used.has(item.id));
-      if (fresh.length < count) {
-        // Everything's been seen: recycle this pool.
-        const ids = new Set(allowed.map((i) => i.id));
-        room.usedContent = room.usedContent.filter((id) => !ids.has(id));
-        fresh = allowed;
-      }
-      const picked = rng.shuffle(fresh).slice(0, count);
-      room.usedContent.push(...picked.map((p) => p.id));
-      return picked;
+      // Normal mode: everyday items only. Pro mode: mostly clinical items, topped up with everyday ones.
+      const take = <T extends { id: string }>(items: readonly T[], n: number): T[] => {
+        const used = new Set(room.usedContent);
+        let fresh = items.filter((item) => !used.has(item.id));
+        if (fresh.length < n) {
+          // Everything's been seen: recycle these.
+          const ids = new Set(items.map((i) => i.id));
+          room.usedContent = room.usedContent.filter((id) => !ids.has(id));
+          fresh = items.slice();
+        }
+        const picked = rng.shuffle(fresh).slice(0, n);
+        room.usedContent.push(...picked.map((p) => p.id));
+        return picked;
+      };
+      const everyday = pool.filter((item) => item.breadth === 'universal');
+      if (room.settings.mode === 'normal') return take(everyday, count);
+      const clinical = take(pool.filter((item) => item.breadth === 'clinical'), Math.round(count * PRO_SHARE));
+      return rng.shuffle([...clinical, ...take(everyday, count - clinical.length)]);
     },
   };
 }
@@ -370,14 +387,8 @@ function sanitizeSettings(s: RoomSettings, devMode: boolean): RoomSettings {
   const gameIds = Object.keys(games) as GameId[];
   return {
     game: gameIds.includes(s.game) ? s.game : defaultSettings.game,
-    filter: s.filter === 'clean' ? 'clean' : 'standard',
-    breadth: s.breadth === 'all' ? 'all' : 'universal',
+    mode: s.mode === 'pro' ? 'pro' : 'normal',
     extendedTimers: Boolean(s.extendedTimers),
-    audience: Boolean(s.audience),
-    playersCanStart: Boolean(s.playersCanStart),
-    doodles: Boolean(s.doodles),
-    insideJokes: s.insideJokes !== false,
-    sketchTurns: s.sketchTurns === 2 ? 2 : 1,
     speed: devMode && typeof s.speed === 'number' && s.speed >= 0.02 && s.speed <= 1 ? s.speed : 1,
   };
 }

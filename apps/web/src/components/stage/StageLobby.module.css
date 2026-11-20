@@ -14,6 +14,13 @@
   text-align: center;
 }
 
+.home {
+  position: fixed;
+  top: clamp(14px, 2vw, 24px);
+  left: clamp(14px, 2vw, 24px);
+  z-index: 10;
+}
+
 .wordmark {
   width: min(380px, 80%);
   margin-bottom: 8px;
@@ -130,7 +137,9 @@
 
 .players {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(calc(var(--bubble, 64px) + 28px), 1fr));
+  max-height: 46vh;
+  overflow-y: auto;
   gap: 14px 8px;
   margin: 0;
   padding: 0;
@@ -175,8 +184,8 @@
 
 .empty {
   justify-self: center;
-  width: 64px;
-  height: 64px;
+  width: var(--bubble, 64px);
+  height: var(--bubble, 64px);
   border: 2px dashed var(--line);
   border-radius: 50%;
 }

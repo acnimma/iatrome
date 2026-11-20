@@ -1,6 +1,6 @@
 import { curbsideGeneric, differentials, doodles, playerDifferentials, playerQuips, quips } from '@iatrome/content';
 import { GRAND_ROUNDS as GR, LIMITS } from '../../constants';
-import { cleanText, isAllowed, sameAnswer } from '../../text';
+import { cleanText, sameAnswer } from '../../text';
 import type { Drawing, GameResult, Highlight, Phase } from '../../types';
 import { validDrawing } from '../../drawing';
 import {
@@ -38,7 +38,6 @@ export interface MatchupResult {
   winner: Side | null;
   consensus: boolean;
   playerVotes: { voterId: string; side: Side }[];
-  audienceVotes: [number, number];
 }
 
 interface Matchup {
@@ -49,7 +48,6 @@ interface Matchup {
   playerIds: [string, string];
   entries: [Entry, Entry];
   votes: Record<string, Side>;
-  audienceVotes: Record<string, Side>;
   result: MatchupResult | null;
 }
 
@@ -198,7 +196,7 @@ export const grandRounds: GameModule<GrandRoundsState, GrandRoundsAction, GrandR
     else if (state.phase.name === 'vote') {
       const m = state.matchups[state.current];
       const v = voters(state, ctx, m);
-      if (!live(m, ctx, 0) || !live(m, ctx, 1) || (v.players.length > 0 && v.players.every((id) => id in m.votes))) finish(state, ctx);
+      if (!live(m, ctx, 0) || !live(m, ctx, 1) || (v.length > 0 && v.every((id) => id in m.votes))) finish(state, ctx);
     }
   },
 
@@ -267,7 +265,7 @@ function startRound(state: GrandRoundsState, ctx: GameContext) {
     const others = order.filter((id) => !pair.includes(id));
     return others.length ? ctx.person(ctx.rng.pick(others))!.name : null;
   };
-  const insideJokes = ctx.room.settings.insideJokes && order.length >= 3;
+  const insideJokes = order.length >= 3;
   const personalize = (text: string, pair: readonly string[]) => {
     const name = subjectFor(pair);
     return name ? text.replace('{player}', () => name) : null;
@@ -275,7 +273,7 @@ function startRound(state: GrandRoundsState, ctx: GameContext) {
 
   if (state.round < 2) {
     const kinds: MatchupKind[] =
-      state.round === 1 && ctx.room.settings.doodles ? mixedKinds(order.length) : order.map(() => 'quip');
+      state.round === 1 ? mixedKinds(order.length) : order.map(() => 'quip');
     const quipCount = kinds.filter((k) => k === 'quip').length;
     const personal = insideJokes ? ctx.draw(playerQuips, Math.round(quipCount * PERSONAL_SHARE)) : [];
     const quipPool = ctx.rng.shuffle([...personal, ...ctx.draw(quips, quipCount - personal.length)]);
@@ -338,28 +336,23 @@ function newMatchup(
     playerIds,
     entries: [entry(playerIds[0]), entry(playerIds[1])],
     votes: {},
-    audienceVotes: {},
     result: null,
   };
 }
 
 function writeDuration(state: GrandRoundsState, ctx: GameContext) {
   if (state.round === 2) return GR.writeDifferential;
-  return state.round === 1 && ctx.room.settings.doodles ? GR.writeMixed : GR.writeQuips;
+  return state.round === 1 ? GR.writeMixed : GR.writeQuips;
 }
 
 // ── Writing ──────────────────────────────────────────────────────────────────
 
-const BLOCKED = 'The room’s filter blocked that — try different words.';
-
 function write(matchup: Matchup, entry: Entry, ctx: GameContext, action: GrandRoundsAction): ActionOutcome | void {
-  const level = ctx.room.settings.filter;
   switch (action.type) {
     case 'answer': {
       if (matchup.kind !== 'quip') return { error: 'Wrong kind of answer.' };
       const text = cleanText(action.text, LIMITS.quip);
       if (action.final && !text) return { error: 'Write something first!' };
-      if (text && !isAllowed(text, level)) return { error: BLOCKED };
       entry.text = text || null;
       entry.curbside = false;
       entry.final = action.final;
@@ -369,14 +362,13 @@ function write(matchup: Matchup, entry: Entry, ctx: GameContext, action: GrandRo
       if (matchup.kind !== 'differential') return { error: 'Wrong kind of answer.' };
       const items = action.items.slice(0, 3).map((s) => cleanText(String(s), LIMITS.differentialItem));
       if (action.final && items.filter(Boolean).length < 3) return { error: 'Your differential needs all three!' };
-      if (items.some((s) => s && !isAllowed(s, level))) return { error: BLOCKED };
       entry.items = items.some(Boolean) ? items : null;
       entry.final = action.final;
       return;
     }
     case 'doodle': {
       if (matchup.kind !== 'doodle') return { error: 'Wrong kind of answer.' };
-      if (!validDrawing(action.drawing)) return { error: 'That drawing didn’t come through — try again.' };
+      if (!validDrawing(action.drawing)) return { error: 'That drawing didn’t come through. Try again.' };
       if (action.final && action.drawing.strokes.length === 0) return { error: 'Draw something first!' };
       entry.drawingId ??= ctx.rng.id(10);
       ctx.room.drawings[entry.drawingId] = action.drawing;
@@ -397,7 +389,7 @@ function hasContent(entry: Entry) {
   return Boolean(entry.text || entry.items?.some(Boolean) || entry.drawingId);
 }
 
-/** Who still owes an answer (connected players only — we don't wait for dropouts). */
+/** Who still owes an answer (connected players only: we don't wait for dropouts). */
 function unwritten(state: GrandRoundsState, ctx: GameContext) {
   const connected = new Set(ctx.connectedPlayers(state.playerIds));
   const waiting = new Set<string>();
@@ -450,20 +442,15 @@ function isDuplicate(m: Matchup) {
   return false;
 }
 
-/** People who may vote on the current matchup. */
+/** Players who may vote on the current matchup: everyone present except its two authors. */
 function voters(state: GrandRoundsState, ctx: GameContext, m: Matchup) {
-  const players = ctx.connectedPlayers(state.playerIds).filter((id) => !m.playerIds.includes(id));
-  const audience = ctx.room.settings.audience
-    ? ctx.room.people.filter((p) => p.connected && !state.playerIds.includes(p.id)).map((p) => p.id)
-    : [];
-  return { players, audience };
+  return ctx.connectedPlayers(state.playerIds).filter((id) => !m.playerIds.includes(id));
 }
 
 function needsVote(state: GrandRoundsState, ctx: GameContext) {
   const m = state.matchups[state.current];
   if (!live(m, ctx, 0) || !live(m, ctx, 1) || isDuplicate(m)) return false;
-  const v = voters(state, ctx, m);
-  return v.players.length + v.audience.length > 0;
+  return voters(state, ctx, m).length > 0;
 }
 
 function vote(state: GrandRoundsState, ctx: GameContext, voterId: string, side: Side): ActionOutcome | void {
@@ -471,11 +458,10 @@ function vote(state: GrandRoundsState, ctx: GameContext, voterId: string, side: 
   if (state.phase.name !== 'vote' || !m) return { error: 'Voting is closed.' };
   if (side !== 0 && side !== 1) return;
   if (m.playerIds.includes(voterId)) return { error: 'No voting for yourself!' };
-  const v = voters(state, ctx, m);
-  if (v.players.includes(voterId)) m.votes[voterId] = side;
-  else if (v.audience.includes(voterId)) m.audienceVotes[voterId] = side;
-  else return { error: 'You can’t vote on this one.' };
-  if (v.players.length > 0 && v.players.every((id) => id in m.votes)) finish(state, ctx);
+  const eligible = voters(state, ctx, m);
+  if (!eligible.includes(voterId)) return { error: 'You can’t vote on this one.' };
+  m.votes[voterId] = side;
+  if (eligible.every((id) => id in m.votes)) finish(state, ctx);
 }
 
 // ── Results ──────────────────────────────────────────────────────────────────
@@ -486,9 +472,7 @@ function finish(state: GrandRoundsState, ctx: GameContext) {
   const curbside: [boolean, boolean] = [m.entries[0].curbside, m.entries[1].curbside];
   const alive: [boolean, boolean] = [live(m, ctx, 0), live(m, ctx, 1)];
   const playerVotes = Object.entries(m.votes).map(([voterId, side]) => ({ voterId, side }));
-  const audienceVotes: [number, number] = [0, 0];
-  for (const side of Object.values(m.audienceVotes)) audienceVotes[side] += 1;
-  const base = { playerVotes, audienceVotes, consensus: false };
+  const base = { playerVotes, consensus: false };
 
   let result: MatchupResult;
   if (!alive[0] && !alive[1]) {
@@ -510,7 +494,7 @@ function finish(state: GrandRoundsState, ctx: GameContext) {
   } else {
     const counts: [number, number] = [0, 0];
     for (const v of playerVotes) counts[v.side] += 1;
-    const score = scoreVotes({ players: counts, audience: audienceVotes, multiplier, curbside });
+    const score = scoreVotes({ votes: counts, multiplier, curbside });
     result = { ...base, outcome: 'vote', ...score };
     const w = score.winner;
     if (w === null) ctx.say('tie');
@@ -533,7 +517,7 @@ function matchupView(state: GrandRoundsState, ctx: GameContext, m: Matchup, view
   const v = voters(state, ctx, m);
   const viewerId = viewer.kind === 'stage' ? null : viewer.id;
   const canVote =
-    state.phase.name === 'vote' && viewerId !== null && (v.players.includes(viewerId) || v.audience.includes(viewerId));
+    state.phase.name === 'vote' && viewerId !== null && v.includes(viewerId);
   const entry = (e: Entry): EntryView => {
     const hide = e.hidden || (e.playerId !== BEEP && !ctx.person(e.playerId));
     return {
@@ -553,10 +537,10 @@ function matchupView(state: GrandRoundsState, ctx: GameContext, m: Matchup, view
     total: state.matchups.length,
     entries: [entry(m.entries[0]), entry(m.entries[1])],
     result: revealed ? m.result : null,
-    votesIn: Object.keys(m.votes).length + Object.keys(m.audienceVotes).length,
-    votersExpected: v.players.length,
+    votesIn: Object.keys(m.votes).length,
+    votersExpected: v.length,
     canVote,
-    myVote: viewerId ? (m.votes[viewerId] ?? m.audienceVotes[viewerId] ?? null) : null,
+    myVote: viewerId ? (m.votes[viewerId] ?? null) : null,
     yours: viewerId && m.playerIds.includes(viewerId) ? (m.playerIds.indexOf(viewerId) as Side) : null,
   };
 }
@@ -568,7 +552,7 @@ function highlights(state: GrandRoundsState, ctx: GameContext): Highlight[] {
   const voted = state.archive.filter((a) => a.result.outcome === 'vote' && a.result.winner !== null);
 
   const best = voted
-    .filter((a) => a.result.playerVotes.length + a.result.audienceVotes[0] + a.result.audienceVotes[1] >= 2)
+    .filter((a) => a.result.playerVotes.length >= 2)
     .sort((x, y) => y.result.shares[y.result.winner!] - x.result.shares[x.result.winner!] || y.round - x.round)[0];
   if (best) {
     const e = best.entries[best.result.winner!];
