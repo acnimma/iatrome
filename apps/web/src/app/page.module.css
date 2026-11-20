@@ -17,16 +17,15 @@
 }
 
 .soon {
-  font-size: clamp(0.72rem, 2.6vw, 0.85rem);
+  font-size: clamp(0.85rem, 3vw, 1rem);
   font-weight: 500;
-  letter-spacing: 0.42em;
-  text-transform: uppercase;
+  letter-spacing: 0.34em;
   color: var(--ink-soft);
-  padding-left: 0.42em; /* optically re-centre the letter-spaced text */
-  animation: settle 1s cubic-bezier(0.22, 1, 0.36, 1) 0.75s both;
+  padding-left: 0.34em; /* optically re-centre the letter-spaced text */
+  animation: settle 1s cubic-bezier(0.22, 1, 0.36, 1) 0.95s both;
 }
 
-/* arrives just after the last letter */
+/* arrives just after the last letter lands */
 @keyframes settle {
   from {
     opacity: 0;
