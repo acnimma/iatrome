@@ -14,7 +14,7 @@
 .logo {
   display: flex;
   justify-content: center;
-  margin-top: auto; /* with the footer's auto margin: centred, and never under the footer */
+  margin-top: auto; /* with the host button's auto margin: the stack stays centred */
 }
 
 /* Capped by height too, so a phone on its side still shows the room code. */
@@ -40,31 +40,14 @@
   animation: settle 0.9s var(--ease-out) 0.7s both;
 }
 
+/* Same size and width as "Join game", in white jelly so joining stays the main action. */
 .host {
-  text-align: center;
-  font-weight: 600;
-  color: var(--ink-soft);
+  width: min(420px, 100%);
+  margin-bottom: auto; /* with the logo's auto margin: the whole stack stays centred */
+  text-decoration: none;
   animation: settle 0.9s var(--ease-out) 1s both;
 }
 
-.host a {
-  color: var(--ink);
-  font-weight: 800;
-  text-decoration-thickness: 2px;
-  text-underline-offset: 4px;
-  white-space: nowrap;
-}
-
-.footer {
-  margin-top: auto;
-  padding: 24px 8px 0;
-  max-width: 46ch;
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--ink-soft);
-  text-align: center;
-  opacity: 0.8;
-}
 
 @keyframes settle {
   from {

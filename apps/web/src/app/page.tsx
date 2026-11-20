@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { Wordmark } from '@/components/brand/Wordmark';
 import { JoinCodeForm } from '@/components/home/JoinCodeForm';
+import { jelly } from '@/components/ui/jelly';
+import buttons from '@/components/ui/Button.module.css';
 import styles from './page.module.css';
 
 export default function HomePage() {
@@ -14,10 +16,9 @@ export default function HomePage() {
       </p>
       <p className={styles.tagline}>The party game that speaks fluent medicine.</p>
       <JoinCodeForm />
-      <p className={styles.host}>
-        Somebody has to be in charge. <Link href="/host">Host a game →</Link>
-      </p>
-      <footer className={styles.footer}>Free to play · Just phones, or phones and a big screen · Punches at medicine, never at patients</footer>
+      <Link href="/host" className={`${buttons.button} ${buttons.xl} ${jelly('pearl')} ${styles.host}`}>
+        Host a game
+      </Link>
     </main>
   );
 }
