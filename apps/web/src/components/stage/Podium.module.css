@@ -1,0 +1,199 @@
+.podium {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  margin-top: -24px;
+  width: min(1100px, 100%);
+}
+
+.eyebrow {
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  align-items: end;
+  gap: clamp(10px, 2vw, 24px);
+  width: min(760px, 100%);
+  height: clamp(220px, 34vh, 360px);
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  height: 100%;
+}
+
+.winners {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding-bottom: 12px;
+}
+
+.winner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+}
+
+.name {
+  max-width: 14ch;
+  overflow: hidden;
+  font-weight: 900;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.score {
+  font-size: 1.1rem;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+.step {
+  display: flex;
+  justify-content: center;
+  padding-top: 14px;
+  max-height: 55%;
+  border-radius: 28px 28px 6px 6px;
+  cursor: default;
+}
+
+.medal {
+  font-size: clamp(2rem, 4vw, 3rem);
+}
+
+.rest {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-weight: 600;
+}
+
+.rest span {
+  color: var(--ink-soft);
+}
+
+.highlights {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+}
+
+.highlight {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-width: 320px;
+  padding: 14px 18px;
+  border: var(--outline);
+  border-radius: var(--radius-md);
+  background: var(--card);
+  box-shadow: var(--shadow-md);
+}
+
+.highlightTitle {
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--rose-kiss);
+}
+
+.highlightWho {
+  font-weight: 900;
+}
+
+.highlightDetail {
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.actions {
+  display: flex;
+  gap: 12px;
+}
+
+/* ── Team podium ─────────────────────────────────────── */
+.teamWinner {
+  composes: blackText from '../ui/Jelly.module.css';
+  font-family: var(--font-display);
+  font-size: clamp(2.6rem, 6vw, 4.6rem);
+  font-weight: 400;
+  text-align: center;
+}
+
+.teamList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: min(900px, 100%);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.teamRow {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 320px) 1fr 110px;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 20px;
+  border: var(--outline);
+  border-radius: 26px;
+  background: color-mix(in srgb, var(--tone) 22%, var(--card));
+  box-shadow: var(--shadow-md);
+}
+
+.teamMedal {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  text-align: center;
+}
+
+.teamInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.teamTitle {
+  font-size: 1.3rem;
+  font-weight: 900;
+}
+
+.teamMembers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.teamBar {
+  height: 16px;
+  overflow: hidden;
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--card) 70%, transparent);
+}
+
+.teamBar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--tone);
+}

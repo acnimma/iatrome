@@ -1,0 +1,229 @@
+.lobby {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+  gap: clamp(20px, 4vw, 64px);
+  align-items: center;
+  width: min(1320px, 100%);
+}
+
+.join {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  text-align: center;
+}
+
+.home {
+  position: fixed;
+  top: clamp(14px, 2vw, 24px);
+  left: clamp(14px, 2vw, 24px);
+  z-index: 10;
+}
+
+.wordmark {
+  width: min(380px, 80%);
+  margin-bottom: 8px;
+}
+
+.lead {
+  font-size: clamp(1.05rem, 1.8vw, 1.4rem);
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.site {
+  margin-top: -8px;
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+}
+
+.qrRow {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-top: 10px;
+}
+
+.qr {
+  width: clamp(120px, 13vw, 170px);
+}
+
+.joinNotes {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  max-width: 240px;
+  text-align: left;
+}
+
+.password {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.passwordText {
+  font-size: 1.3rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+}
+
+.note {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: clamp(20px, 2.5vw, 32px);
+  border: var(--outline);
+  border-radius: 36px;
+  background: var(--card);
+  box-shadow: var(--shadow-lg);
+}
+
+.gameHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.eyebrow {
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.gameTitle {
+  composes: blackText from '../ui/Jelly.module.css';
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+  font-weight: 400;
+  line-height: 1.05;
+}
+
+.tagline {
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.chips {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.playersHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.players {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(calc(var(--bubble, 64px) + 28px), 1fr));
+  gap: 14px 8px;
+  margin: 0;
+  /*
+   * Never a scroll box: it would clip bubbles as they pop in (and the VIP star).
+   * Bubbles shrink as the room fills instead, so even 40 people fit.
+   */
+  overflow: visible;
+  padding: 6px 4px 0;
+  list-style: none;
+}
+
+.player {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Host-only, on hover: stacked on the avatar itself, so nothing pokes out of the list. */
+.playerActions {
+  position: absolute;
+  top: calc(var(--bubble, 64px) / 2);
+  left: 50%;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(0.85);
+  transition:
+    opacity 150ms ease,
+    transform 200ms var(--ease-spring);
+}
+
+.player:hover .playerActions,
+.player:focus-within .playerActions {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.kick {
+  composes: jelly pearl from '../ui/Jelly.module.css';
+}
+
+.ban {
+  composes: jelly rose from '../ui/Jelly.module.css';
+}
+
+.kick,
+.ban {
+  min-width: 56px;
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.empty {
+  justify-self: center;
+  width: var(--bubble, 64px);
+  height: var(--bubble, 64px);
+  border: 2px dashed var(--line);
+  border-radius: 50%;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.secondary {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+@media (max-width: 900px) {
+  .lobby {
+    grid-template-columns: 1fr;
+  }
+}
+
+.overflow {
+  margin-top: -6px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+}

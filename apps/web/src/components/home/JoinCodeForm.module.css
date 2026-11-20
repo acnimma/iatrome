@@ -1,0 +1,52 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  width: min(420px, 100%);
+}
+
+.label {
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.boxes {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+  width: 100%;
+  cursor: text;
+}
+
+.box {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 0.82;
+  border: var(--outline);
+  border-radius: 16px;
+  background: var(--card);
+  box-shadow: var(--gloss), var(--shadow-sm);
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 8vw, 2.4rem);
+  line-height: 1;
+}
+
+.cursor {
+  box-shadow:
+    0 0 0 4px color-mix(in srgb, var(--sky-blue) 50%, transparent),
+    var(--shadow-sm);
+}
+
+.input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  opacity: 0;
+  font-size: 16px; /* no iOS zoom */
+  caret-color: transparent;
+}

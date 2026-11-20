@@ -1,0 +1,137 @@
+.lobby {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+}
+
+.topBar {
+  align-self: stretch;
+  display: flex;
+}
+
+.me {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.tapHint {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+
+.picker {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  width: 100%;
+}
+
+.option {
+  aspect-ratio: 1;
+  border: var(--outline);
+  border-radius: 50%;
+  box-shadow: var(--gloss);
+  font-size: 1.8rem;
+  cursor: pointer;
+}
+
+.option:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+}
+
+.others {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+
+.vip {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  width: 100%;
+  margin-top: auto;
+  padding: 12px 0 max(4px, env(safe-area-inset-bottom));
+  background: linear-gradient(to bottom, transparent, var(--warm-white) 30%);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: center;
+}
+
+.vipNote {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+
+.joinCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 16px;
+  border: var(--outline);
+  border-radius: 24px;
+  background: var(--card);
+  box-shadow: var(--gloss), var(--shadow-md);
+}
+
+.joinLabel {
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.joinActions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.joinQr {
+  width: min(220px, 70%);
+}
+
+.teams {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.teams li {
+  display: grid;
+  grid-template-columns: 28px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border: var(--outline);
+  border-radius: var(--radius-lg);
+  background: var(--card);
+  font-weight: 800;
+  box-shadow: var(--gloss), var(--shadow-md);
+}
+
+.teams .myTeamRow {
+  background: color-mix(in srgb, var(--royal-gold) 30%, var(--card));
+}

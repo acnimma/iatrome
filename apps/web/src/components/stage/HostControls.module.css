@@ -1,0 +1,103 @@
+.dock {
+  position: fixed;
+  right: clamp(12px, 2vw, 28px);
+  bottom: clamp(12px, 2vw, 28px);
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.pill {
+  composes: jelly black from '../ui/Jelly.module.css';
+  display: flex;
+  gap: 4px;
+  padding: 5px;
+  border-radius: var(--radius-pill);
+  cursor: default;
+  opacity: 0.75;
+  transition: opacity 200ms ease;
+}
+
+.pill:hover,
+.pill:focus-within {
+  opacity: 1;
+}
+
+.icon {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  font-size: 1rem;
+  cursor: pointer;
+  transition:
+    background 150ms ease,
+    transform 200ms var(--ease-spring);
+}
+
+.icon:hover,
+.active {
+  background: rgb(255 255 255 / 0.16);
+}
+
+.icon:active {
+  transform: scale(0.88);
+}
+
+.drawer {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: min(340px, calc(100vw - 24px));
+  padding: 18px 20px;
+  border: var(--outline);
+  border-radius: var(--radius-lg);
+  background: var(--card);
+  box-shadow: var(--shadow-lg);
+  transform-origin: 100% 100%;
+}
+
+.title {
+  margin-bottom: 4px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-bottom: 8px;
+}
+
+.label {
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.row {
+  display: flex;
+  gap: 6px;
+}
+
+.action {
+  composes: jelly black from '../ui/Jelly.module.css';
+  flex: 1;
+  min-height: 44px;
+  padding: 10px 14px;
+  border-radius: var(--radius-pill);
+  font-weight: 800;
+}
+
+.danger {
+  composes: rose from '../ui/Jelly.module.css';
+  margin-top: 8px;
+}

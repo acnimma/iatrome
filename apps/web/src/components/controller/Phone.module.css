@@ -1,0 +1,173 @@
+.message {
+  margin: auto 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 24px 8px;
+  text-align: center;
+}
+
+.icon {
+  display: grid;
+  filter: drop-shadow(0 8px 12px rgb(31 42 77 / 0.18));
+}
+
+.title {
+  font-family: var(--font-play);
+  font-size: 1.75rem;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  line-height: 1.15;
+  text-shadow: var(--play-raised);
+}
+
+.text {
+  max-width: 30ch;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.prompt {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px 18px;
+  border: var(--outline);
+  border-radius: var(--radius-lg);
+  background: var(--card);
+  box-shadow: var(--shadow-md);
+}
+
+.promptText {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.promptText p {
+  font-family: var(--font-play);
+  font-size: 1.3rem;
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+}
+
+.label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--rose-kiss);
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.choice {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 72px;
+  padding: 14px 18px;
+  border-radius: var(--radius-lg);
+  font-family: var(--font-play);
+  font-size: 1.25rem;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  line-height: 1.2;
+  text-align: center;
+}
+
+.choice:disabled {
+  cursor: default;
+  opacity: 1;
+  filter: none;
+}
+
+/* Your pick: a white ring inside the edge, so it reads on any colour and never grows. */
+.picked {
+  outline: 3px solid #fff;
+  outline-offset: -7px;
+}
+
+.dimmed {
+  opacity: 0.35;
+  filter: saturate(0.5);
+}
+
+.beep {
+  overflow: hidden;
+}
+
+.beepInner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding: 10px 14px 10px 10px;
+  border: var(--outline);
+  border-radius: var(--radius-lg);
+  background: var(--card);
+  box-shadow: var(--gloss), var(--shadow-md);
+  font-size: 0.95rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.beepFace {
+  flex: none;
+  width: 44px;
+}
+
+.answer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px;
+  border: var(--outline);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--cool-sky) 14%, var(--card));
+  box-shadow: var(--gloss), var(--shadow-md);
+}
+
+.answerText {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.1rem;
+  font-weight: 900;
+}
+
+.answerLetter {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: var(--outline);
+  border-radius: 50%;
+  background: var(--card);
+  font-size: 0.95rem;
+}
+
+.fact {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+/* Case-stem length prompts (Pro vignettes). */
+.promptText p[data-long] {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: 0;
+}

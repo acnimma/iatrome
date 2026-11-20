@@ -1,6 +1,6 @@
 /*
  * iatrome design tokens.
- * Palette and surface mirror packages/brand/src/palette.mjs — keep in sync.
+ * Palette and surface mirror packages/brand/src/palette.mjs: keep in sync.
  */
 :root {
   /* ── Palette ─────────────────────────────────────────── */
@@ -15,8 +15,34 @@
   /* ── Surface (not palette colours) ──────────────────── */
   --warm-white: #fbf8f3;
   --vignette: #e9dccb;
+  --card: #fffdf9;
   --ink-soft: color-mix(in srgb, var(--ink) 62%, var(--warm-white));
+  --line: color-mix(in srgb, var(--ink) 14%, transparent);
 
   /* ── Type ────────────────────────────────────────────── */
   --font-body: var(--font-inter), system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  /* Dogbangy: display moments only (room codes, round titles, winners). */
+  --font-display: var(--font-dogbangy), var(--font-body);
+  /*
+   * The game's voice: prompts, questions and everyone's answers set in the bubbly display face,
+   * raised off the page like the logo. Long case stems fall back to the body face.
+   */
+  --font-play: var(--font-dogbangy), var(--font-body);
+  --play-raised: 0 1px 0 rgb(255 255 255 / 0.9), 0 3px 0 rgb(31 42 77 / 0.1), 0 10px 24px rgb(31 42 77 / 0.12);
+  --play-on-jelly: 0 2px 0 rgb(14 16 27 / 0.28), 0 6px 14px rgb(14 16 27 / 0.22);
+
+  /* ── Shape & depth: round, thin ink outline, soft gloss ─ */
+  --radius-sm: 12px;
+  --radius-md: 20px;
+  --radius-lg: 28px;
+  --radius-pill: 999px;
+  --outline: 2px solid var(--ink);
+  --gloss: inset 0 2px 0 rgb(255 255 255 / 0.38), inset 0 -3px 0 rgb(31 42 77 / 0.12);
+  --shadow-sm: 0 2px 8px -2px rgb(31 42 77 / 0.14);
+  --shadow-md: 0 12px 28px -10px rgb(31 42 77 / 0.28);
+  --shadow-lg: 0 28px 60px -18px rgb(31 42 77 / 0.35);
+
+  /* ── Motion ──────────────────────────────────────────── */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 }

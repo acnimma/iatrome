@@ -1,0 +1,291 @@
+/* ── Room code ───────────────────────────────────────── */
+.code {
+  display: inline-flex;
+  gap: 0.18em;
+}
+
+.tile {
+  display: grid;
+  place-items: center;
+  width: 1.15em;
+  height: 1.3em;
+  border: var(--outline);
+  border-radius: 0.32em;
+  background: var(--card);
+  box-shadow: var(--gloss), var(--shadow-sm);
+  font-family: var(--font-display);
+  line-height: 1;
+}
+
+.lg {
+  font-size: clamp(2.4rem, 5.5vw, 4.6rem);
+}
+
+.md {
+  font-size: 1.6rem;
+}
+
+.tile:nth-child(5n + 1) {
+  color: var(--cool-sky);
+}
+.tile:nth-child(5n + 2) {
+  color: var(--rose-kiss);
+}
+.tile:nth-child(5n + 3) {
+  color: #a8922c;
+}
+.tile:nth-child(5n + 4) {
+  color: var(--sky-blue);
+}
+.tile:nth-child(5n) {
+  color: var(--ink);
+}
+
+.qr {
+  width: 100%;
+  aspect-ratio: 1;
+  padding: 12px;
+  border: var(--outline);
+  border-radius: var(--radius-md);
+  background: #fff;
+}
+
+.qr svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* ── Reactions ───────────────────────────────────────── */
+.reactions {
+  position: fixed;
+  inset: auto 0 0;
+  height: 0;
+  pointer-events: none;
+  z-index: 40;
+}
+
+.floater {
+  position: absolute;
+  bottom: 40px;
+  font-size: clamp(2rem, 4vw, 3.4rem);
+  filter: drop-shadow(0 6px 10px rgb(31 42 77 / 0.25));
+}
+
+.reactionBar {
+  display: flex;
+  justify-content: center;
+  gap: min(8px, 1.6vw);
+}
+
+.reactionButton {
+  composes: jelly pearl from '../ui/Jelly.module.css';
+  display: grid;
+  place-items: center;
+  width: min(50px, 13.5vw);
+  height: min(50px, 13.5vw);
+  padding: 0;
+  border-radius: 50%;
+  font-size: 1.5rem;
+}
+
+/* ── Intro card ──────────────────────────────────────── */
+.intro {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  max-width: 760px;
+  padding: clamp(28px, 4vw, 48px) clamp(28px, 5vw, 64px);
+  border: var(--outline);
+  border-radius: 40px;
+  background: var(--card);
+  box-shadow: var(--gloss), var(--shadow-lg);
+  text-align: center;
+}
+
+.eyebrow {
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.introTitle {
+  composes: blackText from '../ui/Jelly.module.css';
+  font-family: var(--font-display);
+  font-size: clamp(2.6rem, 7vw, 5.6rem);
+  font-weight: 400;
+  line-height: 1.05;
+}
+
+.introBody {
+  max-width: 34ch;
+  font-size: clamp(1rem, 2vw, 1.35rem);
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.badge {
+  position: absolute;
+  top: -22px;
+  right: -22px;
+  display: grid;
+  place-items: center;
+  width: 86px;
+  height: 86px;
+  border: var(--outline);
+  border-radius: 50%;
+  background: var(--royal-gold);
+  box-shadow: var(--gloss), var(--shadow-md);
+  font-size: 1.6rem;
+  font-weight: 900;
+}
+
+/* ── Stamp ───────────────────────────────────────────── */
+.stamp {
+  display: inline-block;
+  padding: 8px 18px;
+  border: 3px solid currentColor;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--card) 85%, transparent);
+  font-size: clamp(1.1rem, 2.4vw, 1.9rem);
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.stamp_rose {
+  color: var(--rose-kiss);
+}
+.stamp_gold {
+  color: #9c8524;
+}
+.stamp_sky {
+  color: var(--cool-sky);
+}
+.stamp_ink {
+  color: var(--ink);
+}
+
+/* ── Scoreboard ──────────────────────────────────────── */
+.scoreboard {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: min(820px, 100%);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.scoreRow {
+  display: grid;
+  grid-template-columns: 36px 44px minmax(0, 180px) 1fr 90px;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 18px;
+  border: var(--outline);
+  border-radius: var(--radius-pill);
+  background: var(--card);
+  box-shadow: var(--shadow-sm);
+}
+
+.rank {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  text-align: center;
+}
+
+.scoreName {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  overflow: hidden;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The points a player just gained: a little jelly pill. */
+.gain {
+  flex: none;
+  padding: 1px 9px;
+  border: 2px solid var(--ink);
+  border-radius: var(--radius-pill);
+  background: var(--royal-gold);
+  box-shadow: var(--gloss);
+  font-size: 0.78em;
+  font-weight: 900;
+}
+
+.scoreBar {
+  height: 14px;
+  overflow: hidden;
+  border-radius: var(--radius-pill);
+  background: #efe9e0;
+}
+
+.scoreBar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--cool-sky), var(--rose-kiss));
+}
+
+.scoreValue {
+  font-size: 1.2rem;
+  font-weight: 900;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Misc ────────────────────────────────────────────── */
+.avatarRow {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 18px;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border: var(--outline);
+  border-radius: var(--radius-pill);
+  font-size: 0.85rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.pill_card {
+  background: var(--card);
+}
+.pill_rose {
+  background: var(--rose-kiss);
+  color: #fff;
+}
+.pill_gold {
+  background: var(--royal-gold);
+}
+.pill_sky {
+  background: var(--cool-sky);
+  color: #fff;
+}
+
+@media (max-width: 640px) {
+  .scoreRow {
+    grid-template-columns: 28px 36px 1fr 70px;
+    padding: 8px 14px;
+    gap: 10px;
+  }
+  .scoreBar {
+    display: none;
+  }
+}

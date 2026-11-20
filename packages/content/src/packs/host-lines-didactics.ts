@@ -1,0 +1,47 @@
+// Original content written for iatrome. Beep's lines for Didactics Mode (team trivia).
+import type { DidacticsHostEvent } from '../types';
+
+export const didacticsHostLines: Record<DidacticsHostEvent, string[]> = {
+  didacticsIntro: [
+    'Didactics. Teams are random, so you can’t blame me for who you got.',
+    'Answer on your phone. Your team scores together, and fails together.',
+    'Twelve questions. Some easy. Some written by someone who hates you.',
+    'Teams are set. Any complaints can be filed with nobody.',
+    'You’re on a team now. Act like it, or at least don’t sabotage it.',
+    'Quick rules: read the screen, tap your phone, look smug if you’re right.',
+    'This is a team sport. Your teammate’s wrong answer is now your problem.',
+    'If you don’t know, guess. Statistically, you’re 25% a genius.',
+    'Didactics is in session. Attendance is mandatory. Learning is optional.',
+    'Everyone answers. Silence counts as wrong, which is very on brand for medicine.',
+    'Your team’s score is the share of you that got it right. No carrying.',
+    'Twelve questions, random teams, zero mercy. Mostly zero.',
+  ],
+  didacticsLightning: [
+    'Lightning round. Every question is worth double.',
+    'Double points from here. Whoever’s losing, this is your opening.',
+    'Last three questions, double points. The scoreboard is about to lie to you.',
+    'Lightning round. Read fast, tap faster.',
+    'Double points. It’s anybody’s game, technically.',
+    'From here on, everything counts twice. Including mistakes.',
+    'Final stretch. Double points. Try not to peak too early.',
+    'Lightning round. If you’ve been coasting, stop.',
+    'Every answer is worth double now. No pressure. Some pressure.',
+    'Three questions left, double value. Comebacks are legal.',
+    'Lightning round. This is where the standings get rearranged.',
+    'Double points. The team in last place just sat up a little.',
+  ],
+  didacticsStumped: [
+    'Nobody got that one. Honestly, fair.',
+    'A clean sweep of wrong answers. Impressive coordination.',
+    'Zero for everyone. We’ll call it a learning experience.',
+    'Not one right answer. The question wins.',
+    'Everyone missed it. I had to look it up too.',
+    'Total wipeout. That one’s going in the hard pile.',
+    'Nobody? Not even a lucky guess?',
+    'The whole room was confidently wrong. Very medical of you.',
+    'No points this round. The question was the problem. Probably.',
+    'Well, now everyone learned something.',
+    'Universal agreement, universally wrong.',
+    'That question is undefeated.',
+  ],
+};

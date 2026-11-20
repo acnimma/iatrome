@@ -1,0 +1,482 @@
+/* ── Stage ───────────────────────────────────────────── */
+.stageScene {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.heading {
+  font-family: var(--font-play);
+  font-size: clamp(1.9rem, 3.8vw, 3.2rem);
+  font-weight: 400;
+  line-height: 1.1;
+  text-align: center;
+  text-shadow: var(--play-raised);
+}
+
+.sub {
+  max-width: 40ch;
+  font-size: clamp(1rem, 1.6vw, 1.3rem);
+  font-weight: 600;
+  color: var(--ink-soft);
+  text-align: center;
+}
+
+.writing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+
+.scores {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  width: 100%;
+}
+
+.matchup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(14px, 2.4vh, 26px);
+  width: min(1240px, 100%);
+}
+
+.matchupTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 72px;
+}
+
+.prompt {
+  max-width: 26ch;
+  font-family: var(--font-play);
+  font-size: clamp(1.9rem, 3.7vw, 3.3rem);
+  font-weight: 400;
+  line-height: 1.12;
+  letter-spacing: 0.005em;
+  text-align: center;
+  text-wrap: balance;
+  text-shadow: var(--play-raised);
+}
+
+.versus {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(28px, 5vw, 72px);
+  width: 100%;
+}
+
+.vs {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  z-index: 2;
+}
+
+.answer {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+  min-height: clamp(150px, 22vh, 250px);
+  padding: clamp(20px, 2.4vw, 32px);
+  border-radius: clamp(24px, 2.6vw, 34px);
+  cursor: default;
+  transition:
+    filter 300ms ease,
+    opacity 300ms ease;
+}
+
+.won {
+  /* drawn inside the edge: the card never grows into its neighbours */
+  outline: 5px solid var(--royal-gold);
+  outline-offset: -5px;
+}
+
+.lost {
+  opacity: 0.8;
+  filter: saturate(0.55);
+}
+
+.quip {
+  margin: auto 0;
+  font-family: var(--font-play);
+  font-size: clamp(1.6rem, 2.9vw, 2.6rem);
+  font-weight: 400;
+  line-height: 1.15;
+  letter-spacing: 0.01em;
+  text-align: center;
+  text-wrap: balance;
+  text-shadow: var(--play-on-jelly);
+  overflow-wrap: anywhere;
+}
+
+.missing {
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.4rem;
+  font-weight: 800;
+  opacity: 0.75;
+}
+
+.doodle {
+  width: min(100%, 32vh);
+  margin: 0 auto;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0;
+  padding-left: 1.5em;
+  font-family: var(--font-play);
+  font-size: clamp(1.15rem, 1.9vw, 1.65rem);
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+  text-shadow: var(--play-on-jelly);
+}
+
+.list li::marker {
+  font-family: var(--font-display);
+  color: color-mix(in srgb, currentColor 70%, transparent);
+}
+
+.reveal {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: auto;
+  box-shadow: var(--gloss), var(--shadow-md);
+}
+
+.voters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+}
+
+.shareBar {
+  position: relative;
+  height: 30px;
+  overflow: hidden;
+  border: var(--outline);
+  border-radius: var(--radius-pill);
+  background: var(--card);
+}
+
+.shareBar > span:first-child {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--royal-gold), var(--rose-kiss));
+}
+
+.share {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  translate: 0 -50%;
+  font-weight: 900;
+}
+
+.share::after {
+  content: '%';
+}
+
+.author {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.authorName {
+  font-size: 1.2rem;
+  font-weight: 900;
+}
+
+.points {
+  margin-left: auto;
+  font-size: clamp(1.4rem, 2.4vw, 2rem);
+  font-weight: 900;
+  color: var(--rose-kiss);
+}
+
+.curbside {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+
+.footer {
+  min-height: 70px;
+  display: flex;
+  justify-content: center;
+}
+
+.votePrompt {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  font-size: clamp(1.2rem, 2vw, 1.6rem);
+}
+
+.pips {
+  display: flex;
+  gap: 8px;
+}
+
+.pip,
+.pipOn {
+  width: 16px;
+  height: 16px;
+  border: var(--outline);
+  border-radius: 50%;
+  background: var(--card);
+}
+
+.pipOn {
+  background: var(--rose-kiss);
+}
+
+/* ── The finale: everyone's list at once ─────────────── */
+.board {
+  display: grid;
+  grid-template-columns: repeat(var(--cols, 3), minmax(0, 1fr));
+  gap: clamp(12px, 1.6vw, 22px);
+  width: 100%;
+}
+
+.board .answer {
+  min-height: 0;
+  padding: clamp(14px, 1.6vw, 22px);
+  gap: 10px;
+}
+
+.board .list {
+  font-size: clamp(1rem, 1.45vw, 1.35rem);
+  gap: 6px;
+}
+
+.board .reveal {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  margin-top: 4px;
+  padding: 8px 12px;
+}
+
+.board .voters {
+  flex: 1;
+  min-height: 0;
+  gap: 4px;
+}
+
+.board .author {
+  flex-basis: 100%;
+}
+
+.board .authorName {
+  font-size: 1rem;
+}
+
+.board .points {
+  font-size: clamp(1.1rem, 1.6vw, 1.5rem);
+}
+
+/* Votes stack up on each list as little avatars, then the points land. */
+.tally {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  min-height: 30px;
+}
+
+.voteCount {
+  margin-left: auto;
+  font-family: var(--font-play);
+  font-size: 1.1rem;
+  white-space: nowrap;
+}
+
+.banner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.bannerNote {
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+
+/* ── Phone ───────────────────────────────────────────── */
+.task {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.taskNav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--ink-soft);
+}
+
+.dots {
+  display: flex;
+  gap: 6px;
+}
+
+.dot,
+.dotDone,
+.dotNow {
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+}
+
+.dotDone {
+  background: var(--ink);
+}
+
+.dotNow {
+  background: var(--rose-kiss);
+}
+
+.taskActions {
+  display: flex;
+  gap: 10px;
+}
+
+.taskActions > :first-child {
+  flex: 1;
+}
+
+.listInputs {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.voteChoice {
+  flex-direction: column;
+  gap: 6px;
+}
+
+.voteDoodle {
+  width: 100%;
+  max-width: 260px;
+}
+
+.voteList {
+  margin: 0;
+  padding-left: 1.3em;
+  text-align: left;
+  font-size: 1.05rem;
+}
+
+.yours {
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  padding: 2px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--ink);
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-shadow: none;
+}
+
+.outcome {
+  font-size: 3rem;
+  font-weight: 900;
+  color: var(--rose-kiss);
+}
+
+@media (max-width: 760px) {
+  .versus {
+    grid-template-columns: 1fr;
+    gap: 36px;
+  }
+}
+
+/* ── Phone reveal (no big screen) ─────────────────── */
+.phoneHeading {
+  font-size: 1.5rem;
+  font-weight: 900;
+  text-align: center;
+}
+
+.reveal {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  border: var(--outline);
+  border-radius: var(--radius-md);
+  background: var(--card);
+  box-shadow: var(--shadow-sm);
+  color: var(--ink);
+  text-shadow: none;
+}
+
+.revealWon {
+  background: color-mix(in srgb, var(--royal-gold) 28%, var(--card));
+  box-shadow: 0 0 0 3px var(--royal-gold), var(--gloss), var(--shadow-md);
+}
+
+.revealBody {
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+.revealMeta {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+
+.revealMeta span:first-child {
+  flex: 1;
+}
+
+.revealMeta strong {
+  color: var(--ink);
+  font-size: 1rem;
+}

@@ -1,0 +1,77 @@
+.ring {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: none;
+  border: var(--outline);
+  border-radius: 50%;
+  background: var(--card);
+  box-shadow: var(--gloss), var(--shadow-sm);
+}
+
+.ring svg {
+  position: absolute;
+  inset: 4%;
+  width: 92%;
+  height: 92%;
+  transform: rotate(-90deg);
+}
+
+.track {
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 10;
+}
+
+.bar {
+  fill: none;
+  stroke: var(--cool-sky);
+  stroke-width: 10;
+  stroke-linecap: round;
+}
+
+.count {
+  position: relative;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+/* The last five seconds: a gentle heartbeat. */
+.ring[data-urgent] {
+  animation: beat 1s ease-in-out infinite;
+}
+
+.ring[data-urgent] .count {
+  color: var(--rose-kiss);
+}
+
+.paused {
+  position: absolute;
+  inset: -4px;
+  border: 3px dashed var(--line);
+  border-radius: 50%;
+  animation: spin 6s linear infinite;
+}
+
+@keyframes beat {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  15% {
+    transform: scale(1.08);
+  }
+  30% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

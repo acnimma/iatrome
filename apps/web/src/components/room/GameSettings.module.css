@@ -1,0 +1,163 @@
+/* ── Game picker: rows by default ─────────────────────── */
+.games {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.game {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+  padding: 10px 16px 10px 10px;
+  border-radius: 22px;
+  text-align: left;
+  transition: transform 220ms var(--ease-spring);
+}
+
+@media (hover: hover) {
+  .game:hover {
+    transform: translateY(-2px);
+  }
+}
+
+.icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  background: radial-gradient(120% 100% at 50% 10%, color-mix(in srgb, var(--tone) 22%, #fff), color-mix(in srgb, var(--tone) 48%, #fff));
+  box-shadow:
+    inset 0 -3px 4px color-mix(in srgb, var(--tone) 40%, transparent),
+    0 2px 4px -1px rgb(14 16 27 / 0.25);
+}
+
+.gameText {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.gameTitle {
+  font-size: 1.05rem;
+  font-weight: 900;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+}
+
+.tagline {
+  font-size: 0.88rem;
+  font-weight: 600;
+  line-height: 1.3;
+  opacity: 0.68;
+}
+
+.meta {
+  flex: none;
+  font-size: 0.78rem;
+  font-weight: 800;
+  opacity: 0.6;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.compact .game {
+  padding: 8px 12px 8px 8px;
+}
+
+.compact .icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 13px;
+}
+
+/* "players" only where there's room for it (the tiles). */
+.metaWord {
+  display: none;
+}
+
+/* ── Tiles: one row of five when there's room ─────────── */
+@media (min-width: 900px) {
+  .tiles {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .tiles .game {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    min-height: 210px;
+    padding: 16px 16px 14px;
+    border-radius: 26px;
+  }
+
+  .tiles .icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 20px;
+  }
+
+  .tiles .gameText {
+    flex: 1;
+    gap: 4px;
+  }
+
+  .tiles .gameTitle {
+    font-size: 1.15rem;
+  }
+
+  .tiles .metaWord {
+    display: inline;
+  }
+}
+
+/* ── Segmented choices ────────────────────────────────── */
+.choice {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.blurb {
+  min-height: 2.6em; /* two lines, so switching doesn't make the page jump */
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--ink-soft);
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+@media (max-width: 400px) {
+  .game {
+    gap: 10px;
+    padding: 9px 12px 9px 9px;
+  }
+
+  .icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+  }
+
+  .tagline {
+    font-size: 0.82rem;
+  }
+}
+
+/* The tiniest phones: the player range is in the lobby anyway. */
+@media (max-width: 360px) {
+  .meta {
+    display: none;
+  }
+}

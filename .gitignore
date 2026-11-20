@@ -10,3 +10,6 @@ dist/
 .DS_Store
 *.tsbuildinfo
 next-env.d.ts
+.claude/
+test-results/
+playwright-report/

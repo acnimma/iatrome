@@ -1,0 +1,248 @@
+/* ── Stage ───────────────────────────────────────────── */
+.heading {
+  max-width: 24ch;
+  font-size: clamp(1.8rem, 3.4vw, 2.8rem);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  text-align: center;
+}
+
+.choosing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+}
+
+.board {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 340px);
+  gap: clamp(18px, 3vw, 40px);
+  width: min(1180px, 100%);
+  align-items: start;
+}
+
+.canvasCol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.canvasHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: min(54vh, 100%);
+}
+
+.drawer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+.canvas {
+  width: min(54vh, 100%);
+}
+
+.mask {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.letter {
+  display: grid;
+  place-items: center;
+  width: clamp(28px, 3vw, 42px);
+  height: clamp(38px, 4vw, 54px);
+  border-bottom: 4px solid var(--ink);
+  font-size: clamp(1.4rem, 2.6vw, 2.2rem);
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.maskRevealed .letter {
+  border: var(--outline);
+  border-radius: 10px;
+  background: var(--royal-gold);
+  box-shadow: var(--gloss);
+}
+
+.gap {
+  width: 18px;
+}
+
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 72vh;
+}
+
+.sideTitle {
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.feed {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow: hidden;
+}
+
+.feedItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px 8px 8px;
+  border: var(--outline);
+  border-radius: var(--radius-pill);
+  background: var(--card);
+  box-shadow: var(--shadow-sm);
+}
+
+.correct {
+  background: color-mix(in srgb, #3f9d6e 28%, var(--card));
+}
+
+.feedName {
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.feedText {
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.revealList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.solvedRow {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 16px;
+  border: var(--outline);
+  border-radius: var(--radius-pill);
+  background: var(--card);
+  font-weight: 700;
+}
+
+.solvedRow strong {
+  color: var(--rose-kiss);
+}
+
+.miniScores {
+  margin-top: 12px;
+  transform: scale(0.85);
+  transform-origin: top left;
+  width: 118%;
+}
+
+/* ── Phone ───────────────────────────────────────────── */
+.phoneHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.phoneTitle {
+  font-size: 1.4rem;
+  font-weight: 900;
+}
+
+.choiceText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.choiceText span {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+
+.phoneDraw {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--rose-kiss);
+}
+
+.term {
+  font-size: 1.6rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.phoneMask {
+  font-size: 1.4rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.guessForm {
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.solvedCount {
+  font-weight: 700;
+  color: var(--ink-soft);
+  text-align: center;
+}
+
+.gotIt {
+  padding: 14px;
+  border: var(--outline);
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, #3f9d6e 30%, var(--card));
+  font-size: 1.3rem;
+  font-weight: 900;
+  text-align: center;
+}
+
+.close {
+  font-size: 1.2rem;
+  font-weight: 900;
+  color: var(--rose-kiss);
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  .board {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* The comeback stretch, on the drawer's pick screen. */
+.stretch {
+  font-weight: 800;
+  color: #8a7522;
+  text-align: center;
+}

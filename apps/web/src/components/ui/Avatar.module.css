@@ -1,0 +1,49 @@
+.wrap {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  transition: opacity 200ms ease, filter 200ms ease;
+}
+
+.dim {
+  opacity: 0.45;
+  filter: grayscale(0.6);
+}
+
+.badge {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: var(--size);
+  height: var(--size);
+  border: var(--outline);
+  border-radius: 50%;
+  box-shadow: var(--gloss), var(--shadow-sm);
+}
+
+.corner {
+  position: absolute;
+  right: -6px;
+  bottom: -6px;
+  display: grid;
+  place-items: center;
+  min-width: calc(var(--size) * 0.42);
+  height: calc(var(--size) * 0.42);
+  padding: 0 4px;
+  border: var(--outline);
+  border-radius: var(--radius-pill);
+  background: var(--card);
+  font-size: calc(var(--size) * 0.22);
+  font-weight: 800;
+}
+
+.name {
+  max-width: calc(var(--size) * 2.4);
+  overflow: hidden;
+  font-size: max(12px, calc(var(--size) * 0.26));
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

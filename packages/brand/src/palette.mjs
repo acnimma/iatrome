@@ -1,4 +1,4 @@
-// The iatrome palette. Mirrors apps/web/src/styles/tokens.css — keep in sync.
+// The iatrome palette. Mirrors apps/web/src/styles/tokens.css: keep in sync.
 export const palette = {
   coolSky: '#4988b8',
   skyBlue: '#67a1c6',

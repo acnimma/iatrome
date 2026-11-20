@@ -79,7 +79,25 @@ p {
   margin: 0;
 }
 
-button {
+/* Even line lengths everywhere: no lonely one- or two-word last lines. */
+h1,
+h2,
+h3,
+h4,
+button,
+blockquote,
+label {
+  text-wrap: balance;
+}
+
+p,
+li,
+span {
+  text-wrap: pretty;
+}
+
+/* zero specificity, so any class (like the jelly finish) can set a button's colour */
+:where(button) {
   font: inherit;
   color: inherit;
 }
