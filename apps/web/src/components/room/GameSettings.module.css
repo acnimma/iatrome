@@ -1,0 +1,92 @@
+.games {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.game {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px;
+  border: var(--outline);
+  border-radius: var(--radius-md);
+  background: var(--card);
+  box-shadow: var(--shadow-sm);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background 200ms ease,
+    box-shadow 200ms ease;
+}
+
+.game.picked {
+  background: color-mix(in srgb, var(--tone) 22%, var(--card));
+  box-shadow: 0 0 0 3px var(--tone), var(--shadow-md);
+}
+
+.icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border: var(--outline);
+  border-radius: 14px;
+  background: var(--tone);
+  box-shadow: var(--gloss);
+  font-size: 1.4rem;
+}
+
+.gameText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.gameTitle {
+  font-weight: 900;
+  letter-spacing: -0.01em;
+}
+
+.tagline {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--ink-soft);
+  line-height: 1.3;
+}
+
+.meta {
+  margin-top: 2px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+
+.compact .game {
+  padding: 10px;
+  align-items: center;
+}
+
+.compact .icon {
+  width: 36px;
+  height: 36px;
+  font-size: 1.1rem;
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid var(--line);
+}
+
+.options > * {
+  border-bottom: 1px solid var(--line);
+}
+
+@media (max-width: 520px) {
+  .games {
+    grid-template-columns: 1fr;
+  }
+}

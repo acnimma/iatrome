@@ -1,0 +1,200 @@
+.lobby {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+  gap: clamp(20px, 4vw, 64px);
+  align-items: center;
+  width: min(1320px, 100%);
+}
+
+.join {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  text-align: center;
+}
+
+.wordmark {
+  width: min(380px, 80%);
+  margin-bottom: 8px;
+}
+
+.lead {
+  font-size: clamp(1.05rem, 1.8vw, 1.4rem);
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.site {
+  margin-top: -8px;
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+}
+
+.qrRow {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-top: 10px;
+}
+
+.qr {
+  width: clamp(120px, 13vw, 170px);
+}
+
+.joinNotes {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  max-width: 240px;
+  text-align: left;
+}
+
+.password {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.passwordText {
+  font-size: 1.3rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+}
+
+.note {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: clamp(20px, 2.5vw, 32px);
+  border: var(--outline);
+  border-radius: 36px;
+  background: var(--card);
+  box-shadow: var(--shadow-lg);
+}
+
+.gameHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.eyebrow {
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.gameTitle {
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 3vw, 2.6rem);
+  font-weight: 400;
+  line-height: 1.05;
+  color: var(--cool-sky);
+  -webkit-text-stroke: 1px var(--ink);
+}
+
+.tagline {
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.settings {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow: hidden;
+}
+
+.playersHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.players {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+  gap: 14px 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.player {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.playerActions {
+  position: absolute;
+  top: -8px;
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 150ms ease;
+}
+
+.player:hover .playerActions,
+.player:focus-within .playerActions {
+  opacity: 1;
+}
+
+.playerActions button {
+  padding: 2px 8px;
+  border: var(--outline);
+  border-radius: var(--radius-pill);
+  background: var(--card);
+  font-size: 0.7rem;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.playerActions button:last-child {
+  background: var(--rose-kiss);
+  color: #fff;
+}
+
+.empty {
+  justify-self: center;
+  width: 64px;
+  height: 64px;
+  border: 2px dashed var(--line);
+  border-radius: 50%;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.secondary {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+@media (max-width: 900px) {
+  .lobby {
+    grid-template-columns: 1fr;
+  }
+}

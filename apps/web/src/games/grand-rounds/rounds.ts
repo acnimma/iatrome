@@ -1,0 +1,7 @@
+export const ROUND_NAMES = ['Quips', 'Quips & Doodles', 'The Differential'] as const;
+
+export const ROUND_BLURBS = [
+  'Two prompts each. Two answers face off. The room decides.',
+  'Now with drawings. Double points — anyone can come back.',
+  'Three answers each, revealed one at a time. Triple points.',
+] as const;

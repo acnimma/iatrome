@@ -9,12 +9,11 @@ import {
 
 /** Trim, collapse whitespace, strip control characters. Used on all player text. */
 export function cleanText(input: string, maxLength: number): string {
-  return input
-    .replace(/[\u0000-\u001f\u007f​-‏ -‮⁦-⁩]/g, '')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .slice(0, maxLength);
+  return input.replace(INVISIBLE, '').replace(/\s+/g, ' ').trim().slice(0, maxLength);
 }
+
+/** Control characters, zero-width characters and bidi overrides. */
+const INVISIBLE = new RegExp('[\\u0000-\\u001f\\u007f\\u200b-\\u200f\\u2028-\\u202e\\u2066-\\u2069]', 'g');
 
 /** Comparison key: lowercase, no accents, punctuation or articles. */
 export function comparable(input: string): string {
@@ -30,9 +29,17 @@ export function comparable(input: string): string {
 
 /** Same answer for "duplicate order" purposes (ignores case, punctuation, plural s). */
 export function sameAnswer(a: string, b: string): boolean {
-  const key = (s: string) => comparable(s).replace(/s\b/g, '').replace(/ /g, '');
+  const key = (s: string) => singular(comparable(s)).replace(/ /g, '');
   const ka = key(a);
   return ka.length > 0 && ka === key(b);
+}
+
+/** Naive English singular, per word: leeches → leech, bones → bone, glass stays glass. */
+function singular(s: string): string {
+  return s
+    .split(' ')
+    .map((w) => (/(ch|sh|ss|x|z)es$/.test(w) ? w.slice(0, -2) : /[^s]s$/.test(w) && w.length > 3 ? w.slice(0, -1) : w))
+    .join(' ');
 }
 
 // ── Guess matching (Sketchy Diagnosis) ───────────────────────────────────────
@@ -50,10 +57,6 @@ export function matchGuess(guess: string, answers: readonly string[]): GuessResu
     if (a.length >= 6 && levenshtein(g, a) <= 1) return 'correct';
   }
   return best <= 2 && g.length >= 4 ? 'close' : 'wrong';
-}
-
-function singular(s: string): string {
-  return s.replace(/(\w{3,})s\b/g, '$1');
 }
 
 export function levenshtein(a: string, b: string): number {

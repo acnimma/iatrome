@@ -1,0 +1,112 @@
+import { describe, expect, it } from 'vitest';
+import { finalePairs, mixedKinds, ring, spreadOrder } from './assign';
+import { scoreForfeit, scoreVotes } from './scoring';
+
+describe('ring assignment', () => {
+  for (const n of [3, 4, 5, 6, 7, 8]) {
+    it(`gives each of ${n} players exactly two prompts against two different opponents`, () => {
+      const ids = Array.from({ length: n }, (_, i) => `p${i}`);
+      const pairs = ring(ids);
+      expect(pairs).toHaveLength(n);
+      for (const id of ids) {
+        const mine = pairs.filter((p) => p.includes(id));
+        expect(mine).toHaveLength(2);
+        const opponents = mine.map((p) => p.find((x) => x !== id));
+        expect(new Set(opponents).size).toBe(2);
+      }
+    });
+  }
+});
+
+describe('round 2 mix', () => {
+  it('gives everyone one doodle and one quip with an even count', () => {
+    const kinds = mixedKinds(6);
+    const pairs = ring(['a', 'b', 'c', 'd', 'e', 'f']);
+    for (const id of 'abcdef') {
+      const mine = pairs.map((p, i) => (p.includes(id) ? kinds[i] : null)).filter(Boolean);
+      expect(mine.sort()).toEqual(['doodle', 'quip']);
+    }
+  });
+
+  it('never gives anyone two doodles with an odd count', () => {
+    for (const n of [3, 5, 7]) {
+      const ids = Array.from({ length: n }, (_, i) => `p${i}`);
+      const kinds = mixedKinds(n);
+      const pairs = ring(ids);
+      for (const id of ids) {
+        const doodles = pairs.filter((p, i) => p.includes(id) && kinds[i] === 'doodle').length;
+        expect(doodles).toBeLessThanOrEqual(1);
+      }
+    }
+  });
+});
+
+describe('finale pairs', () => {
+  it('pairs everyone with an even count', () => {
+    const pairs = finalePairs(['a', 'b', 'c', 'd'], 'c');
+    expect(pairs.flat().sort()).toEqual(['a', 'b', 'c', 'd']);
+  });
+
+  it('puts last place against Beep with an odd count', () => {
+    const pairs = finalePairs(['a', 'b', 'c', 'd', 'e'], 'd');
+    expect(pairs).toHaveLength(3);
+    expect(pairs.find((p) => p.includes('beep'))).toEqual(['d', 'beep']);
+    expect(pairs.flat().filter((x) => x !== 'beep').sort()).toEqual(['a', 'b', 'c', 'd', 'e']);
+  });
+});
+
+describe('spreadOrder', () => {
+  it('avoids the same player in back-to-back matchups where possible', () => {
+    const items = ring(['a', 'b', 'c', 'd', 'e', 'f']).map((playerIds) => ({ playerIds }));
+    const ordered = spreadOrder(items);
+    for (let i = 1; i < ordered.length; i++) {
+      const shared = ordered[i].playerIds.some((p) => ordered[i - 1].playerIds.includes(p));
+      expect(shared).toBe(false);
+    }
+  });
+});
+
+describe('scoring', () => {
+  const none: [boolean, boolean] = [false, false];
+
+  it('splits the pool by vote share and gives the winner a bonus', () => {
+    const r = scoreVotes({ players: [3, 1], audience: [0, 0], multiplier: 1, curbside: none });
+    expect(r.winner).toBe(0);
+    expect(r.consensus).toBe(false);
+    expect(r.points).toEqual([850, 250]);
+  });
+
+  it('awards the consensus bonus for a unanimous win with 2+ voters', () => {
+    const r = scoreVotes({ players: [4, 0], audience: [0, 0], multiplier: 2, curbside: none });
+    expect(r.consensus).toBe(true);
+    expect(r.points).toEqual([2500, 0]);
+  });
+
+  it('does not call a single vote a consensus', () => {
+    const r = scoreVotes({ players: [1, 0], audience: [0, 0], multiplier: 1, curbside: none });
+    expect(r.consensus).toBe(false);
+    expect(r.points).toEqual([1100, 0]);
+  });
+
+  it('splits evenly on a tie with no bonus', () => {
+    const r = scoreVotes({ players: [2, 2], audience: [0, 0], multiplier: 1, curbside: none });
+    expect(r.winner).toBeNull();
+    expect(r.points).toEqual([500, 500]);
+  });
+
+  it('caps the audience at a third of the matchup', () => {
+    // 1 player vote for A, 100 audience votes for B: audience weight is capped at 1/3.
+    const r = scoreVotes({ players: [1, 0], audience: [0, 100], multiplier: 1, curbside: none });
+    expect(r.shares[0]).toBeCloseTo(2 / 3);
+    expect(r.winner).toBe(0);
+  });
+
+  it('halves curbside consult points', () => {
+    const r = scoreVotes({ players: [3, 1], audience: [0, 0], multiplier: 1, curbside: [true, false] });
+    expect(r.points).toEqual([430, 250]);
+  });
+
+  it('gives a forfeit the whole pool plus bonus', () => {
+    expect(scoreForfeit(1, 3, false)).toEqual([0, 3300]);
+  });
+});

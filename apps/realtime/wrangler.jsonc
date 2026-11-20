@@ -1,0 +1,16 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "iatrome-realtime",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-11-01",
+  "durable_objects": {
+    "bindings": [{ "name": "Room", "class_name": "Room" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["Room"] }],
+  "vars": {
+    // Production: the site's origins. Preview deployments on Vercel are covered by the wildcard.
+    "ALLOWED_ORIGINS": "https://iatrome.com,https://www.iatrome.com,https://*.vercel.app",
+    "DEV_MODE": "false"
+  },
+  "observability": { "enabled": true }
+}

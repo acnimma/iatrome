@@ -167,7 +167,7 @@ function Paint({ ids }: { ids: Ids }) {
  * towards a passing pointer (or finger), and squish softly when pressed.
  * With reduced motion they simply fade in and stay put.
  */
-export function Wordmark() {
+export function Wordmark({ className }: { className?: string }) {
   const ref = useRef<HTMLSpanElement>(null);
   const reduceMotion = useReducedMotion();
   const uid = useId();
@@ -211,7 +211,7 @@ export function Wordmark() {
 
   return (
     <MotionConfig reducedMotion="user">
-      <span ref={ref} className={styles.wordmark} style={{ aspectRatio: `${W.width} / ${W.height}` }}>
+      <span ref={ref} className={`${styles.wordmark} ${className ?? ''}`} style={{ aspectRatio: `${W.width} / ${W.height}` }}>
         <span className="visually-hidden">iatrome</span>
         <Paint ids={ids} />
         {W.letters.map((l, i) => (

@@ -1,0 +1,78 @@
+.host {
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+  pointer-events: none;
+}
+
+.body {
+  flex: none;
+  transform-origin: 50% 100%;
+  filter: drop-shadow(0 10px 14px rgb(31 42 77 / 0.25));
+  animation: bob 3.4s ease-in-out infinite;
+}
+
+.svg {
+  display: block;
+  width: 100%;
+  overflow: visible;
+}
+
+.eyes {
+  transform-origin: 60px 49px;
+  animation: blink 4.6s infinite;
+}
+
+.talk {
+  animation: talk 0.22s ease-in-out infinite alternate;
+  transform-origin: 60px 62px;
+}
+
+.bubble {
+  position: relative;
+  max-width: min(440px, 40vw);
+  margin-bottom: 28px;
+  padding: 14px 18px;
+  border: var(--outline);
+  border-radius: 22px 22px 22px 6px;
+  background: var(--card);
+  box-shadow: var(--shadow-md);
+  font-size: clamp(1rem, 1.5vw, 1.25rem);
+  font-weight: 700;
+  line-height: 1.3;
+  transform-origin: 0 100%;
+}
+
+.compact {
+  gap: 10px;
+}
+
+.compact .bubble {
+  max-width: none;
+  margin-bottom: 10px;
+  padding: 10px 14px;
+  font-size: 0.95rem;
+}
+
+@keyframes bob {
+  50% {
+    transform: translateY(-5px) rotate(-2deg);
+  }
+}
+
+@keyframes blink {
+  0%,
+  94%,
+  100% {
+    transform: scaleY(1);
+  }
+  96% {
+    transform: scaleY(0.1);
+  }
+}
+
+@keyframes talk {
+  to {
+    transform: scaleY(1.9);
+  }
+}

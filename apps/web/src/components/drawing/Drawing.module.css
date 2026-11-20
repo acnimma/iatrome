@@ -1,0 +1,89 @@
+.view {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  border: var(--outline);
+  border-radius: var(--radius-lg);
+  background: #fff;
+  box-shadow: var(--shadow-sm);
+}
+
+.pad {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.surface {
+  touch-action: none;
+  cursor: crosshair;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.tools {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.swatches {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 6px;
+}
+
+.swatch {
+  aspect-ratio: 1;
+  border: var(--outline);
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 150ms var(--ease-spring);
+}
+
+.swatch.picked {
+  transform: scale(1.18);
+  box-shadow: 0 0 0 3px var(--card), 0 0 0 5px var(--ink);
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.sizes,
+.actions {
+  display: flex;
+  gap: 6px;
+}
+
+.size,
+.tool {
+  display: grid;
+  place-items: center;
+  min-width: 44px;
+  height: 44px;
+  padding: 0 14px;
+  border: var(--outline);
+  border-radius: var(--radius-pill);
+  background: var(--card);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.size span {
+  display: block;
+  border-radius: 50%;
+}
+
+.size.picked {
+  background: color-mix(in srgb, var(--sky-blue) 35%, var(--card));
+}
+
+.tool:disabled {
+  opacity: 0.4;
+  cursor: default;
+}

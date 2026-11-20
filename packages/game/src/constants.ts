@@ -89,3 +89,6 @@ export const POISON = {
 export const PODIUM = 9_000;
 
 export const EXTENDED_TIMERS_FACTOR = 1.5;
+
+/** Quick reactions players can fling at the stage. */
+export const REACTIONS = ['😂', '🔥', '👏', '😱', '🫠', '💯'] as const;

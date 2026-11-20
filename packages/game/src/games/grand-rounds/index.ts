@@ -96,6 +96,8 @@ export interface MatchupView {
   /** Viewer-specific. */
   canVote: boolean;
   myVote: Side | null;
+  /** Which side is the viewer's own answer (only ever told to its author). */
+  yours: Side | null;
 }
 
 export interface TaskView {
@@ -528,6 +530,7 @@ function matchupView(state: GrandRoundsState, ctx: GameContext, m: Matchup, view
     votersExpected: v.players.length,
     canVote,
     myVote: viewerId ? (m.votes[viewerId] ?? m.audienceVotes[viewerId] ?? null) : null,
+    yours: viewerId && m.playerIds.includes(viewerId) ? (m.playerIds.indexOf(viewerId) as Side) : null,
   };
 }
 

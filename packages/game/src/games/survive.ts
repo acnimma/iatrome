@@ -23,7 +23,7 @@ export interface SurviveState extends BaseGameState {
   last: { lostCoffee: string[]; clockedOut: string[]; mercy: boolean; points: Record<string, number> } | null;
 }
 
-export type SurviveAction = { type: 'answer'; option: number };
+export type SurviveAction = { type: 'pick-option'; option: number };
 
 export interface SurviveView {
   game: 'survive';
@@ -156,7 +156,7 @@ export const survive: GameModule<SurviveState, SurviveAction, SurviveView> = {
   bot(state, ctx, botId) {
     if (state.phase.name !== 'question' || botId in state.answers || !state.playerIds.includes(botId)) return false;
     const q = state.questions[state.index];
-    survive.act(state, ctx, botId, { type: 'answer', option: ctx.rng.next() < 0.6 ? q.answer : ctx.rng.int(4) });
+    survive.act(state, ctx, botId, { type: 'pick-option', option: ctx.rng.next() < 0.6 ? q.answer : ctx.rng.int(4) });
     return true;
   },
 };

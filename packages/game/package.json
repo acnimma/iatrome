@@ -3,7 +3,10 @@
   "private": true,
   "type": "module",
   "description": "The game engine: protocol, room lifecycle, game modes, scoring. Pure TypeScript, no I/O.",
-  "exports": { ".": "./src/index.ts" },
+  "exports": {
+    ".": "./src/index.ts",
+    "./client": "./src/client.ts"
+  },
   "scripts": {
     "test": "vitest run",
     "typecheck": "tsc --noEmit"

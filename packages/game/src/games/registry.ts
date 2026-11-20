@@ -18,10 +18,3 @@ export const games: Record<GameId, AnyModule> = {
   survive,
   poison,
 };
-
-export const gameInfo: Record<GameId, { title: string; tagline: string; players: string; minutes: string }> = {
-  'grand-rounds': { title: 'Grand Rounds', tagline: 'Head-to-head quips and doodles. The room votes.', players: '3–8', minutes: '15' },
-  sketchy: { title: 'Sketchy Diagnosis', tagline: 'One draws, everyone races to guess.', players: '3–10', minutes: '10' },
-  survive: { title: 'Survive the Shift', tagline: 'Trivia elimination. Two coffees. Last one on shift wins.', players: '2–20', minutes: '8' },
-  poison: { title: 'Pick Your Poison', tagline: 'Would you rather — and can you read the room?', players: '3–20', minutes: '8' },
-};

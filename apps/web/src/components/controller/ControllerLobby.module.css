@@ -1,0 +1,68 @@
+.lobby {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+}
+
+.me {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.tapHint {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+
+.picker {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  width: 100%;
+}
+
+.option {
+  aspect-ratio: 1;
+  border: var(--outline);
+  border-radius: 50%;
+  box-shadow: var(--gloss);
+  font-size: 1.8rem;
+  cursor: pointer;
+}
+
+.option:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+}
+
+.others {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+
+.vip {
+  width: 100%;
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: center;
+}
+
+.vipNote {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+}

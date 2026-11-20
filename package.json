@@ -10,9 +10,13 @@
     "node": ">=22"
   },
   "scripts": {
-    "dev": "npm run dev -w @iatrome/web",
+    "dev": "concurrently -k -n web,realtime -c magenta,cyan \"npm run dev -w @iatrome/web -- -H 0.0.0.0\" \"npm run dev -w @iatrome/realtime\"",
     "build": "npm run build -w @iatrome/web",
-    "brand": "npm run build -w @iatrome/brand"
+    "test": "npm run test -w @iatrome/game -w @iatrome/content",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "e2e": "npm run e2e -w @iatrome/web",
+    "brand": "npm run build -w @iatrome/brand",
+    "deploy:realtime": "npm run deploy -w @iatrome/realtime"
   },
   "devDependencies": {
     "concurrently": "^10.0.7"

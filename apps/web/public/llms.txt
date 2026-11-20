@@ -1,0 +1,3 @@
+# iatrome
+
+> iatrome is a free, browser-based multiplayer party game for people in healthcare — med, nursing, PA, dental and pharmacy students and clinicians. Everyone plays from their own phone around a shared screen (or a video call), trading quick-witted answers, doodles and trivia that poke fun at medicine itself, never at patients.

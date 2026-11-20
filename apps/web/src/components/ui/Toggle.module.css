@@ -1,0 +1,52 @@
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  width: 100%;
+  padding: 10px 0;
+  border: 0;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.label {
+  font-weight: 700;
+}
+
+.hint {
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+}
+
+.track {
+  display: flex;
+  flex: none;
+  width: 52px;
+  height: 30px;
+  padding: 3px;
+  border: var(--outline);
+  border-radius: var(--radius-pill);
+  background: #e9e3da;
+  transition: background 200ms ease;
+}
+
+.on {
+  justify-content: flex-end;
+  background: var(--cool-sky);
+}
+
+.knob {
+  width: 20px;
+  height: 20px;
+  border: var(--outline);
+  border-radius: 50%;
+  background: var(--card);
+}
