@@ -1,4 +1,4 @@
-// Original content written for iatrome. Beep (the bedside monitor hosting the show) for smaller moments across games.
+// Original content written for iatrome. Beep (the TV-headed robot hosting the show) for smaller moments across games.
 import type { MomentHostEvent } from '../types';
 
 export const momentHostLines: Record<MomentHostEvent, string[]> = {

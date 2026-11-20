@@ -24,34 +24,23 @@
   animation: blink 4.6s infinite;
 }
 
-/* The ECG sweeps left one beat-tile (57 units) per heartbeat, forever. */
-.trace {
-  animation: sweep 1s linear infinite;
-}
-
-/* Talking: a taller trace, like a voice on the monitor. */
-.traceTalking {
+/* Talking: the mouth opens and closes. */
+.talk {
   transform-box: fill-box;
-  transform-origin: 50% 100%;
-  animation: talk 0.24s ease-in-out infinite alternate;
+  transform-origin: 50% 0;
+  animation: talk 0.22s ease-in-out infinite alternate;
 }
 
-.rate {
-  fill: #7fe0a8;
-  font-family: var(--font-body);
-  font-size: 15px;
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
+/* The tension bulb on the right antenna. */
+.bulb {
+  animation: bulb 1s steps(2, jump-none) infinite;
 }
 
-.heart {
-  transform-box: fill-box;
-  transform-origin: 50% 50%;
-  animation: pulse 1s ease-out infinite;
-}
-
-.alarm {
-  animation: alarm 0.6s steps(2, jump-none) infinite;
+/* A little wave while talking. */
+.wave {
+  transform-box: view-box;
+  transform-origin: 14px 78px;
+  animation: wave 0.5s ease-in-out infinite alternate;
 }
 
 .bubble {
@@ -99,37 +88,26 @@
 
 @keyframes talk {
   to {
-    transform: scaleY(1.45);
+    transform: scaleY(1.9);
   }
 }
 
-@keyframes sweep {
-  to {
-    transform: translateX(-57px);
-  }
-}
-
-@keyframes pulse {
-  0% {
-    transform: scale(1.35);
-  }
-  40%,
-  100% {
-    transform: scale(1);
-  }
-}
-
-@keyframes alarm {
+@keyframes bulb {
   50% {
-    fill: #cc4e73;
+    fill: #fff6c8;
+  }
+}
+
+@keyframes wave {
+  to {
+    transform: rotate(-14deg);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .trace,
-  .traceTalking,
-  .heart,
-  .alarm,
+  .talk,
+  .bulb,
+  .wave,
   .body {
     animation: none;
   }

@@ -9,8 +9,8 @@ import styles from './Beep.module.css';
 const SHOW_MS = 7_000;
 
 /**
- * Beep: the host. A bedside heart-rate monitor with opinions. Its trace runs at `bpm`, which the
- * stage raises as the show gets tense (writing, voting, the drumroll before a reveal).
+ * Beep: the host. A cute TV-headed robot with opinions. `bpm` is the show's tension (the stage
+ * raises it while people write, vote and wait for a reveal): Beep's antenna blinks along to it.
  */
 export function Beep({
   line,
@@ -61,82 +61,62 @@ export function Beep({
   );
 }
 
-/** One heartbeat (P wave, QRS spike, T wave) on a 60-unit-wide tile, baseline at y=0. */
-const BEAT = 'h10 q3 -3 6 0 h4 l2 3 l3 -18 l3 21 l2 -6 h6 q4 -6 8 0 h13';
-
 /**
- * The monitor itself: glossy black jelly casing, a dark screen with two green eyes, the ECG
- * trace sweeping underneath them like a mouth, and the heart rate in the corner.
+ * Beep: a little TV-headed robot. Rabbit-ear antennas, a cream screen with a face on it,
+ * rosy cheeks, stubby arms. The antenna bulb blinks faster as the show gets tense (`bpm`).
  */
 export function BeepFace({ talking = false, bpm = 72 }: { talking?: boolean; bpm?: number }) {
   const id = useId().replace(/:/g, '');
   const rate = Math.max(40, Math.min(180, Math.round(bpm)));
-  // The trace scrolls one beat-tile per heartbeat, so the drawn rhythm matches the number.
-  const beatSeconds = 60 / rate;
   return (
-    <svg viewBox="0 0 140 112" className={styles.svg} role="img" aria-label={`Beep, the heart-rate monitor, reading ${rate} beats per minute`}>
+    <svg viewBox="0 0 140 132" className={styles.svg} role="img" aria-label="Beep, the TV robot host">
       <defs>
-        <radialGradient id={`${id}-case`} cx="50%" cy="8%" r="110%">
-          <stop offset="0" stopColor="#3a4266" />
-          <stop offset="0.5" stopColor="#0e101b" />
-          <stop offset="1" stopColor="#030409" />
-        </radialGradient>
-        <linearGradient id={`${id}-glow`} x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" stopColor="#4988b8" />
-          <stop offset="0.3" stopColor="#67a1c6" />
-          <stop offset="0.5" stopColor="#c8c8c8" />
-          <stop offset="0.7" stopColor="#ccb64a" />
-          <stop offset="1" stopColor="#cc4e73" />
+        <linearGradient id={`${id}-body`} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#7aaed3" />
+          <stop offset="1" stopColor="#3f78a6" />
         </linearGradient>
-        <clipPath id={`${id}-screen`}>
-          <rect x="17" y="17" width="106" height="66" rx="12" />
-        </clipPath>
+        <radialGradient id={`${id}-screen`} cx="40%" cy="30%" r="80%">
+          <stop offset="0" stopColor="#fffdf6" />
+          <stop offset="1" stopColor="#e9e3d6" />
+        </radialGradient>
       </defs>
 
-      {/* the pole clamp it hangs from */}
-      <rect x="60" y="94" width="20" height="14" rx="5" fill="#1f2a4d" />
-      {/* the lead, trailing off to some unseen patient */}
-      <path d="M128 66 q14 6 8 22 q-5 13 -18 18" fill="none" stroke="#1f2a4d" strokeWidth="3.5" strokeLinecap="round" />
-      <circle cx="117" cy="106" r="4.5" fill="#cc4e73" stroke="#1f2a4d" strokeWidth="2" />
+      {/* rabbit-ear antennas, with a bulb that blinks with the tension */}
+      <path d="M58 28 L44 6" stroke="#1f2a4d" strokeWidth="4" strokeLinecap="round" />
+      <path d="M82 28 L98 8" stroke="#1f2a4d" strokeWidth="4" strokeLinecap="round" />
+      <circle cx="44" cy="6" r="5" fill="#cc4e73" stroke="#1f2a4d" strokeWidth="2.5" />
+      <circle cx="98" cy="8" r="5" fill="#ccb64a" stroke="#1f2a4d" strokeWidth="2.5" className={styles.bulb} style={{ animationDuration: `${(60 / rate) * 2}s` }} />
 
-      {/* casing: the same black jelly as the logo and every button */}
-      <rect x="6" y="6" width="128" height="90" rx="24" fill={`url(#${id}-case)`} />
-      <rect x="10" y="74" width="120" height="20" rx="10" fill={`url(#${id}-glow)`} opacity="0.35" />
-      <path d="M26 12 h88" stroke="rgb(255 255 255 / 0.45)" strokeWidth="5" strokeLinecap="round" />
-
-      {/* screen */}
-      <rect x="17" y="17" width="106" height="66" rx="12" fill="#06140f" stroke="#2c3550" strokeWidth="2" />
-      <g clipPath={`url(#${id}-screen)`}>
-        {/* faint grid */}
-        <path d="M17 39 h106 M17 61 h106 M52 17 v66 M88 17 v66" stroke="#7fe0a8" strokeOpacity="0.08" strokeWidth="1" />
-        {/* eyes */}
-        <g className={styles.eyes}>
-          <rect x="42" y="30" width="9" height="13" rx="4.5" fill="#7fe0a8" />
-          <rect x="66" y="30" width="9" height="13" rx="4.5" fill="#7fe0a8" />
-        </g>
-        {/* the trace, which doubles as a mouth: taller when Beep is talking */}
-        <g transform={`translate(0 ${talking ? 64 : 62})`}>
-          <g className={talking ? styles.traceTalking : undefined}>
-            <path
-              className={styles.trace}
-              style={{ animationDuration: `${beatSeconds}s` }}
-              d={`M17 0 ${BEAT} ${BEAT} ${BEAT}`}
-              fill="none"
-              stroke="#7fe0a8"
-              strokeWidth="2.6"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </g>
-        </g>
-        {/* heart rate readout */}
-        <text x="118" y="31" textAnchor="end" className={styles.rate}>
-          {rate}
-        </text>
-        <path className={styles.heart} style={{ animationDuration: `${beatSeconds}s` }} d="M93 25 c-2 -3 -6 -1 -4 2 l4 4 l4 -4 c2 -3 -2 -5 -4 -2 z" fill="#cc4e73" />
+      {/* stubby arms, waving a little when Beep talks */}
+      <g className={talking ? styles.wave : undefined}>
+        <path d="M14 78 q-12 -2 -10 -16" fill="none" stroke="#1f2a4d" strokeWidth="5" strokeLinecap="round" />
+        <circle cx="4" cy="61" r="5" fill="#7aaed3" stroke="#1f2a4d" strokeWidth="2.5" />
       </g>
-      {/* the alarm light on top: blinks when things get tense */}
-      <circle cx="116" cy="10" r="4" fill="#ccb64a" stroke="#1f2a4d" strokeWidth="1.5" className={rate >= 120 ? styles.alarm : undefined} />
+      <path d="M126 78 q12 2 11 14" fill="none" stroke="#1f2a4d" strokeWidth="5" strokeLinecap="round" />
+      <circle cx="137" cy="93" r="5" fill="#7aaed3" stroke="#1f2a4d" strokeWidth="2.5" />
+
+      {/* little feet */}
+      <rect x="42" y="114" width="20" height="12" rx="6" fill="#1f2a4d" />
+      <rect x="78" y="114" width="20" height="12" rx="6" fill="#1f2a4d" />
+
+      {/* the TV body */}
+      <rect x="12" y="26" width="116" height="92" rx="28" fill={`url(#${id}-body)`} stroke="#1f2a4d" strokeWidth="3.5" />
+      <path d="M30 34 h64" stroke="rgb(255 255 255 / 0.5)" strokeWidth="5" strokeLinecap="round" />
+      {/* knobs */}
+      <circle cx="112" cy="92" r="5" fill="#ccb64a" stroke="#1f2a4d" strokeWidth="2" />
+      <circle cx="112" cy="106" r="3.5" fill="#cc4e73" stroke="#1f2a4d" strokeWidth="2" />
+
+      {/* the screen, and the face on it */}
+      <rect x="24" y="40" width="80" height="64" rx="18" fill={`url(#${id}-screen)`} stroke="#1f2a4d" strokeWidth="3" />
+      <g className={styles.eyes}>
+        <ellipse cx="50" cy="66" rx="5.5" ry="7" fill="#1f2a4d" />
+        <ellipse cx="78" cy="66" rx="5.5" ry="7" fill="#1f2a4d" />
+        <circle cx="52" cy="63" r="1.8" fill="#fff" />
+        <circle cx="80" cy="63" r="1.8" fill="#fff" />
+      </g>
+      <ellipse cx="40" cy="80" rx="6" ry="3.5" fill="#cc4e73" opacity="0.35" />
+      <ellipse cx="88" cy="80" rx="6" ry="3.5" fill="#cc4e73" opacity="0.35" />
+      <path className={talking ? styles.talk : undefined} d="M56 80 q8 9 16 0" fill="none" stroke="#1f2a4d" strokeWidth="3.5" strokeLinecap="round" />
     </svg>
   );
 }

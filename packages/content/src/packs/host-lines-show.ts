@@ -1,5 +1,5 @@
 // Original content written for iatrome. Beep reacting to what actually happened, by name.
-// Beep is the bedside heart-rate monitor hosting the show: readings, rhythm, alarms, leads.
+// Beep, the TV-headed robot host, reading the room's vitals: readings, rhythm, alarms.
 // Vars per event are in hostEventVars (types.ts). No death jokes, no robot jokes.
 import type { ShowHostEvent } from '../types';
 

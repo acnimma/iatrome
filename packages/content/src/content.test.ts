@@ -197,9 +197,9 @@ describe('Beep', () => {
   it('reads aloud in about three seconds (at most 18 words)', () => {
     for (const lines of Object.values(hostLines)) for (const l of lines) expect(l.split(/\s+/).length, l).toBeLessThanOrEqual(18);
   });
-  it('is a bedside heart monitor: no pager, robot or flatline jokes', () => {
+  it('stays on brand: no pager, bot or flatline jokes', () => {
     for (const lines of Object.values(hostLines))
-      for (const l of lines) expect(l, l).not.toMatch(/\b(pager|robot|bots?|plastic|rectangle|flatline|flatlined)\b|playing too/i);
+      for (const l of lines) expect(l, l).not.toMatch(/\b(pager|bots?|plastic|rectangle|flatline|flatlined)\b|playing too/i);
   });
   it('only uses the {vars} each event is given', () => {
     for (const event of hostEvents)

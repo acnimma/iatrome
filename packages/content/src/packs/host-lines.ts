@@ -1,6 +1,6 @@
 // Original content written for iatrome.
-// Beep is the host: a bedside heart-rate monitor with a game show. Readings, rhythm,
-// alarms, leads, telemetry. Deadpan. Never a robot, never a pager, never a death joke.
+// Beep is the host: a small TV-headed robot who reads the room's vitals like a monitor.
+// Readings, rhythm, alarms, telemetry. Deadpan. Never a pager, never a death joke.
 import type { HostLines } from '../types';
 
 export const hostLines: HostLines = {
@@ -8,7 +8,7 @@ export const hostLines: HostLines = {
     'Monitoring the lobby. Current reading: two people and a lot of potential.',
     'Room code is on the screen. Type it in. I’ll keep the baseline warm.',
     'Waiting for players. Resting heart rate: 60. Patience: also 60.',
-    'Leads on, alarms set, nobody here yet. Classic night shift.',
+    'Antennas up, alarms set, nobody here yet. Classic night shift.',
     'Join on your phone. Yes, the one you promised to put away.',
     'Still a few beds open in this lobby. Unlike every real hospital.',
     'I’ll just sit here beeping softly. It’s what I trained for.',
