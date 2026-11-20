@@ -5,7 +5,6 @@
 const patterns = {
   tap: 8,
   success: [12, 40, 18],
-  heartbeat: [28, 90, 22], // lub … dub
   error: [40, 30, 40],
 } as const;
 

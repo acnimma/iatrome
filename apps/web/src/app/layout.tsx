@@ -6,21 +6,21 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'sw
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'),
-  title: 'iatrome! — the party game that speaks fluent medicine',
+  title: 'iatrome | medical party game',
   description:
-    'A free, phone-friendly party game for med, nursing, PA and dental students and clinicians. Quips, doodles and diagnoses. Coming soon.',
+    'A party game for people who speak fluent medicine. Free and phone-friendly, for students and clinicians. Coming soon.',
   applicationName: 'iatrome',
   manifest: '/manifest.webmanifest',
   openGraph: {
-    title: 'iatrome!',
-    description: 'The party game that speaks fluent medicine. Coming soon.',
+    title: 'iatrome | medical party game',
+    description: 'A party game for people who speak fluent medicine. Coming soon.',
     type: 'website',
   },
   twitter: { card: 'summary_large_image' },
 };
 
 export const viewport: Viewport = {
-  themeColor: '#5aa9e6',
+  themeColor: '#4988b8',
   width: 'device-width',
   initialScale: 1,
   viewportFit: 'cover',

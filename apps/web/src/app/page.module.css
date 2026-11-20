@@ -5,7 +5,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: clamp(16px, 3vw, 28px);
+  gap: clamp(20px, 3.5vw, 36px);
   padding: max(24px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom));
   overflow: hidden;
   isolation: isolate;
@@ -17,21 +17,19 @@
 }
 
 .soon {
-  font-size: clamp(1rem, 3.6vw, 1.35rem);
-  font-weight: 700;
-  letter-spacing: 0.32em;
+  font-size: clamp(0.72rem, 2.6vw, 0.85rem);
+  font-weight: 500;
+  letter-spacing: 0.42em;
   text-transform: uppercase;
   color: var(--ink-soft);
-  padding-left: 0.32em; /* optically re-centre the letter-spaced text */
-  animation: breathe 3.2s ease-in-out infinite;
+  padding-left: 0.42em; /* optically re-centre the letter-spaced text */
+  animation: settle 1s cubic-bezier(0.22, 1, 0.36, 1) 0.75s both;
 }
 
-@keyframes breathe {
-  0%,
-  100% {
-    opacity: 0.65;
-  }
-  50% {
-    opacity: 1;
+/* arrives just after the last letter */
+@keyframes settle {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
   }
 }
