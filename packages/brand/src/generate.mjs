@@ -7,185 +7,159 @@ import { fileURLToPath } from 'node:url';
 import opentype from 'opentype.js';
 import sharp from 'sharp';
 import pngToIco from 'png-to-ico';
-import { palette, rainbow, rainbowAt } from './palette.mjs';
-import { STETHOSCOPE_BOX, stethoscopeShapes, stethoscopeDetails } from './stethoscope.mjs';
+import { palette, rainbow, surface } from './palette.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, '../../..');
-const fontFile = path.resolve(here, '../fonts/SuperNugget.ttf');
+const fontFile = path.resolve(here, '../fonts/Dogbangy.ttf');
 const webApp = path.join(root, 'apps/web/src/app'); // Next.js file-convention icons
 const webPublic = path.join(root, 'apps/web/public/brand');
+const glyphModule = path.join(root, 'apps/web/src/components/brand/wordmark-glyphs.ts');
 
 const font = opentype.parse((await fs.readFile(fontFile)).buffer);
 const round = (n) => Math.round(n * 100) / 100;
 
-// ── Building blocks ──────────────────────────────────────────────────────────
+const WORD = 'iatrome';
+const WORD_SIZE = 200; // font size the wordmark is laid out at (its user units)
 
-/** Gradient through all five palette colours, spanning x1 → x2. */
-function rainbowGradient(id, x1, x2, y1 = 0, y2 = 0) {
-  const stops = rainbow
-    .map((c, i) => `<stop offset="${i / (rainbow.length - 1)}" stop-color="${c}"/>`)
-    .join('');
-  return `<linearGradient id="${id}" gradientUnits="userSpaceOnUse" x1="${round(x1)}" y1="${round(y1)}" x2="${round(x2)}" y2="${round(y2)}">${stops}</linearGradient>`;
-}
+/** Where each palette colour sits along the word (0 = left edge, 1 = right edge). */
+const STOP_OFFSETS = [0.04, 0.3, 0.49, 0.66, 0.96];
+const gradientStops = rainbow.map((color, i) => ({ offset: STOP_OFFSETS[i], color }));
 
-/**
- * The stethoscope is drawn in its own scaled coordinate space (0–100 wide), so
- * it gets the matching slice of the rainbow as a local gradient.
- */
-function scopeSegmentGradient(id, gradStart, gradEnd, scopeLeft) {
-  const t0 = (scopeLeft - gradStart) / (gradEnd - gradStart);
-  const stops = [0, 0.5, 1]
-    .map((f) => `<stop offset="${f}" stop-color="${rainbowAt(t0 + (1 - t0) * f)}"/>`)
-    .join('');
-  return `<linearGradient id="${id}" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="${STETHOSCOPE_BOX.width}" y2="0">${stops}</linearGradient>`;
-}
+// ── The letter treatment ─────────────────────────────────────────────────────
+// A fine ink outline, a soft pillowy gloss inside the letter and a diffuse
+// shadow underneath. Every measure scales with the font size.
+// apps/web/src/components/brand/Wordmark.tsx renders the same layers.
 
-/** Text as outlined paths, so no font file ever ships to the browser. */
-function textPath(text, x, baseline, size) {
-  const p = font.getPath(text, x, baseline, size);
-  return { d: p.toPathData(2), box: p.getBoundingBox(), advance: font.getAdvanceWidth(text, size) };
-}
-
-/** Stethoscope "!" placed with its baseline at (x, baseline), `height` tall. */
-function stethoscope(x, baseline, height) {
-  const s = height / STETHOSCOPE_BOX.height;
-  const top = baseline - height;
+function treatment(size) {
   return {
-    width: STETHOSCOPE_BOX.width * s,
-    /** Render one layer. `grow` thickens every shape (used for outlines). */
-    layer(fill, grow = 0, dy = 0) {
-      const t = `translate(${round(x)} ${round(top + dy)}) scale(${round(s * 1000) / 1000})`;
-      const g = grow / s;
-      const body = stethoscopeShapes
-        .map((sh) =>
-          sh.kind === 'line'
-            ? `<path d="${sh.d}" fill="none" stroke="${fill}" stroke-width="${round(sh.w + 2 * g)}" stroke-linecap="round"/>`
-            : `<circle cx="${sh.cx}" cy="${sh.cy}" r="${round(sh.r + g)}" fill="${fill}"/>`,
-        )
-        .join('');
-      return `<g transform="${t}">${body}</g>`;
-    },
-    details(color) {
-      const t = `translate(${round(x)} ${round(top)}) scale(${round(s * 1000) / 1000})`;
-      return `<g transform="${t}">${stethoscopeDetails
-        .map((d) => `<circle cx="${d.cx}" cy="${d.cy}" r="${d.r}" fill="none" stroke="${color}" stroke-width="${d.w}"/>`)
-        .join('')}</g>`;
-    },
+    outline: round(size * 0.017), // visible ink outside the letter edge
+    shadow: { dy: round(size * 0.045), blur: round(size * 0.032), opacity: 0.2 },
+    gloss: { blur: round(size * 0.028), offset: round(size * 0.04), highlight: 0.62, shade: 0.2 },
   };
 }
 
+const stopsSvg = (stops) => stops.map((s) => `<stop offset="${s.offset}" stop-color="${s.color}"/>`).join('');
+
 /**
- * The bubbly "sticker" treatment: ink extrusion underneath, ink outline,
- * colour fill on top. `parts` is a list of text paths and stethoscopes.
+ * Filters shared by every rendering of the letters. The gloss lights the top
+ * inside edge of each letter and gently shades the bottom one, so the flat
+ * fill reads as a soft, rounded pillow.
  */
-function sticker({ texts, scopes, fill, scopeFill = fill, outline, depth, highlight }) {
-  const textLayer = (paint, grow, dy) =>
-    texts
-      .map(
-        (t) =>
-          `<path d="${t.d}" transform="translate(0 ${dy})" fill="${paint}"${
-            grow ? ` stroke="${paint}" stroke-width="${round(grow * 2)}" stroke-linejoin="round"` : ''
-          }/>`,
-      )
-      .join('');
-  const scopeLayer = (paint, grow, dy) => scopes.map((s) => s.layer(paint, grow, dy)).join('');
-  return [
-    depth ? textLayer(palette.ink, outline, depth) + scopeLayer(palette.ink, outline, depth) : '',
-    outline ? textLayer(palette.ink, outline, 0) + scopeLayer(palette.ink, outline, 0) : '',
-    textLayer(fill, 0, 0) + scopeLayer(scopeFill, 0, 0),
-    highlight ? scopes.map((s) => s.details(highlight)).join('') : '',
-  ].join('');
+function filterDefs({ shadow, gloss }) {
+  // a soft band just inside the letter edge: dy > 0 picks the top edge, dy < 0 the bottom
+  const rim = (name, dy, color, opacity) =>
+    `<feOffset in="soft" dy="${dy}" result="${name}-shifted"/>` +
+    `<feComposite in="SourceAlpha" in2="${name}-shifted" operator="out" result="${name}-band"/>` +
+    `<feFlood flood-color="${color}" flood-opacity="${opacity}"/>` +
+    `<feComposite in2="${name}-band" operator="in" result="${name}"/>`;
+  return (
+    `<filter id="shadow" x="-20%" y="-20%" width="140%" height="160%"><feGaussianBlur stdDeviation="${shadow.blur}"/></filter>` +
+    `<filter id="gloss" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">` +
+    `<feGaussianBlur in="SourceAlpha" stdDeviation="${gloss.blur}" result="soft"/>` +
+    rim('highlight', gloss.offset, '#fff', gloss.highlight) +
+    rim('shade', -gloss.offset, palette.ink, gloss.shade) +
+    `<feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="shade"/><feMergeNode in="highlight"/></feMerge>` +
+    `</filter>`
+  );
 }
 
-const svgDoc = (w, h, defs, body, bg = '') =>
-  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${round(w)} ${round(h)}" width="${round(w)}" height="${round(h)}"><defs>${defs}</defs>${bg}${body}</svg>`;
-
-// ── Wordmark: "iatrome" + stethoscope "!" ────────────────────────────────────
-
-function wordmark({ size = 200 } = {}) {
-  const outline = size * 0.045;
-  const depth = size * 0.05;
-  const pad = outline * 2;
-  const capHeight = (font.tables.os2.sCapHeight / font.unitsPerEm) * size;
-  const baseline = pad + capHeight * 1.08;
-  const word = textPath('iatrome', pad, baseline, size);
-  const scope = stethoscope(word.box.x2 + size * 0.06, baseline, capHeight * 1.08);
-  const right = word.box.x2 + size * 0.06 + scope.width;
-  const width = right + pad;
-  const height = baseline + depth + pad;
-  const defs = rainbowGradient('rainbow', pad, right) + scopeSegmentGradient('rainbow-scope', pad, right, right - scope.width);
-  const body = sticker({
-    texts: [word],
-    scopes: [scope],
-    fill: 'url(#rainbow)',
-    scopeFill: 'url(#rainbow-scope)',
-    outline,
-    depth,
-    highlight: palette.brightSnow,
-  });
-  return svgDoc(width, height, defs, body);
+/** Shadow, outline, then the glossy fill: one letter (or word) path, fully dressed. */
+function dressed(d, { outline, shadow }, fill) {
+  return (
+    `<path d="${d}" transform="translate(0 ${shadow.dy})" fill="${palette.ink}" opacity="${shadow.opacity}" filter="url(#shadow)"/>` +
+    `<path d="${d}" fill="${palette.ink}" stroke="${palette.ink}" stroke-width="${round(outline * 2)}" stroke-linejoin="round"/>` +
+    `<path d="${d}" fill="${fill}" filter="url(#gloss)"/>`
+  );
 }
 
-// ── App mark: "I" + stethoscope "!" on a squircle ────────────────────────────
+const svgDoc = (w, h, defs, body) =>
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${round(w)} ${round(h)}" width="${round(w)}" height="${round(h)}"><defs>${defs}</defs>${body}</svg>`;
 
-/** `minimal` drops the outline/extrusion so 16–32px favicons stay crisp. */
+// ── Wordmark: "iatrome" ──────────────────────────────────────────────────────
+
+/** Lays the word out so its ink (incl. outline and shadow) starts at the origin. */
+function wordLayout(size = WORD_SIZE) {
+  const t = treatment(size);
+  const pad = t.outline * 2;
+  const raw = font.getPath(WORD, 0, 0, size).getBoundingBox();
+  const x0 = pad - raw.x1;
+  const baseline = pad - raw.y1;
+  const box = font.getPath(WORD, x0, baseline, size).getBoundingBox();
+  return {
+    t,
+    x0,
+    baseline,
+    box,
+    width: box.x2 + pad,
+    height: box.y2 + Math.max(pad, t.shadow.dy + t.shadow.blur * 2),
+  };
+}
+
+function wordmark() {
+  const { t, x0, baseline, box, width, height } = wordLayout();
+  const d = font.getPath(WORD, x0, baseline, WORD_SIZE).toPathData(2);
+  const defs =
+    `<linearGradient id="fill" gradientUnits="userSpaceOnUse" x1="${round(box.x1)}" y1="0" x2="${round(box.x2)}" y2="0">${stopsSvg(gradientStops)}</linearGradient>` +
+    filterDefs(t);
+  return svgDoc(width, height, defs, dressed(d, t, 'url(#fill)'));
+}
+
+// ── App mark: the "i" on a palette squircle ──────────────────────────────────
+
+/** `minimal` keeps just the fill and outline so 16–32px favicons stay crisp. */
 function appMark({ size = 512, minimal = false, maskable = false } = {}) {
-  const inset = maskable ? size * 0.1 : 0; // keep art inside the maskable safe zone
-  const radius = maskable ? 0 : size * 0.23;
-  const glyphSize = (size - inset * 2) * 0.78;
-  const capHeight = (font.tables.os2.sCapHeight / font.unitsPerEm) * glyphSize;
-  const letter = textPath('I', 0, 0, glyphSize);
-  const scopeHeight = capHeight * 1.02;
-  const scopeWidth = (STETHOSCOPE_BOX.width / STETHOSCOPE_BOX.height) * scopeHeight;
-  const gap = glyphSize * 0.04;
-  const groupWidth = letter.box.x2 - letter.box.x1 + gap + scopeWidth;
-  const x0 = (size - groupWidth) / 2 - letter.box.x1;
-  const baseline = size / 2 + capHeight / 2 - (minimal ? 0 : size * 0.015);
-  const word = textPath('I', x0, baseline, glyphSize);
-  const scope = stethoscope(word.box.x2 + gap, baseline, scopeHeight);
+  const glyphHeight = size * (maskable ? 0.52 : 0.66); // maskable art stays in the safe zone
+  const raw = font.getPath('i', 0, 0, 1000).getBoundingBox();
+  const glyphSize = (glyphHeight / (raw.y2 - raw.y1)) * 1000;
+  const t = treatment(glyphSize);
+  const letterW = ((raw.x2 - raw.x1) / 1000) * glyphSize;
+  const x = (size - letterW) / 2 - (raw.x1 / 1000) * glyphSize;
+  // centre optically: nudge up a touch so the shadow doesn't weigh it down
+  const nudge = minimal ? 0 : t.shadow.dy * 0.4;
+  const baseline = (size - glyphHeight) / 2 - (raw.y1 / 1000) * glyphSize - nudge;
+  const d = font.getPath('i', x, baseline, glyphSize).toPathData(2);
 
   const defs =
     `<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${palette.skyBlue}"/><stop offset="1" stop-color="${palette.coolSky}"/></linearGradient>` +
-    `<linearGradient id="scope" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="${STETHOSCOPE_BOX.height}"><stop offset="0" stop-color="${palette.royalGold}"/><stop offset="1" stop-color="${palette.roseKiss}"/></linearGradient>`;
+    `<linearGradient id="fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0.1" stop-color="${palette.royalGold}"/><stop offset="1" stop-color="${palette.roseKiss}"/></linearGradient>` +
+    (minimal ? '' : filterDefs(t));
+  const radius = maskable ? 0 : size * 0.23;
   const bg = `<rect width="${size}" height="${size}" rx="${round(radius)}" fill="url(#bg)"/>`;
-  const outline = minimal ? 0 : size * 0.022;
-  const depth = minimal ? 0 : size * 0.028;
-  const body = [
-      depth ? `<path d="${word.d}" transform="translate(0 ${depth})" fill="${palette.ink}" stroke="${palette.ink}" stroke-width="${outline * 2}" stroke-linejoin="round"/>` + scope.layer(palette.ink, outline, depth) : '',
-      outline ? `<path d="${word.d}" fill="${palette.ink}" stroke="${palette.ink}" stroke-width="${outline * 2}" stroke-linejoin="round"/>` + scope.layer(palette.ink, outline) : '',
-      `<path d="${word.d}" fill="${palette.brightSnow}"/>`,
-      scope.layer('url(#scope)'),
-    minimal ? '' : scope.details(palette.brightSnow),
-  ].join('');
-  return svgDoc(size, size, defs, body, bg);
+  const letter = minimal
+    ? `<path d="${d}" fill="url(#fill)" stroke="${palette.ink}" stroke-width="${round(t.outline * 2)}" paint-order="stroke" stroke-linejoin="round"/>`
+    : dressed(d, t, 'url(#fill)');
+  return svgDoc(size, size, defs, bg + letter);
 }
 
 // ── Social card ──────────────────────────────────────────────────────────────
 
+/** Warm-white page surface with a soft, warm vignette. */
+function surfaceSvg(w, h) {
+  return svgDoc(
+    w,
+    h,
+    `<radialGradient id="vignette" cx="0.5" cy="0.45" r="0.75"><stop offset="0.45" stop-color="${surface.vignette}" stop-opacity="0"/><stop offset="1" stop-color="${surface.vignette}" stop-opacity="0.85"/></radialGradient>`,
+    `<rect width="${w}" height="${h}" fill="${surface.warmWhite}"/><rect width="${w}" height="${h}" fill="url(#vignette)"/>`,
+  );
+}
+
 async function socialCard(wordmarkSvg) {
   const W = 1200;
   const H = 630;
-  const blob = (cx, cy, r, c, o) => `<circle cx="${cx}" cy="${cy}" r="${r}" fill="${c}" opacity="${o}"/>`;
-  const bg = svgDoc(
-    W,
-    H,
-    '<filter id="b"><feGaussianBlur stdDeviation="60"/></filter>',
-    `<rect width="${W}" height="${H}" fill="${palette.brightSnow}"/><g filter="url(#b)">${[
-      blob(120, 80, 220, palette.skyBlue, 0.8),
-      blob(1100, 120, 200, palette.royalGold, 0.8),
-      blob(1050, 600, 240, palette.roseKiss, 0.55),
-      blob(160, 600, 200, palette.coolSky, 0.6),
-    ].join('')}</g>`,
-  );
-  const tagline = textPath('the party game that speaks fluent medicine', 0, 0, 44);
-  const tagX = (W - (tagline.box.x2 - tagline.box.x1)) / 2 - tagline.box.x1;
-  const taglineSvg = svgDoc(W, H, '', `<path d="${textPath('the party game that speaks fluent medicine', tagX, 520, 44).d}" fill="${palette.ink}"/>`);
-  const logo = await sharp(Buffer.from(wordmarkSvg)).resize({ width: 860 }).png().toBuffer();
-  const meta = await sharp(logo).metadata();
-  return sharp(Buffer.from(bg))
+  const logo = await sharp(Buffer.from(wordmarkSvg), { density: 300 }).resize({ width: 820 }).png().toBuffer();
+  const { width, height } = await sharp(logo).metadata();
+
+  const tagline = 'medical party game';
+  const tagOpts = { letterSpacing: 0.14 };
+  const tagSize = 30;
+  const tagBox = font.getPath(tagline, 0, 0, tagSize, tagOpts).getBoundingBox();
+  const tagX = (W - (tagBox.x2 - tagBox.x1)) / 2 - tagBox.x1;
+  const taglineSvg = svgDoc(W, H, '', `<path d="${font.getPath(tagline, tagX, 450, tagSize, tagOpts).toPathData(2)}" fill="${palette.ink}" opacity="0.62"/>`);
+
+  return sharp(Buffer.from(surfaceSvg(W, H)))
     .composite([
-      { input: logo, left: Math.round((W - meta.width) / 2), top: Math.round(250 - meta.height / 2) },
+      { input: logo, left: Math.round((W - width) / 2), top: Math.round(285 - height / 2) },
       { input: Buffer.from(taglineSvg), left: 0, top: 0 },
     ])
     .png()
@@ -194,62 +168,32 @@ async function socialCard(wordmarkSvg) {
 
 // ── Interactive wordmark data (per-letter paths for the React component) ─────
 
-function wordmarkGlyphs({ size = 200 } = {}) {
-  const outline = size * 0.045;
-  const depth = size * 0.05;
-  const pad = outline * 2;
-  const capHeight = (font.tables.os2.sCapHeight / font.unitsPerEm) * size;
-  const baseline = pad + capHeight * 1.08;
+function wordmarkGlyphs() {
+  const { t, x0, baseline, box, width, height } = wordLayout();
+  const bleed = t.outline * 1.5;
   const letters = [];
-  font.forEachGlyph('iatrome', pad, baseline, size, { kerning: true }, (glyph, gx, gy, gs) => {
+  font.forEachGlyph(WORD, x0, baseline, WORD_SIZE, {}, (glyph, gx, gy, gs) => {
     const p = glyph.getPath(gx, gy, gs);
-    const box = p.getBoundingBox();
-    const m = outline * 1.5; // room for the outline
+    const b = p.getBoundingBox();
     letters.push({
       char: String.fromCharCode(glyph.unicode),
       d: p.toPathData(2),
-      // the letter's own box (incl. outline + extrusion), in wordmark units
+      // the letter's own box (incl. outline and shadow), in wordmark units
       box: {
-        x: round(box.x1 - m),
-        y: round(box.y1 - m),
-        width: round(box.x2 - box.x1 + 2 * m),
-        height: round(box.y2 - box.y1 + 2 * m + depth),
+        x: round(b.x1 - bleed),
+        y: round(b.y1 - bleed),
+        width: round(b.x2 - b.x1 + bleed * 2),
+        height: round(b.y2 - b.y1 + bleed + t.shadow.dy + t.shadow.blur * 2),
       },
     });
   });
-  const word = textPath('iatrome', pad, baseline, size);
-  const scopeX = word.box.x2 + size * 0.06;
-  const scopeHeight = capHeight * 1.08;
-  const s = scopeHeight / STETHOSCOPE_BOX.height;
-  const right = scopeX + STETHOSCOPE_BOX.width * s;
   return {
-    width: round(right + pad),
-    height: round(baseline + depth + pad),
-    outline: round(outline),
-    depth: round(depth),
-    gradient: { x1: round(pad), x2: round(right) },
+    width: round(width),
+    height: round(height),
+    ...t,
+    gradient: { x1: round(box.x1), x2: round(box.x2), stops: gradientStops },
     letters,
-    stethoscope: {
-      x: round(scopeX),
-      y: round(baseline - scopeHeight),
-      scale: round(s * 1000) / 1000,
-      box: {
-        x: round(scopeX - outline * 1.5),
-        y: round(baseline - scopeHeight - outline * 1.5),
-        width: round(STETHOSCOPE_BOX.width * s + outline * 3),
-        height: round(scopeHeight + outline * 3 + depth),
-      },
-      shapes: stethoscopeShapes,
-      details: stethoscopeDetails,
-      // the stethoscope's slice of the rainbow, in its local 0–100 space
-      gradientStops: [0, 0.5, 1].map((f) => {
-        const t0 = (scopeX - pad) / (right - pad);
-        return { offset: f, color: rainbowAt(t0 + (1 - t0) * f) };
-      }),
-    },
-    rainbow,
     ink: palette.ink,
-    snow: palette.brightSnow,
   };
 }
 
@@ -258,15 +202,13 @@ function wordmarkGlyphs({ size = 200 } = {}) {
 const png = (svg, size) => sharp(Buffer.from(svg), { density: 300 }).resize(size, size).png().toBuffer();
 
 await fs.mkdir(webPublic, { recursive: true });
-await fs.mkdir(webApp, { recursive: true });
 
 const wordmarkSvg = wordmark();
 const markSvg = appMark();
-const markMinimalSvg = appMark({ size: 64, minimal: true });
 
 await fs.writeFile(path.join(webPublic, 'wordmark.svg'), wordmarkSvg);
 await fs.writeFile(path.join(webPublic, 'mark.svg'), markSvg);
-await fs.writeFile(path.join(webApp, 'icon.svg'), markMinimalSvg);
+await fs.writeFile(path.join(webApp, 'icon.svg'), appMark({ size: 64, minimal: true }));
 await fs.writeFile(path.join(webApp, 'apple-icon.png'), await png(appMark({ size: 180 }), 180));
 await fs.writeFile(path.join(webPublic, 'icon-192.png'), await png(appMark({ size: 192 }), 192));
 await fs.writeFile(path.join(webPublic, 'icon-512.png'), await png(markSvg, 512));
@@ -276,11 +218,8 @@ await fs.writeFile(
   await pngToIco(await Promise.all([16, 32, 48].map((s) => png(appMark({ size: s, minimal: s < 48 }), s)))),
 );
 await fs.writeFile(path.join(webApp, 'opengraph-image.png'), await socialCard(wordmarkSvg));
-
-const webBrandModule = path.join(root, 'apps/web/src/components/brand/wordmark-glyphs.ts');
-await fs.mkdir(path.dirname(webBrandModule), { recursive: true });
 await fs.writeFile(
-  webBrandModule,
+  glyphModule,
   `// Generated by packages/brand (npm run brand). Do not edit by hand.\n` +
     `export const wordmarkGlyphs = ${JSON.stringify(wordmarkGlyphs(), null, 2)} as const;\n`,
 );
