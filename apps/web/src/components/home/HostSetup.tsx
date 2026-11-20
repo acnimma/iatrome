@@ -6,7 +6,6 @@ import { useEffect, useState } from 'react';
 import { type CreateRoomResponse, ROOM, type RoomSettings, defaultSettings } from '@iatrome/game/client';
 import { realtimeHttpUrl } from '@/realtime/config';
 import { rememberHost, rememberPassword } from '@/realtime/identity';
-import { Backdrop } from '@/components/ui/Backdrop';
 import { BackButton } from '@/components/ui/BackButton';
 import { Button } from '@/components/ui/Button';
 import { TextInput } from '@/components/ui/Field';
@@ -51,7 +50,6 @@ export function HostSetup() {
 
   return (
     <main className={styles.page}>
-      <Backdrop />
       <motion.div className={styles.card} initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}>
         <div className={styles.top}>
           <BackButton href="/" />

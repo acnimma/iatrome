@@ -39,6 +39,7 @@
 }
 
 .host {
+  text-align: center;
   font-weight: 600;
   color: var(--ink-soft);
   animation: settle 0.9s var(--ease-out) 1s both;
@@ -49,6 +50,7 @@
   font-weight: 800;
   text-decoration-thickness: 2px;
   text-underline-offset: 4px;
+  white-space: nowrap;
 }
 
 .footer {

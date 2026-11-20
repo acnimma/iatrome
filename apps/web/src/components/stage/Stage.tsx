@@ -5,7 +5,6 @@ import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useRef, useState } from 'react';
 import { REVEAL, type RoomView } from '@iatrome/game/client';
 import { RoomContext, useRoomConnection, useSnapshot } from '@/realtime/use-room';
-import { Backdrop } from '@/components/ui/Backdrop';
 import { Button } from '@/components/ui/Button';
 import { Beep } from '@/components/room/Beep';
 import { ReactionLayer, RoomCode } from '@/components/room/RoomBits';
@@ -49,7 +48,6 @@ export function Stage({ code }: { code: string }) {
   return (
     <RoomContext.Provider value={client}>
       <div className={styles.stage} onPointerDown={unlockAudio}>
-        <Backdrop />
         <StageScreen view={snap.view} prefs={prefs} />
         <ReactionLayer view={snap.view} />
         <HostControls view={snap.view} prefs={prefs} onPrefs={updatePrefs} />
@@ -145,7 +143,6 @@ function StageProblem({ code, error }: { code: string; error: string | null }) {
   const gone = error === 'no-room';
   return (
     <div className={styles.problem}>
-      <Backdrop />
       <h1>{gone ? 'This room has closed' : 'This screen isn’t the host'}</h1>
       <p>
         {gone
@@ -173,7 +170,6 @@ function StageProblem({ code, error }: { code: string; error: string | null }) {
 function Loading() {
   return (
     <div className={styles.problem}>
-      <Backdrop />
       <motion.div animate={{ scale: [1, 1.08, 1] }} transition={{ repeat: Infinity, duration: 1.2 }} className={styles.loading}>
         Connecting…
       </motion.div>

@@ -6,7 +6,6 @@ import { useEffect, useState } from 'react';
 import type { RoomView } from '@iatrome/game/client';
 import { RoomContext, useRoomConnection, useSnapshot } from '@/realtime/use-room';
 import type { Snapshot } from '@/realtime/room-client';
-import { Backdrop } from '@/components/ui/Backdrop';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { haptic } from '@/lib/haptics';
@@ -32,7 +31,6 @@ export function Controller({ code }: { code: string }) {
   return (
     <RoomContext.Provider value={client}>
       <div className={styles.phone}>
-        <Backdrop />
         <PhoneScreen code={code} snap={snap} />
         <FeedbackToast feedback={snap.feedback} />
       </div>
