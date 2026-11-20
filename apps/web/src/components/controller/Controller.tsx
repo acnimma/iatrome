@@ -16,7 +16,8 @@ import { SurviveController } from '@/games/survive/SurviveController';
 import { PoisonController } from '@/games/poison/PoisonController';
 import { DidacticsController } from '@/games/didactics/DidacticsController';
 import { JoinForm } from './JoinForm';
-import { PhoneMessage } from './Phone';
+import { BeepBanner, PhoneMessage } from './Phone';
+import { HostMenu, useIsHost } from './PhoneHost';
 import { ControllerLobby, ControllerResults } from './ControllerLobby';
 import styles from './Controller.module.css';
 
@@ -49,6 +50,7 @@ function PhoneScreen({ code, snap }: { code: string; snap: Snapshot }) {
 function InRoom({ view, reconnecting }: { view: RoomView; reconnecting: boolean }) {
   const me = view.people.find((p) => p.id === view.you?.id);
   const watching = view.stage === 'playing' && !view.you?.inGame;
+  const isHost = useIsHost(view.code);
   return (
     <>
       <header className={styles.header}>
@@ -56,8 +58,10 @@ function InRoom({ view, reconnecting }: { view: RoomView; reconnecting: boolean 
         <span className={styles.me}>{me?.name}</span>
         {watching && <span className={styles.tag}>Next game</span>}
         <span className={styles.code}>{view.code}</span>
+        {isHost && !view.screen && <HostMenu view={view} />}
       </header>
       {reconnecting && <div className={styles.reconnecting}>Reconnecting…</div>}
+      {!view.screen && view.stage !== 'lobby' && <BeepBanner line={view.hostLine} />}
       <main className={styles.body}>
         <AnimatePresence mode="wait">
           <motion.div
@@ -72,7 +76,7 @@ function InRoom({ view, reconnecting }: { view: RoomView; reconnecting: boolean 
             {view.stage === 'playing' &&
               (watching ? (
                 <PhoneMessage icon="hourglass" title="You’re in for the next game">
-                  A game is already going. Watch the big screen, you’ll be dealt in when it ends.
+                  A game is already going. You’ll be dealt in when it ends.{view.screen ? ' Enjoy the big screen until then.' : ''}
                 </PhoneMessage>
               ) : (
                 <ControllerGame view={view} />
@@ -144,7 +148,7 @@ function NoRoom({ code }: { code: string }) {
   return (
     <div className={styles.center}>
       <h1 className={styles.bigTitle}>No room called {code}</h1>
-      <p className={styles.soft}>Double-check the code on the big screen. Rooms close after 30 minutes with nobody in them.</p>
+      <p className={styles.soft}>Double-check the code. Rooms close after 30 minutes with nobody in them.</p>
       <Link href="/">
         <Button tone="rose" size="lg">
           Try another code

@@ -338,3 +338,24 @@
     grid-template-columns: 1fr;
   }
 }
+
+.phoneStandings {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.phoneStandings li {
+  display: grid;
+  grid-template-columns: 24px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border: var(--outline);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--tone) 30%, var(--card));
+  font-weight: 800;
+}

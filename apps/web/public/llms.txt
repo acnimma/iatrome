@@ -1,3 +1,38 @@
 # iatrome
 
-> iatrome is a free, browser-based multiplayer party game for people in healthcare — med, nursing, PA, dental and pharmacy students and clinicians. Everyone plays from their own phone around a shared screen (or a video call), trading quick-witted answers, doodles and trivia that poke fun at medicine itself, never at patients.
+> iatrome (pronounced EYE-uh-trohm, /ˈaɪ.ə.troʊm/) is a free multiplayer party game about bodies, doctors, hospitals and the long, strange history of medicine. Everyone plays on their phone in a browser. A shared screen (a TV, a laptop, a video call) makes it better, but it's optional. No app, no account, no download. It makes fun of medicine, never of patients.
+
+The name comes from the Greek *iatros*, physician. The humor is dry: questionable historical cures, bureaucracy, bodily betrayals, and the gap between what doctors say and what they mean.
+
+## How it works
+
+- A host opens [iatrome.com/host](https://iatrome.com/host), picks a game, and chooses where everyone is looking: a big screen, or just phones.
+- The room gets a 6-letter code, a QR code and a share link. Players join at [iatrome.com](https://iatrome.com) or go straight to `iatrome.com/CODE`.
+- Everyone answers, draws and votes on their phone. The show is hosted by Beep, a deadpan pager with a face.
+- With a big screen, it carries the prompts, reveals and scoreboard. Without one, every phone shows them instead, and the host's phone gets the host controls. If a laptop joins or drops out mid-game, the phones adjust on their own.
+- Rooms can have an optional password. Hosts can lock the room, kick or ban players, and hide any answer from the screen.
+- Free to play. No sign-up. Rooms disappear on their own after 30 minutes of nobody being in them.
+
+## Games
+
+- **Grand Rounds** (3–8 players): anonymous head-to-head comedy. Two players answer the same prompt, everyone else votes, authors are revealed after. Round two adds drawing duels; the finale has everyone list three answers, revealed one line at a time.
+- **Didactics Mode** (4–40 players): team trivia for big groups and family gatherings. Random teams, everyone answers on their phone, and a team scores by the share of its members who got it right. Late arrivals join the smallest team.
+- **Sketch** (3–10 players): one person draws a word live on their phone, everyone else races to guess it.
+- **Survive the Shift** (2–20 players): elimination trivia. Everyone gets two coffees. Wrong answers cost one. Run out and you clock out.
+- **Pick Your Poison** (3–20 players): would you rather, plus guessing what the room picked. Whoever ends up in the minority has to defend themselves to the room.
+
+## Modes
+
+- **Normal**: for anyone. No medical knowledge required; grandparents welcome.
+- **Pro**: for people who work or train in healthcare. More jargon, more in-jokes, fewer explanations.
+
+## Pages
+
+- [Home](https://iatrome.com): enter a room code to join.
+- [Host a game](https://iatrome.com/host): pick a game and open a room, with or without a big screen.
+- `https://iatrome.com/CODE`: short link that drops a player straight into room CODE.
+
+## Good to know
+
+- Works in modern mobile browsers (iOS Safari, Android Chrome) and on desktop. For remote play, share the big screen on any video call.
+- All prompts, trivia and drawing words are original. Trivia answers are fact-checked against published sources. It is a game, not medical advice. If something hurts, see an actual clinician, not a pager with opinions.

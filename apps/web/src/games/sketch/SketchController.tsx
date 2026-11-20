@@ -28,7 +28,7 @@ export function SketchController({ view, game }: { view: RoomView; game: SketchV
     case 'intro':
       return (
         <PhoneMessage icon="pencil" title="Sketch">
-          When it’s your turn, draw. Otherwise, guess fast!
+          Draw when it’s your turn. Otherwise, guess fast.
         </PhoneMessage>
       );
     case 'choose':
@@ -61,6 +61,9 @@ export function SketchController({ view, game }: { view: RoomView; game: SketchV
           <PhoneMessage icon={mine ? 'target' : drawing ? 'palette' : 'melt'} title={`It was “${game.term}”`}>
             {mine ? `+${mine.points} points` : drawing ? `+${game.drawerPoints} for your art` : 'You’ll get the next one.'}
           </PhoneMessage>
+          {!view.screen && game.solved.length > 0 && (
+            <p className={styles.solvedCount}>Got it: {game.solved.map((s) => nameOf(people, s.playerId)).join(', ')}</p>
+          )}
           <ReactionBar />
         </PhoneStack>
       );

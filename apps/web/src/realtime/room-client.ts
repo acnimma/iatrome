@@ -140,7 +140,12 @@ export class RoomClient {
     }
     switch (msg.t) {
       case 'welcome':
-        if (msg.you) rememberSession(this.code, msg.you.token);
+        if (msg.you) {
+          rememberSession(this.code, msg.you.token);
+          // This phone created the room (phones-only): unlock host controls on it.
+          const host = hostToken(this.code);
+          if (host) this.send({ t: 'claim-host', token: host });
+        }
         this.update({ status: 'ready', role: msg.role, error: null });
         return;
       case 'state':

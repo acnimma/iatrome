@@ -130,3 +130,33 @@ test('moderation: password, kick and ban', async ({ browser }) => {
   await phone.getByRole('button', { name: 'Join game' }).click();
   await expect(phone.getByText('This device was banned from the room.')).toBeVisible();
 });
+
+test('phones only: host from a phone, play with no big screen', async ({ browser }) => {
+  const host = await (await browser.newContext(devices['iPhone 13'])).newPage();
+  const errors: string[] = [];
+  host.on('pageerror', (e) => errors.push(e.message));
+  await host.goto('/host');
+  await expect(host.getByRole('radio', { name: /Just phones/ })).toHaveAttribute('aria-checked', 'true');
+  await host.getByRole('radio', { name: /Survive the Shift/ }).click();
+  await host.getByRole('button', { name: 'Create room' }).click();
+  await host.waitForURL(/\/play\//);
+  const code = host.url().split('/').pop()!;
+  await host.getByLabel('Your name').fill('Ana');
+  await host.getByRole('button', { name: 'Join game' }).click();
+  await expect(host.getByText('Friends join with')).toBeVisible();
+
+  const friend = await joinPhone(browser, code, 'Ben', 1);
+  // The friend has no host controls; the creator does.
+  await expect(friend.getByRole('button', { name: 'Host controls' })).toHaveCount(0);
+  await host.getByRole('button', { name: 'Host controls' }).click();
+  await host.getByRole('switch', { name: /Lock room/ }).click();
+  await host.keyboard.press('Escape');
+
+  await host.getByRole('button', { name: /Start/ }).click();
+  await expect(host.getByText(/Question 1/)).toBeVisible();
+  await host.locator('[data-choice]').first().click();
+  await friend.locator('[data-choice]').nth(1).click();
+  // No big screen, so the phones show the answer and the fact themselves.
+  await expect(host.locator('[class*=fact]')).toBeVisible({ timeout: 30_000 });
+  expect(errors).toEqual([]);
+});

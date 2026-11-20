@@ -48,11 +48,13 @@ export function GamePicker({ value, onChange, compact }: { value: GameId; onChan
               <Icon name={GAME_ICONS[id]} size={compact ? 30 : 38} />
             </span>
             <span className={styles.gameText}>
-              <span className={styles.gameTitle}>{info.title}</span>
+              <span className={styles.gameHead}>
+                <span className={styles.gameTitle}>{info.title}</span>
+                <span className={styles.meta}>
+                  {info.min}–{info.max}
+                </span>
+              </span>
               <span className={styles.tagline}>{info.tagline}</span>
-            </span>
-            <span className={styles.meta}>
-              {info.min}–{info.max}
             </span>
           </motion.button>
         );
@@ -67,6 +69,34 @@ const MODES: { id: ContentMode; title: string; blurb: string }[] = [
 ];
 
 /** The only options: who it's for, and how much time. */
+const SCREENS = [
+  { id: 'big', title: 'Big screen', blurb: 'A TV, laptop or video call' },
+  { id: 'phones', title: 'Just phones', blurb: 'Everyone plays on their own' },
+] as const;
+
+export type ScreenChoice = (typeof SCREENS)[number]['id'];
+
+/** Where everyone will be looking. Phones-only rooms skip the stage entirely. */
+export function ScreenPicker({ value, onChange }: { value: ScreenChoice; onChange: (v: ScreenChoice) => void }) {
+  return (
+    <div className={styles.modes} role="radiogroup" aria-label="Where everyone looks">
+      {SCREENS.map((s) => (
+        <button
+          key={s.id}
+          type="button"
+          role="radio"
+          aria-checked={value === s.id}
+          className={`${styles.mode} ${value === s.id ? styles.modePicked : ''}`}
+          onClick={() => onChange(s.id)}
+        >
+          <span className={styles.modeTitle}>{s.title}</span>
+          <span className={styles.modeBlurb}>{s.blurb}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
 export function RoomOptions({ settings, onChange }: { settings: RoomSettings; onChange: (patch: Partial<RoomSettings>) => void }) {
   return (
     <div className={styles.options}>

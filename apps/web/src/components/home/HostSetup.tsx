@@ -2,7 +2,7 @@
 
 import { motion } from 'motion/react';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { type CreateRoomResponse, ROOM, type RoomSettings, defaultSettings } from '@iatrome/game/client';
 import { realtimeHttpUrl } from '@/realtime/config';
 import { rememberHost, rememberPassword } from '@/realtime/identity';
@@ -10,7 +10,7 @@ import { Backdrop } from '@/components/ui/Backdrop';
 import { BackButton } from '@/components/ui/BackButton';
 import { Button } from '@/components/ui/Button';
 import { TextInput } from '@/components/ui/Field';
-import { GamePicker, RoomOptions } from '@/components/room/GameSettings';
+import { GamePicker, RoomOptions, type ScreenChoice, ScreenPicker } from '@/components/room/GameSettings';
 import { unlockAudio } from '@/lib/sound';
 import styles from './HostSetup.module.css';
 
@@ -19,6 +19,11 @@ export function HostSetup() {
   const router = useRouter();
   const [settings, setSettings] = useState<RoomSettings>(defaultSettings);
   const [password, setPassword] = useState('');
+  const [screen, setScreen] = useState<ScreenChoice>('big');
+  // Hosting from a phone almost always means there's no TV involved.
+  useEffect(() => {
+    if (window.matchMedia('(pointer: coarse) and (max-width: 700px)').matches) setScreen('phones');
+  }, []);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -37,7 +42,7 @@ export function HostSetup() {
       const { code, hostToken } = (await res.json()) as CreateRoomResponse;
       rememberHost(code, hostToken);
       rememberPassword(code, password.trim());
-      router.push(`/host/${code}`);
+      router.push(screen === 'phones' ? `/play/${code}` : `/host/${code}`);
     } catch (e) {
       setError(e instanceof TypeError ? 'Can’t reach the game server. Check your connection and try again.' : (e as Error).message);
       setBusy(false);
@@ -54,8 +59,14 @@ export function HostSetup() {
         </div>
         <div>
           <h1 className={styles.title}>Host a game</h1>
-          <p className={styles.sub}>Open this on the screen everyone can see: a TV, a laptop or a video call. Everyone plays on their phone.</p>
+          <p className={styles.sub}>Everyone plays on their phone. A shared screen makes it better, but it’s optional.</p>
         </div>
+
+        <section className={styles.section}>
+          <h2 className={styles.sectionTitle}>Where’s everyone looking</h2>
+          <ScreenPicker value={screen} onChange={setScreen} />
+          {screen === 'big' && <p className={styles.hint}>Open this page on the screen everyone can see.</p>}
+        </section>
 
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>Pick a game</h2>

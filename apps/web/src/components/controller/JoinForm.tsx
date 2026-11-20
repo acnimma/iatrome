@@ -5,7 +5,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ROOM } from '@iatrome/game/client';
 import { useRoom } from '@/realtime/use-room';
 import type { Snapshot } from '@/realtime/room-client';
-import { lastName, rememberName } from '@/realtime/identity';
+import { lastName, rememberName, roomPassword } from '@/realtime/identity';
 import { BackButton } from '@/components/ui/BackButton';
 import { Button } from '@/components/ui/Button';
 import { TextInput } from '@/components/ui/Field';
@@ -25,7 +25,8 @@ const ERRORS: Record<string, string> = {
 export function JoinForm({ code, snap }: { code: string; snap: Snapshot }) {
   const room = useRoom();
   const [name, setName] = useState('');
-  const [password, setPassword] = useState('');
+  // The host's own phone already knows the password it set.
+  const [password, setPassword] = useState(() => (typeof window === 'undefined' ? '' : (roomPassword(code) ?? '')));
   const [needsPassword, setNeedsPassword] = useState(false);
   const nameRef = useRef<HTMLInputElement>(null);
   const joining = snap.status === 'joining';

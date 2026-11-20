@@ -1,7 +1,9 @@
 'use client';
 
-import { motion } from 'motion/react';
-import type { Phase } from '@iatrome/game/client';
+import { AnimatePresence, motion } from 'motion/react';
+import { useEffect, useState } from 'react';
+import type { HostLine, Phase } from '@iatrome/game/client';
+import { BeepFace } from '@/components/room/Beep';
 import { Icon } from '@/components/icons/Icon';
 import type { IconName } from '@/components/icons/icons';
 import { TimerRing } from '@/components/ui/TimerRing';
@@ -70,5 +72,53 @@ export function Choice({
     >
       {children}
     </motion.button>
+  );
+}
+
+/** Beep's latest line, for rooms with no big screen. Slides in, says its piece, leaves. */
+export function BeepBanner({ line }: { line: HostLine | null }) {
+  const [shown, setShown] = useState<HostLine | null>(null);
+  useEffect(() => {
+    if (!line || Date.now() - line.at > 8_000) return;
+    setShown(line);
+    const t = setTimeout(() => setShown(null), 6_500);
+    return () => clearTimeout(t);
+  }, [line]);
+  return (
+    <AnimatePresence initial={false}>
+      {shown && (
+        <motion.div
+          key={shown.at}
+          className={styles.beep}
+          role="status"
+          initial={{ height: 0, opacity: 0 }}
+          animate={{ height: 'auto', opacity: 1 }}
+          exit={{ height: 0, opacity: 0 }}
+          transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+        >
+          <div className={styles.beepInner}>
+            <span className={styles.beepFace}>
+              <BeepFace talking />
+            </span>
+            <p>{shown.text}</p>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
+/** The right answer and its fun fact, for trivia reveals with no big screen. */
+export function AnswerCard({ letter, text, fact }: { letter?: string; text?: string; fact?: string | null }) {
+  return (
+    <motion.div className={styles.answer} initial={{ y: 16, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }}>
+      {text && (
+        <p className={styles.answerText}>
+          {letter && <span className={styles.answerLetter}>{letter}</span>}
+          {text}
+        </p>
+      )}
+      {fact && <p className={styles.fact}>{fact}</p>}
+    </motion.div>
   );
 }

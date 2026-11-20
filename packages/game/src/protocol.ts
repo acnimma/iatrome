@@ -64,6 +64,7 @@ const hostCommand = z.discriminatedUnion('type', [
 
 export const clientMessage = z.discriminatedUnion('t', [
   z.object({ t: z.literal('host'), token: z.string().max(64) }),
+  z.object({ t: z.literal('claim-host'), token: z.string().max(64) }),
   z.object({
     t: z.literal('join'),
     deviceId: z.string().min(8).max(64),
@@ -79,6 +80,8 @@ export const clientMessage = z.discriminatedUnion('t', [
 
 export type ClientMessage =
   | { t: 'host'; token: string }
+  /** A player whose device created the room: lets their phone run host controls. */
+  | { t: 'claim-host'; token: string }
   | { t: 'join'; deviceId: string; name: string; password?: string }
   | { t: 'resume'; token: string }
   | { t: 'ping'; c: number }

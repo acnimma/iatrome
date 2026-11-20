@@ -349,3 +349,49 @@
     gap: 36px;
   }
 }
+
+/* ── Phone reveal (no big screen) ─────────────────── */
+.phoneHeading {
+  font-size: 1.5rem;
+  font-weight: 900;
+  text-align: center;
+}
+
+.reveal {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px;
+  border: var(--outline);
+  border-radius: var(--radius-md);
+  background: var(--card);
+  box-shadow: var(--shadow-sm);
+}
+
+.revealWon {
+  background: color-mix(in srgb, var(--royal-gold) 28%, var(--card));
+  box-shadow: 0 0 0 3px var(--royal-gold), var(--shadow-sm);
+}
+
+.revealBody {
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+.revealMeta {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+
+.revealMeta span:first-child {
+  flex: 1;
+}
+
+.revealMeta strong {
+  color: var(--ink);
+  font-size: 1rem;
+}

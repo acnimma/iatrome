@@ -6,15 +6,17 @@ import { useRoom } from '@/realtime/use-room';
 import { Button } from '@/components/ui/Button';
 import { AnswerBox } from '@/components/ui/Field';
 import { Choice, PhoneMessage, PhonePrompt, PhoneStack } from '@/components/controller/Phone';
-import { ReactionBar } from '@/components/room/RoomBits';
+import { ReactionBar, nameOf, usePeople } from '@/components/room/RoomBits';
 import { haptic } from '@/lib/haptics';
 import styles from './Poison.module.css';
 
 export function PoisonController({ view, game }: { view: RoomView; game: PoisonView }) {
   const room = useRoom();
+  const people = usePeople(view);
   const me = view.you?.id ?? '';
   const playing = view.you?.inGame;
   const phase = game.phase.name;
+  const defender = nameOf(people, game.defender);
 
   if (phase === 'intro')
     return (
@@ -24,7 +26,14 @@ export function PoisonController({ view, game }: { view: RoomView; game: PoisonV
     );
 
   if (phase === 'choose') {
-    if (!playing) return <PhoneMessage icon="popcorn" title="Watch the big screen" />;
+    if (!playing)
+      return view.screen ? (
+        <PhoneMessage icon="popcorn" title="Watch the big screen" />
+      ) : (
+        <PhoneMessage icon="game-poison" title="Would you rather…">
+          {game.a}. Or. {game.b}.
+        </PhoneMessage>
+      );
     const mine = game.mine ?? { side: null, predict: null };
     const options = [
       { side: 'a' as const, text: game.a, tone: 'rose' as const },
@@ -62,7 +71,16 @@ export function PoisonController({ view, game }: { view: RoomView; game: PoisonV
   if (phase === 'defend' || phase === 'defence')
     return (
       <PhoneStack>
-        <PhoneMessage icon="mic" title={phase === 'defend' ? 'The minority speaks…' : 'Judge them'} />
+        {phase === 'defence' && !view.screen && game.defence ? (
+          <div className={styles.phoneDefence}>
+            <span className={styles.phoneDefenceLabel}>{defender}, in their defence</span>
+            <blockquote>“{game.defence}”</blockquote>
+          </div>
+        ) : (
+          <PhoneMessage icon="mic" title={phase === 'defend' ? `${defender} is in the minority` : 'Judge them'}>
+            {phase === 'defend' ? 'They’re writing their defence.' : ''}
+          </PhoneMessage>
+        )}
         <ReactionBar />
       </PhoneStack>
     );
@@ -74,6 +92,7 @@ export function PoisonController({ view, game }: { view: RoomView; game: PoisonV
       <PhoneMessage icon={earned ? 'brain' : game.majority === 'tie' ? 'scales' : 'see-no-evil'} title={earned ? 'You read the room!' : game.majority === 'tie' ? 'Dead even' : 'Misread the room'}>
         {earned ? `+${earned} points` : ''}
       </PhoneMessage>
+      {!view.screen && game.counts && <Split a={game.a ?? ''} b={game.b ?? ''} counts={game.counts} />}
       <ReactionBar />
     </PhoneStack>
   );
@@ -99,5 +118,21 @@ function Defend({ view, game }: { view: RoomView; game: PoisonView }) {
         Rest my case
       </Button>
     </form>
+  );
+}
+
+/** How the room split, for phones with no big screen to look at. */
+function Split({ a, b, counts }: { a: string; b: string; counts: { a: number; b: number } }) {
+  const total = Math.max(1, counts.a + counts.b);
+  return (
+    <div className={styles.phoneSplit}>
+      {(['a', 'b'] as const).map((side) => (
+        <div key={side} className={`${styles.phoneSplitRow} ${side === 'a' ? styles.a : styles.b}`}>
+          <span className={styles.phoneSplitFill} style={{ width: `${(counts[side] / total) * 100}%` }} />
+          <span className={styles.phoneSplitText}>{side === 'a' ? a : b}</span>
+          <strong>{Math.round((counts[side] / total) * 100)}%</strong>
+        </div>
+      ))}
+    </div>
   );
 }

@@ -12,10 +12,12 @@ import { rememberSession } from '@/realtime/identity';
 import { Button } from '@/components/ui/Button';
 import { Confetti } from '@/components/ui/Confetti';
 import { Beep } from '@/components/room/Beep';
-import { ReactionBar } from '@/components/room/RoomBits';
+import { JoinQr, ReactionBar, RoomCode, Scoreboard } from '@/components/room/RoomBits';
+import { SettingsDialog } from '@/components/room/SettingsDialog';
 import { InviteButton } from '@/components/room/InviteButton';
 import { haptic } from '@/lib/haptics';
 import { PhoneMessage } from './Phone';
+import { useIsHost } from './PhoneHost';
 import styles from './ControllerLobby.module.css';
 
 /** Leave the room for good: frees your name and seat, forgets the session, goes home. */
@@ -37,6 +39,8 @@ function LeaveButton({ code }: { code: string }) {
 export function ControllerLobby({ view }: { view: RoomView }) {
   const room = useRoom();
   const [picking, setPicking] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const isHost = useIsHost(view.code);
   const me = view.people.find((p) => p.id === view.you?.id);
   const info = gameInfo[view.settings.game];
   const players = view.people.filter((p) => p.role === 'player' && p.connected);
@@ -60,7 +64,7 @@ export function ControllerLobby({ view }: { view: RoomView }) {
         transition={{ type: 'spring', stiffness: 400, damping: 14 }}
         aria-label="Change your avatar"
       >
-        <Avatar avatar={me.avatar} size={112} />
+        <Avatar avatar={me.avatar} size={view.screen ? 112 : 84} />
         <span className={styles.tapHint}>{picking ? 'Pick one' : 'Tap to change'}</span>
       </motion.button>
 
@@ -85,10 +89,19 @@ export function ControllerLobby({ view }: { view: RoomView }) {
             </button>
           ))}
         </div>
-      ) : (
+      ) : (view.screen || !isHost || me.role === 'audience') && (
         <PhoneMessage title={me.role === 'audience' ? 'You’re up next game' : 'You’re in!'}>
-          {me.role === 'audience' ? 'This game is full. You’ll be dealt into the next one.' : `Next up: ${info.title}. Eyes on the big screen.`}
+          {me.role === 'audience' ? 'This game is full. You’ll be dealt into the next one.' : `Next up: ${info.title}.${view.screen ? ' Eyes on the big screen.' : ''}`}
         </PhoneMessage>
+      )}
+
+      {isHost && !view.screen && (
+        <>
+          <Button tone="card" onClick={() => setEditing(true)} aria-haspopup="dialog">
+            <Icon name="settings" size={22} /> {info.title} · {view.settings.mode === 'pro' ? 'Pro' : 'Normal'}
+          </Button>
+          <SettingsDialog open={editing} settings={view.settings} onChange={(settings) => room.host({ type: 'settings', settings })} onClose={() => setEditing(false)} />
+        </>
       )}
 
       <div className={styles.others}>
@@ -99,7 +112,7 @@ export function ControllerLobby({ view }: { view: RoomView }) {
           ))}
       </div>
 
-      <InviteButton code={view.code} />
+      {view.screen ? <InviteButton code={view.code} /> : <JoinCard code={view.code} />}
 
       {isVip && (
         <div className={styles.vip}>
@@ -108,6 +121,29 @@ export function ControllerLobby({ view }: { view: RoomView }) {
           </Button>
           <p className={styles.vipNote}>You’re the VIP, so you can start the game.</p>
         </div>
+      )}
+    </div>
+  );
+}
+
+/** No big screen to show the code, so the phones do: tiles, a QR to scan, and a share link. */
+function JoinCard({ code }: { code: string }) {
+  const [qr, setQr] = useState(false);
+  const url = typeof window === 'undefined' ? '' : `${window.location.origin}/${code}`;
+  return (
+    <div className={styles.joinCard}>
+      <span className={styles.joinLabel}>Friends join with</span>
+      <RoomCode code={code} size="md" />
+      <div className={styles.joinActions}>
+        <InviteButton code={code} />
+        <Button tone="card" onClick={() => setQr((q) => !q)} aria-expanded={qr}>
+          {qr ? 'Hide QR' : 'Show QR'}
+        </Button>
+      </div>
+      {qr && (
+        <motion.div className={styles.joinQr} initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}>
+          <JoinQr url={url} />
+        </motion.div>
       )}
     </div>
   );
@@ -129,7 +165,9 @@ export function ControllerResults({ view, result }: { view: RoomView; result: Ga
       <PhoneMessage icon={mine?.rank === 1 ? 'trophy' : mine && mine.rank <= 3 ? 'party' : 'stethoscope'} title={mine ? `You came ${ordinal(mine.rank)}!` : 'Game over!'}>
         {mine ? `${mine.score.toLocaleString()} points` : 'Thanks for watching.'}
       </PhoneMessage>
-      <Beep line={view.hostLine} size={64} compact />
+      {!view.screen && result.teams && <TeamTable teams={result.teams} you={view.you?.id} />}
+      {!view.screen && <Scoreboard view={view} scores={Object.fromEntries(result.standings.map((s) => [s.playerId, s.score]))} limit={8} />}
+      {view.screen && <Beep line={view.hostLine} size={64} compact />}
       <ReactionBar />
       {isVip && (
         <Button tone="rose" size="lg" block onClick={() => room.command({ type: 'start' })}>
@@ -137,5 +175,19 @@ export function ControllerResults({ view, result }: { view: RoomView; result: Ga
         </Button>
       )}
     </div>
+  );
+}
+
+function TeamTable({ teams, you }: { teams: NonNullable<GameResult['teams']>; you?: string }) {
+  return (
+    <ol className={styles.teams}>
+      {teams.map((t) => (
+        <li key={t.name} className={t.members.includes(you ?? '') ? styles.myTeamRow : undefined}>
+          <span>{t.rank}</span>
+          <strong>{t.name}</strong>
+          <span>{t.score.toLocaleString()}</span>
+        </li>
+      ))}
+    </ol>
   );
 }

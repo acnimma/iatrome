@@ -17,9 +17,9 @@ export default function HomePage() {
       <p className={styles.tagline}>The party game that speaks fluent medicine.</p>
       <JoinCodeForm />
       <p className={styles.host}>
-        Got the big screen? <Link href="/host">Host a game →</Link>
+        Somebody has to be in charge. <Link href="/host">Host a game →</Link>
       </p>
-      <footer className={styles.footer}>Free to play · Phones are the controllers · Punches at medicine, never at patients</footer>
+      <footer className={styles.footer}>Free to play · Just phones, or phones and a big screen · Punches at medicine, never at patients</footer>
     </main>
   );
 }

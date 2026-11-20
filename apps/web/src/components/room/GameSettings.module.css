@@ -46,20 +46,25 @@
   min-width: 0;
 }
 
+.gameHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
 .gameTitle {
   font-size: 1.05rem;
   font-weight: 900;
   letter-spacing: -0.01em;
 }
 
-/* Taglines are written to fit one line; truncate rather than wrap if a screen is tiny. */
+/* Taglines are written to fit one line. */
 .tagline {
   overflow: hidden;
   font-size: 0.88rem;
   font-weight: 600;
   color: var(--ink-soft);
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .meta {
@@ -121,4 +126,30 @@
   font-size: 0.85rem;
   font-weight: 600;
   color: var(--ink-soft);
+}
+
+@media (max-width: 480px) {
+  .tagline {
+    font-size: 0.82rem;
+  }
+}
+
+@media (max-width: 400px) {
+  .game {
+    gap: 10px;
+    padding: 10px 12px 10px 10px;
+  }
+
+  .icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
+  }
+}
+
+/* The tiniest phones: the player range is in the lobby anyway. */
+@media (max-width: 360px) {
+  .meta {
+    display: none;
+  }
 }

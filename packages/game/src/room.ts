@@ -421,9 +421,11 @@ export interface RoomView {
   game: GameView | null;
   result: GameResult | null;
   serverNow: number;
+  /** A big screen (the stage) is connected. Without one, phones show everything themselves. */
+  screen: boolean;
 }
 
-export function viewFor(room: RoomState, viewer: Viewer, now: number): RoomView {
+export function viewFor(room: RoomState, viewer: Viewer, now: number, screen = false): RoomView {
   const ctx = context(room, now);
   const inGame = (id: string) => Boolean(room.game?.playerIds.includes(id));
   const me = viewer.kind === 'stage' ? null : room.people.find((p) => p.id === viewer.id);
@@ -450,6 +452,7 @@ export function viewFor(room: RoomState, viewer: Viewer, now: number): RoomView 
     game: room.game ? games[room.game.game].view(room.game, ctx, viewer) : null,
     result: room.result,
     serverNow: now,
+    screen,
   };
 }
 

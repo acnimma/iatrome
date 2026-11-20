@@ -9,7 +9,7 @@ import { siteDisplayHost } from '@/realtime/config';
 import { Avatar } from '@/components/ui/Avatar';
 import { BackButton } from '@/components/ui/BackButton';
 import { Button } from '@/components/ui/Button';
-import { GamePicker, RoomOptions } from '@/components/room/GameSettings';
+import { SettingsDialog } from '@/components/room/SettingsDialog';
 import { InviteButton } from '@/components/room/InviteButton';
 import { JoinQr, Pill, RoomCode } from '@/components/room/RoomBits';
 import { unlockAudio } from '@/lib/sound';
@@ -71,26 +71,27 @@ export function StageLobby({ view, hideCode }: { view: RoomView; hideCode: boole
             <span className={styles.eyebrow}>Playing</span>
             <h2 className={styles.gameTitle}>{info.title}</h2>
             <p className={styles.tagline}>{info.tagline}</p>
+            <div className={styles.chips}>
+              <Pill tone={view.settings.mode === 'pro' ? 'rose' : 'sky'}>{view.settings.mode === 'pro' ? 'Pro' : 'Normal'}</Pill>
+              {view.settings.extendedTimers && <Pill>More time</Pill>}
+            </div>
           </div>
-          <Button tone="card" onClick={() => setEditing((e) => !e)} aria-expanded={editing}>
-            {editing ? 'Done' : 'Change'}
+          <Button tone="card" onClick={() => setEditing(true)} aria-haspopup="dialog">
+            <Icon name="settings" size={22} /> Change game
           </Button>
         </div>
-
-        <AnimatePresence initial={false}>
-          {editing && (
-            <motion.div className={styles.settings} initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }}>
-              <GamePicker compact value={view.settings.game} onChange={(game) => room.host({ type: 'settings', settings: { game } })} />
-              <RoomOptions settings={view.settings} onChange={(settings) => room.host({ type: 'settings', settings })} />
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <SettingsDialog
+          open={editing}
+          settings={view.settings}
+          onChange={(settings) => room.host({ type: 'settings', settings })}
+          onClose={() => setEditing(false)}
+        />
 
         <div className={styles.playersHead}>
           <span className={styles.eyebrow}>
             Players {players.length}/{info.max}
           </span>
-          {audience.length > 0 && <Pill>+{audience.length} watching</Pill>}
+          {audience.length > 0 && <Pill>+{audience.length} next game</Pill>}
         </div>
 
         <ul className={styles.players} style={{ '--bubble': `${bubble}px` } as React.CSSProperties}>

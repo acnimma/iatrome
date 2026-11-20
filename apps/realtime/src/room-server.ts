@@ -25,7 +25,8 @@ import { hashPassword, safeEqual } from './crypto';
 import type { Env } from './env';
 
 /** What we remember about each socket (survives hibernation; max 2 KB). */
-type ConnState = { kind: 'pending'; ip: string } | { kind: 'host' } | { kind: 'person'; id: string };
+/** `host` on a person: the phone that created a phones-only room, allowed to run host commands. */
+type ConnState = { kind: 'pending'; ip: string } | { kind: 'host' } | { kind: 'person'; id: string; host?: boolean };
 
 interface Auth {
   hostToken: string;
@@ -127,6 +128,9 @@ export class Room extends Server<Env> {
         return;
       case 'host':
         return this.authenticateHost(conn, msg.token);
+      case 'claim-host':
+        if (state?.kind === 'person' && this.auth && safeEqual(msg.token, this.auth.hostToken)) conn.setState({ ...state, host: true });
+        return;
       case 'resume':
         return this.resume(conn, msg.token, now);
       case 'join':
@@ -140,7 +144,7 @@ export class Room extends Server<Env> {
         return;
       }
       case 'host-cmd': {
-        if (state?.kind !== 'host') return;
+        if (state?.kind !== 'host' && !(state?.kind === 'person' && state.host)) return;
         const before = new Set(this.room.people.map((p) => p.id));
         const error = hostCommand(this.room, msg.cmd, now);
         if (error) this.send(conn, { t: 'feedback', error });
@@ -169,6 +173,8 @@ export class Room extends Server<Env> {
   override async onClose(conn: Connection<ConnState>) {
     this.sentDrawings.delete(conn.id);
     const state = conn.state;
+    // The big screen left: phones take over showing everything.
+    if (this.room && state?.kind === 'host') return this.commit(Date.now(), conn.id);
     if (!this.room || state?.kind !== 'person') return;
     const stillHere = [...this.getConnections<ConnState>()].some((c) => c.id !== conn.id && c.state?.kind === 'person' && c.state.id === state.id);
     if (stillHere) return;
@@ -200,7 +206,8 @@ export class Room extends Server<Env> {
     }
     conn.setState({ kind: 'host' });
     this.send(conn, { t: 'welcome', role: 'host', you: null });
-    this.sendView(conn, Date.now());
+    // Everyone's phone learns a big screen is here.
+    await this.commit(Date.now());
   }
 
   private async resume(conn: Connection<ConnState>, token: string, now: number) {
@@ -241,8 +248,8 @@ export class Room extends Server<Env> {
 
   // ── State sync ────────────────────────────────────────────────────────────
 
-  /** Persist, schedule the next wake-up and send everyone their view. */
-  private async commit(now: number) {
+  /** Persist, schedule the next wake-up and send everyone their view. `leaving` is a socket on its way out. */
+  private async commit(now: number, leaving?: string) {
     if (!this.room) return;
     await this.ctx.storage.put('room', stripDrawings(this.room));
     await this.flushDrawings();
@@ -254,7 +261,8 @@ export class Room extends Server<Env> {
     if (next.length) await this.ctx.storage.setAlarm(Math.min(...next));
     else await this.ctx.storage.deleteAlarm();
 
-    for (const conn of this.getConnections<ConnState>()) this.sendView(conn, now);
+    const screen = [...this.getConnections<ConnState>()].some((c) => c.id !== leaving && c.state?.kind === 'host');
+    for (const conn of this.getConnections<ConnState>()) if (conn.id !== leaving) this.sendView(conn, now, screen);
   }
 
   private viewerOf(conn: Connection<ConnState>): Viewer | null {
@@ -267,10 +275,10 @@ export class Room extends Server<Env> {
     return null;
   }
 
-  private sendView(conn: Connection<ConnState>, now: number) {
+  private sendView(conn: Connection<ConnState>, now: number, screen: boolean) {
     const viewer = this.viewerOf(conn);
     if (!viewer || !this.room) return;
-    const view = viewFor(this.room, viewer, now);
+    const view = viewFor(this.room, viewer, now, screen);
     const sent = this.sentDrawings.get(conn.id) ?? new Set<string>();
     for (const id of referencedDrawings(view)) {
       const drawing = this.room.drawings[id];

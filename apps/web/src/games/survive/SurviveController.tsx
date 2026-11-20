@@ -2,7 +2,7 @@
 
 import type { RoomView, SurviveView } from '@iatrome/game/client';
 import { useRoom } from '@/realtime/use-room';
-import { Choice, PhoneMessage, PhonePrompt, PhoneStack } from '@/components/controller/Phone';
+import { AnswerCard, Choice, PhoneMessage, PhonePrompt, PhoneStack } from '@/components/controller/Phone';
 import { ReactionBar } from '@/components/room/RoomBits';
 import { haptic } from '@/lib/haptics';
 import { LETTERS, OPTION_TONES } from './SurviveStage';
@@ -22,7 +22,19 @@ export function SurviveController({ view, game }: { view: RoomView; game: Surviv
     );
 
   if (game.phase.name === 'question') {
-    if (!playing) return <PhoneMessage icon="popcorn" title="Watch the big screen" />;
+    if (!playing && view.screen) return <PhoneMessage icon="popcorn" title="Watch the big screen" />;
+    if (!playing)
+      return (
+        <PhoneStack>
+          <PhonePrompt label={`Question ${game.number}`} prompt={game.question ?? ''} phase={game.phase} pausedAt={view.pausedAt} />
+          {game.options.map((option, i) => (
+            <Choice key={i} tone={OPTION_TONES[i]} disabled>
+              <span className={styles.phoneLetter}>{LETTERS[i]}</span>
+              <span>{option}</span>
+            </Choice>
+          ))}
+        </PhoneStack>
+      );
     return (
       <PhoneStack>
         <PhonePrompt label={out ? 'Ghost mode · half points' : `Question ${game.number}`} prompt={game.question ?? ''} phase={game.phase} pausedAt={view.pausedAt} />
@@ -68,6 +80,7 @@ export function SurviveController({ view, game }: { view: RoomView; game: Surviv
           {lostCoffee ? `${game.coffees[me]} left.` : game.last?.mercy ? 'Mercy rule: nobody loses a coffee.' : out ? 'Ghosts don’t lose coffee.' : ''}
         </PhoneMessage>
       )}
+      {!view.screen && <AnswerCard letter={LETTERS[game.answer ?? 0]} text={game.options[game.answer ?? 0]} fact={game.fact} />}
       <ReactionBar />
     </PhoneStack>
   );

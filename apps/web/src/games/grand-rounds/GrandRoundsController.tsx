@@ -9,7 +9,7 @@ import { AnswerBox, TextInput } from '@/components/ui/Field';
 import { DrawPad } from '@/components/drawing/DrawPad';
 import { DrawingView } from '@/components/drawing/DrawingView';
 import { Choice, PhoneMessage, PhonePrompt, PhoneStack } from '@/components/controller/Phone';
-import { ReactionBar } from '@/components/room/RoomBits';
+import { ReactionBar, Scoreboard, nameOf, usePeople } from '@/components/room/RoomBits';
 import { haptic } from '@/lib/haptics';
 import { play } from '@/lib/sound';
 import { ROUND_NAMES } from './rounds';
@@ -22,7 +22,7 @@ export function GrandRoundsController({ view, game }: { view: RoomView; game: Gr
     case 'intro':
       return (
         <PhoneMessage icon={(['speech', 'pencil', 'clipboard'] as const)[game.round]} title={`Round ${game.round + 1}: ${ROUND_NAMES[game.round]}`}>
-          {game.multiplier > 1 ? `${game.multiplier}× points. ` : ''}Eyes on the big screen.
+          {[game.multiplier > 1 && `${game.multiplier}× points.`, view.screen && 'Eyes on the big screen.'].filter(Boolean).join(' ')}
         </PhoneMessage>
       );
     case 'write':
@@ -36,9 +36,16 @@ export function GrandRoundsController({ view, game }: { view: RoomView; game: Gr
       const rank = ranked.findIndex(([id]) => id === view.you?.id) + 1;
       return (
         <PhoneStack>
-          <PhoneMessage icon="list" title={rank ? `You’re #${rank}` : 'Scores are up'}>
-            {rank ? `${(game.scores[view.you!.id] ?? 0).toLocaleString()} points so far.` : 'Check the big screen.'}
-          </PhoneMessage>
+          {view.screen ? (
+            <PhoneMessage icon="list" title={rank ? `You’re #${rank}` : 'Scores are up'}>
+              {rank ? `${(game.scores[view.you!.id] ?? 0).toLocaleString()} points so far.` : 'Check the big screen.'}
+            </PhoneMessage>
+          ) : (
+            <>
+              <h2 className={styles.phoneHeading}>{rank ? `You’re #${rank}` : 'The scores so far'}</h2>
+              <Scoreboard view={view} scores={game.scores} limit={8} />
+            </>
+          )}
           <ReactionBar />
         </PhoneStack>
       );
@@ -244,13 +251,20 @@ function MatchupPhone({ view, game, matchup }: { view: RoomView; game: GrandRoun
   }
 
   if (phase === 'vote') {
-    if (matchup.yours !== null)
+    if (matchup.yours !== null || !matchup.canVote) {
+      const title = matchup.yours !== null ? 'Votes are coming in…' : 'Players are voting';
+      if (view.screen) return <PhoneMessage icon={matchup.yours !== null ? 'sweat' : 'popcorn'} title={title}>{matchup.yours !== null ? 'Keep a straight face.' : ''}</PhoneMessage>;
       return (
-        <PhoneMessage icon="sweat" title="Votes are coming in…">
-          Keep a straight face.
-        </PhoneMessage>
+        <PhoneStack>
+          <PhonePrompt label={title} prompt={matchup.prompt} phase={game.phase} pausedAt={view.pausedAt} />
+          {([0, 1] as const).map((side) => (
+            <Choice key={side} tone={side === 0 ? 'rose' : 'sky'} disabled>
+              <VoteContent matchup={matchup} side={side} />
+            </Choice>
+          ))}
+        </PhoneStack>
       );
-    if (!matchup.canVote) return <PhoneMessage icon="popcorn" title="Watch the big screen" />;
+    }
     return (
       <PhoneStack>
         <PhonePrompt label="Vote for the best" prompt={matchup.prompt} phase={game.phase} pausedAt={view.pausedAt} />
@@ -277,6 +291,7 @@ function MatchupPhone({ view, game, matchup }: { view: RoomView; game: GrandRoun
 
   // Results
   const r = matchup.result;
+  if (!view.screen && r) return <MatchupReveal view={view} matchup={matchup} />;
   if (matchup.yours !== null && r) {
     const mine = r.points[matchup.yours];
     const won = r.winner === matchup.yours;
@@ -292,6 +307,45 @@ function MatchupPhone({ view, game, matchup }: { view: RoomView; game: GrandRoun
   return (
     <PhoneStack>
       <PhoneMessage icon="drum" title="The results are in" />
+      <ReactionBar />
+    </PhoneStack>
+  );
+}
+
+/** Results on the phone when there's no big screen: both answers, authors, the split and the points. */
+function MatchupReveal({ view, matchup }: { view: RoomView; matchup: MatchupView }) {
+  const people = usePeople(view);
+  const r = matchup.result!;
+  const mine = matchup.yours;
+  const headline =
+    r.outcome === 'duplicate' ? 'Duplicate order' : r.consensus ? 'Unanimous' : r.winner === null ? 'Dead even' : mine === null ? 'The results are in' : r.winner === mine ? 'You won the room' : 'Not this time';
+  return (
+    <PhoneStack>
+      <PhonePrompt label={headline} prompt={matchup.prompt} />
+      {([0, 1] as const).map((side, i) => {
+        const entry = matchup.entries[side];
+        const won = r.winner === side;
+        return (
+          <motion.div
+            key={side}
+            className={`${styles.reveal} ${won ? styles.revealWon : ''}`}
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ delay: i * 0.25, type: 'spring', stiffness: 320, damping: 26 }}
+          >
+            <div className={styles.revealBody}>{entry.hidden ? <em>Hidden by the host</em> : <VoteContent matchup={matchup} side={side} />}</div>
+            <div className={styles.revealMeta}>
+              <span>
+                {nameOf(people, entry.author)}
+                {mine === side ? ' (you)' : ''}
+                {entry.curbside ? ' · curbside' : ''}
+              </span>
+              <span>{Math.round(r.shares[side] * 100)}%</span>
+              <strong>+{r.points[side].toLocaleString()}</strong>
+            </div>
+          </motion.div>
+        );
+      })}
       <ReactionBar />
     </PhoneStack>
   );

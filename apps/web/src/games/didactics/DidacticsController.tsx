@@ -3,7 +3,7 @@
 import type { DidacticsView, RoomView } from '@iatrome/game/client';
 import { useRoom } from '@/realtime/use-room';
 import { Avatar } from '@/components/ui/Avatar';
-import { Choice, PhoneMessage, PhonePrompt, PhoneStack } from '@/components/controller/Phone';
+import { AnswerCard, Choice, PhoneMessage, PhonePrompt, PhoneStack } from '@/components/controller/Phone';
 import { ReactionBar, usePeople } from '@/components/room/RoomBits';
 import { haptic } from '@/lib/haptics';
 import { LETTERS, teamTone } from './teams';
@@ -76,6 +76,7 @@ export function DidacticsController({ view, game }: { view: RoomView; game: Dida
             The answer was {LETTERS[game.answer ?? 0]}: {game.options[game.answer ?? 0]}
             {result ? `. Your team: ${result.right} of ${result.of} right, +${result.points}.` : '.'}
           </PhoneMessage>
+          {!view.screen && game.fact && <AnswerCard fact={game.fact} />}
           <ReactionBar />
         </PhoneStack>
       );
@@ -86,9 +87,20 @@ export function DidacticsController({ view, game }: { view: RoomView; game: Dida
       return (
         <PhoneStack>
           {badge}
-          <PhoneMessage icon={place === 1 ? 'trophy' : 'list'} title={place === 1 ? 'Your team is winning!' : place ? `Your team is #${place}` : 'Scores are up'}>
-            {team ? `${team.score.toLocaleString()} points so far.` : 'Check the big screen.'}
+          <PhoneMessage icon={place === 1 ? 'trophy' : 'list'} title={place === 1 ? 'Your team is winning' : place ? `Your team is #${place}` : 'Scores are up'}>
+            {team ? `${team.score.toLocaleString()} points so far.` : view.screen ? 'Check the big screen.' : ''}
           </PhoneMessage>
+          {!view.screen && (
+            <ol className={styles.phoneStandings}>
+              {ranked.map((t, i) => (
+                <li key={t.id} style={{ '--tone': teamTone(t.color) } as React.CSSProperties}>
+                  <span>{i + 1}</span>
+                  <strong>{t.name}</strong>
+                  <span>{t.score.toLocaleString()}</span>
+                </li>
+              ))}
+            </ol>
+          )}
           <ReactionBar />
         </PhoneStack>
       );
