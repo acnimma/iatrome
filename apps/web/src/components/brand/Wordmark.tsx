@@ -27,12 +27,12 @@ const { pivot, radius, tilt } = W.tablet;
 const pct = (n: number) => `${(n * 100).toFixed(2)}%`;
 /** The hinge the tablet's halves open around (the bottom of its score line), relative to its box. */
 const hinge = `${pct((pivot.x - tabletBox.x) / tabletBox.width)} ${pct((pivot.y - tabletBox.y) / tabletBox.height)}`;
-/** The palette flash inside the crack: a sliver standing on the hinge, along the score line. */
+/** The double helix inside the crack, standing on the hinge along the score line. */
 const flashPlacement = {
-  left: pct((pivot.x - radius * 0.16 - tabletBox.x) / tabletBox.width),
-  top: pct((pivot.y - radius * 1.7 - tabletBox.y) / tabletBox.height),
-  width: pct((radius * 0.32) / tabletBox.width),
-  height: pct((radius * 1.7) / tabletBox.height),
+  left: pct((pivot.x - radius * 0.5 - tabletBox.x) / tabletBox.width),
+  top: pct((pivot.y - radius * 3.4 - tabletBox.y) / tabletBox.height),
+  width: pct((radius * 1.0) / tabletBox.width),
+  height: pct((radius * 3.4) / tabletBox.height),
   rotate: `${tilt}deg`,
 };
 
@@ -290,7 +290,6 @@ export function Wordmark({ className }: { className?: string }) {
           <span ref={(el) => void (glyphs.current[i] = el)} className={styles.glyph} style={{ transformOrigin: seat(box) }}>
             {i === W.tablet.index ? (
               <>
-                <span ref={flashRef} className={styles.flash} style={flashPlacement} />
                 {parts.map((d, k) => (
                   <span key={d} ref={(el) => void (halves.current[k] = el)} className={styles.half} style={{ transformOrigin: hinge }}>
                     <svg viewBox={viewBox(box)} aria-hidden>
@@ -298,6 +297,12 @@ export function Wordmark({ className }: { className?: string }) {
                     </svg>
                   </span>
                 ))}
+                {/* clipped at the hinge, so the helix rises out of the crack and sinks back in */}
+                <span className={styles.flashClip} style={flashPlacement}>
+                  <span ref={flashRef} className={styles.flash}>
+                    <Helix />
+                  </span>
+                </span>
               </>
             ) : (
               <svg viewBox={viewBox(box)} aria-hidden>
@@ -308,5 +313,42 @@ export function Wordmark({ className }: { className?: string }) {
         </span>
       ))}
     </span>
+  );
+}
+
+/** The surprise inside the tablet: a double helix in the palette, spiralling. */
+function Helix() {
+  return (
+    <svg viewBox="0 0 40 100" className={styles.helix} aria-hidden>
+      <g className={styles.spiral}>
+          <line x1="26.4" y1="-61.7" x2="13.6" y2="-61.7" stroke="var(--royal-gold)" strokeWidth="5" strokeLinecap="round" />
+          <line x1="33.8" y1="-51.7" x2="6.2" y2="-51.7" stroke="var(--sky-blue)" strokeWidth="5" strokeLinecap="round" />
+          <line x1="29.9" y1="-41.7" x2="10.1" y2="-41.7" stroke="var(--bright-snow)" strokeWidth="5" strokeLinecap="round" />
+          <line x1="17.8" y1="-31.7" x2="22.2" y2="-31.7" stroke="var(--rose-kiss)" strokeWidth="5" strokeLinecap="round" />
+          <line x1="7.5" y1="-21.7" x2="32.5" y2="-21.7" stroke="var(--cool-sky)" strokeWidth="5" strokeLinecap="round" />
+          <line x1="7.5" y1="-11.7" x2="32.5" y2="-11.7" stroke="var(--royal-gold)" strokeWidth="5" strokeLinecap="round" />
+          <line x1="17.8" y1="-1.7" x2="22.2" y2="-1.7" stroke="var(--sky-blue)" strokeWidth="5" strokeLinecap="round" />
+          <line x1="29.9" y1="8.3" x2="10.1" y2="8.3" stroke="var(--bright-snow)" strokeWidth="5" strokeLinecap="round" />
+          <line x1="33.8" y1="18.3" x2="6.2" y2="18.3" stroke="var(--rose-kiss)" strokeWidth="5" strokeLinecap="round" />
+          <line x1="26.4" y1="28.3" x2="13.6" y2="28.3" stroke="var(--cool-sky)" strokeWidth="5" strokeLinecap="round" />
+          <line x1="13.6" y1="38.3" x2="26.4" y2="38.3" stroke="var(--royal-gold)" strokeWidth="5" strokeLinecap="round" />
+          <line x1="6.2" y1="48.3" x2="33.8" y2="48.3" stroke="var(--sky-blue)" strokeWidth="5" strokeLinecap="round" />
+          <line x1="10.1" y1="58.3" x2="29.9" y2="58.3" stroke="var(--bright-snow)" strokeWidth="5" strokeLinecap="round" />
+          <line x1="22.2" y1="68.3" x2="17.8" y2="68.3" stroke="var(--rose-kiss)" strokeWidth="5" strokeLinecap="round" />
+          <line x1="32.5" y1="78.3" x2="7.5" y2="78.3" stroke="var(--cool-sky)" strokeWidth="5" strokeLinecap="round" />
+          <line x1="32.5" y1="88.3" x2="7.5" y2="88.3" stroke="var(--royal-gold)" strokeWidth="5" strokeLinecap="round" />
+          <line x1="22.2" y1="98.3" x2="17.8" y2="98.3" stroke="var(--sky-blue)" strokeWidth="5" strokeLinecap="round" />
+          <line x1="10.1" y1="108.3" x2="29.9" y2="108.3" stroke="var(--bright-snow)" strokeWidth="5" strokeLinecap="round" />
+          <line x1="6.2" y1="118.3" x2="33.8" y2="118.3" stroke="var(--rose-kiss)" strokeWidth="5" strokeLinecap="round" />
+          <line x1="13.6" y1="128.3" x2="26.4" y2="128.3" stroke="var(--cool-sky)" strokeWidth="5" strokeLinecap="round" />
+          <line x1="26.4" y1="138.3" x2="13.6" y2="138.3" stroke="var(--royal-gold)" strokeWidth="5" strokeLinecap="round" />
+          <line x1="33.8" y1="148.3" x2="6.2" y2="148.3" stroke="var(--sky-blue)" strokeWidth="5" strokeLinecap="round" />
+          <line x1="29.9" y1="158.3" x2="10.1" y2="158.3" stroke="var(--bright-snow)" strokeWidth="5" strokeLinecap="round" />
+        <path d="M20.0 -66.7L23.3 -64.2L26.4 -61.7L29.1 -59.2L31.3 -56.7L32.9 -54.2L33.8 -51.7L34.0 -49.2L33.3 -46.7L31.9 -44.2L29.9 -41.7L27.3 -39.2L24.3 -36.7L21.1 -34.2L17.8 -31.7L14.6 -29.2L11.8 -26.7L9.4 -24.2L7.5 -21.7L6.4 -19.2L6.0 -16.7L6.4 -14.2L7.5 -11.7L9.4 -9.2L11.8 -6.7L14.6 -4.2L17.8 -1.7L21.1 0.8L24.3 3.3L27.3 5.8L29.9 8.3L31.9 10.8L33.3 13.3L34.0 15.8L33.8 18.3L32.9 20.8L31.3 23.3L29.1 25.8L26.4 28.3L23.3 30.8L20.0 33.3L16.7 35.8L13.6 38.3L10.9 40.8L8.7 43.3L7.1 45.8L6.2 48.3L6.0 50.8L6.7 53.3L8.1 55.8L10.1 58.3L12.7 60.8L15.7 63.3L18.9 65.8L22.2 68.3L25.4 70.8L28.2 73.3L30.6 75.8L32.5 78.3L33.6 80.8L34.0 83.3L33.6 85.8L32.5 88.3L30.6 90.8L28.2 93.3L25.4 95.8L22.2 98.3L18.9 100.8L15.7 103.3L12.7 105.8L10.1 108.3L8.1 110.8L6.7 113.3L6.0 115.8L6.2 118.3L7.1 120.8L8.7 123.3L10.9 125.8L13.6 128.3L16.7 130.8L20.0 133.3L23.3 135.8L26.4 138.3L29.1 140.8L31.3 143.3L32.9 145.8L33.8 148.3L34.0 150.8L33.3 153.3L31.9 155.8L29.9 158.3L27.3 160.8L24.3 163.3L21.1 165.8" fill="none" stroke="#1f2a4d" strokeWidth="8" strokeLinecap="round" />
+        <path d="M20.0 -66.7L23.3 -64.2L26.4 -61.7L29.1 -59.2L31.3 -56.7L32.9 -54.2L33.8 -51.7L34.0 -49.2L33.3 -46.7L31.9 -44.2L29.9 -41.7L27.3 -39.2L24.3 -36.7L21.1 -34.2L17.8 -31.7L14.6 -29.2L11.8 -26.7L9.4 -24.2L7.5 -21.7L6.4 -19.2L6.0 -16.7L6.4 -14.2L7.5 -11.7L9.4 -9.2L11.8 -6.7L14.6 -4.2L17.8 -1.7L21.1 0.8L24.3 3.3L27.3 5.8L29.9 8.3L31.9 10.8L33.3 13.3L34.0 15.8L33.8 18.3L32.9 20.8L31.3 23.3L29.1 25.8L26.4 28.3L23.3 30.8L20.0 33.3L16.7 35.8L13.6 38.3L10.9 40.8L8.7 43.3L7.1 45.8L6.2 48.3L6.0 50.8L6.7 53.3L8.1 55.8L10.1 58.3L12.7 60.8L15.7 63.3L18.9 65.8L22.2 68.3L25.4 70.8L28.2 73.3L30.6 75.8L32.5 78.3L33.6 80.8L34.0 83.3L33.6 85.8L32.5 88.3L30.6 90.8L28.2 93.3L25.4 95.8L22.2 98.3L18.9 100.8L15.7 103.3L12.7 105.8L10.1 108.3L8.1 110.8L6.7 113.3L6.0 115.8L6.2 118.3L7.1 120.8L8.7 123.3L10.9 125.8L13.6 128.3L16.7 130.8L20.0 133.3L23.3 135.8L26.4 138.3L29.1 140.8L31.3 143.3L32.9 145.8L33.8 148.3L34.0 150.8L33.3 153.3L31.9 155.8L29.9 158.3L27.3 160.8L24.3 163.3L21.1 165.8" fill="none" stroke="var(--rose-kiss)" strokeWidth="5" strokeLinecap="round" />
+        <path d="M20.0 -66.7L16.7 -64.2L13.6 -61.7L10.9 -59.2L8.7 -56.7L7.1 -54.2L6.2 -51.7L6.0 -49.2L6.7 -46.7L8.1 -44.2L10.1 -41.7L12.7 -39.2L15.7 -36.7L18.9 -34.2L22.2 -31.7L25.4 -29.2L28.2 -26.7L30.6 -24.2L32.5 -21.7L33.6 -19.2L34.0 -16.7L33.6 -14.2L32.5 -11.7L30.6 -9.2L28.2 -6.7L25.4 -4.2L22.2 -1.7L18.9 0.8L15.7 3.3L12.7 5.8L10.1 8.3L8.1 10.8L6.7 13.3L6.0 15.8L6.2 18.3L7.1 20.8L8.7 23.3L10.9 25.8L13.6 28.3L16.7 30.8L20.0 33.3L23.3 35.8L26.4 38.3L29.1 40.8L31.3 43.3L32.9 45.8L33.8 48.3L34.0 50.8L33.3 53.3L31.9 55.8L29.9 58.3L27.3 60.8L24.3 63.3L21.1 65.8L17.8 68.3L14.6 70.8L11.8 73.3L9.4 75.8L7.5 78.3L6.4 80.8L6.0 83.3L6.4 85.8L7.5 88.3L9.4 90.8L11.8 93.3L14.6 95.8L17.8 98.3L21.1 100.8L24.3 103.3L27.3 105.8L29.9 108.3L31.9 110.8L33.3 113.3L34.0 115.8L33.8 118.3L32.9 120.8L31.3 123.3L29.1 125.8L26.4 128.3L23.3 130.8L20.0 133.3L16.7 135.8L13.6 138.3L10.9 140.8L8.7 143.3L7.1 145.8L6.2 148.3L6.0 150.8L6.7 153.3L8.1 155.8L10.1 158.3L12.7 160.8L15.7 163.3L18.9 165.8" fill="none" stroke="#1f2a4d" strokeWidth="8" strokeLinecap="round" />
+        <path d="M20.0 -66.7L16.7 -64.2L13.6 -61.7L10.9 -59.2L8.7 -56.7L7.1 -54.2L6.2 -51.7L6.0 -49.2L6.7 -46.7L8.1 -44.2L10.1 -41.7L12.7 -39.2L15.7 -36.7L18.9 -34.2L22.2 -31.7L25.4 -29.2L28.2 -26.7L30.6 -24.2L32.5 -21.7L33.6 -19.2L34.0 -16.7L33.6 -14.2L32.5 -11.7L30.6 -9.2L28.2 -6.7L25.4 -4.2L22.2 -1.7L18.9 0.8L15.7 3.3L12.7 5.8L10.1 8.3L8.1 10.8L6.7 13.3L6.0 15.8L6.2 18.3L7.1 20.8L8.7 23.3L10.9 25.8L13.6 28.3L16.7 30.8L20.0 33.3L23.3 35.8L26.4 38.3L29.1 40.8L31.3 43.3L32.9 45.8L33.8 48.3L34.0 50.8L33.3 53.3L31.9 55.8L29.9 58.3L27.3 60.8L24.3 63.3L21.1 65.8L17.8 68.3L14.6 70.8L11.8 73.3L9.4 75.8L7.5 78.3L6.4 80.8L6.0 83.3L6.4 85.8L7.5 88.3L9.4 90.8L11.8 93.3L14.6 95.8L17.8 98.3L21.1 100.8L24.3 103.3L27.3 105.8L29.9 108.3L31.9 110.8L33.3 113.3L34.0 115.8L33.8 118.3L32.9 120.8L31.3 123.3L29.1 125.8L26.4 128.3L23.3 130.8L20.0 133.3L16.7 135.8L13.6 138.3L10.9 140.8L8.7 143.3L7.1 145.8L6.2 148.3L6.0 150.8L6.7 153.3L8.1 155.8L10.1 158.3L12.7 160.8L15.7 163.3L18.9 165.8" fill="none" stroke="var(--cool-sky)" strokeWidth="5" strokeLinecap="round" />
+      </g>
+    </svg>
   );
 }

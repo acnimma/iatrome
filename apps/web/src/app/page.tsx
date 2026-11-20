@@ -9,8 +9,8 @@ export default function ComingSoonPage() {
       <h1 className={styles.logo}>
         <Wordmark />
       </h1>
-      <p className={styles.say} aria-label="Pronounced i-uh-trome">
-        i·uh·trome
+      <p className={styles.say} aria-label="Pronounced EYE-uh-trohm">
+        /ˈaɪ.ə.troʊm/
       </p>
       <p className={styles.soon}>coming soon</p>
     </main>
