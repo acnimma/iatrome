@@ -13,6 +13,7 @@ import { Button } from '@/components/ui/Button';
 import { Confetti } from '@/components/ui/Confetti';
 import { Beep } from '@/components/room/Beep';
 import { ReactionBar } from '@/components/room/RoomBits';
+import { InviteButton } from '@/components/room/InviteButton';
 import { haptic } from '@/lib/haptics';
 import { PhoneMessage } from './Phone';
 import styles from './ControllerLobby.module.css';
@@ -97,6 +98,8 @@ export function ControllerLobby({ view }: { view: RoomView }) {
             <Avatar key={p.id} avatar={p.avatar} size={34} />
           ))}
       </div>
+
+      <InviteButton code={view.code} />
 
       {isVip && (
         <div className={styles.vip}>

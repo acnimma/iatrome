@@ -10,6 +10,7 @@ import { Avatar } from '@/components/ui/Avatar';
 import { BackButton } from '@/components/ui/BackButton';
 import { Button } from '@/components/ui/Button';
 import { GamePicker, RoomOptions } from '@/components/room/GameSettings';
+import { InviteButton } from '@/components/room/InviteButton';
 import { JoinQr, Pill, RoomCode } from '@/components/room/RoomBits';
 import { unlockAudio } from '@/lib/sound';
 import styles from './StageLobby.module.css';
@@ -57,6 +58,7 @@ export function StageLobby({ view, hideCode }: { view: RoomView; hideCode: boole
                 <span className={styles.passwordText}>{showPassword ? password : 'tap to reveal'}</span>
               </button>
             )}
+            {!hideCode && <InviteButton code={view.code} />}
             {view.locked && <Pill tone="rose">Room locked</Pill>}
             <p className={styles.note}>No real patients. No identifiers. Just vibes.</p>
           </div>
