@@ -3,7 +3,7 @@
  * Browsers only allow audio after a user gesture; call `unlockAudio()` from a click.
  */
 
-export type Sfx = 'pop' | 'tick' | 'whoosh' | 'reveal' | 'vote' | 'win' | 'consensus' | 'buzz' | 'drumroll' | 'lose' | 'correct' | 'beat' | 'pathognomonic' | 'lockin';
+export type Sfx = 'pop' | 'tick' | 'whoosh' | 'reveal' | 'vote' | 'win' | 'consensus' | 'buzz' | 'drumroll' | 'lose' | 'correct' | 'beat' | 'pathognomonic' | 'lockin' | 'applause' | 'cheer';
 
 const MUTE_KEY = 'iatrome:muted';
 let audio: AudioContext | null = null;
@@ -149,6 +149,14 @@ export function play(sfx: Sfx) {
       [C5, E5, G5, C6, E5 * 2, C6 * 1.5].forEach((f, i) => tone(f, 0.6 + i * 0.08, 0.5, { type: 'triangle', gain: 0.2 }));
       noise(0.6, 0.9, { from: 3000, to: 9000, gain: 0.06 });
       return;
+    case 'applause':
+      clapping(1.8, 26);
+      return;
+    case 'cheer':
+      // A bigger room: more hands, longer, with a whoop of noise on top.
+      clapping(3.2, 70);
+      noise(0, 1.4, { from: 600, to: 1800, gain: 0.05 });
+      return;
     case 'lockin':
       tone(660, 0, 0.07, { type: 'triangle', gain: 0.16 });
       tone(990, 0.06, 0.12, { type: 'triangle', gain: 0.16 });
@@ -156,31 +164,30 @@ export function play(sfx: Sfx) {
   }
 }
 
+/**
+ * Applause, synthesized: lots of short, bright noise bursts at random moments, densest early,
+ * tapering off. No samples, no licensing.
+ */
+function clapping(seconds: number, hands: number) {
+  const ctx = context();
+  if (!ctx || !master) return;
+  const claps = Math.round(hands * seconds * 6);
+  for (let i = 0; i < claps; i++) {
+    // Front-loaded: most clapping happens in the first half, then it thins out.
+    const t = seconds * Math.random() ** 1.7;
+    const gain = 0.05 * (1 - t / seconds) + 0.01;
+    noise(t, 0.018 + Math.random() * 0.02, { from: 900 + Math.random() * 900, to: 2200 + Math.random() * 1400, gain });
+  }
+}
+
 // ── Beep's voice ─────────────────────────────────────────────────────────────
 
-/** A pentatonic scale, so random chirps always sound musical rather than like a fax machine. */
-const CHIRP_NOTES = [880, 988, 1109, 1319, 1480, 1760];
-
-/**
- * Beep talking: a monitor blip, then cute chirps, roughly one per few words of the line, ending
- * on an upward swing for a question or a little dip otherwise. No words, all personality.
- */
-export function beepTalk(text: string) {
+/** Beep acknowledging a line: a soft double blip from the monitor. */
+export function beepTalk(_text: string) {
   if (isMuted() || !context()) return;
-  const words = text.trim().split(/\s+/).length;
-  const syllables = Math.max(3, Math.min(9, Math.round(words / 2.5)));
-  // The monitor blip first: Beep clearing its throat.
-  tone(1975, 0, 0.05, { gain: 0.07 });
-  let t = 0.11;
-  for (let i = 0; i < syllables; i++) {
-    const f = CHIRP_NOTES[Math.floor(Math.random() * CHIRP_NOTES.length)];
-    const length = 0.045 + Math.random() * 0.05;
-    tone(f, t, length, { type: i % 3 === 2 ? 'triangle' : 'sine', gain: 0.09, slide: 0.92 + Math.random() * 0.2 });
-    t += length + 0.025 + Math.random() * 0.03;
-  }
-  // The sign-off: up for a question, a little "boop" otherwise.
-  const question = /\?["”’]?$/.test(text.trim());
-  tone(question ? 1319 : 784, t + 0.02, 0.13, { type: 'sine', gain: 0.1, slide: question ? 1.35 : 0.8 });
+  // Just the monitor saying "noted": two soft blips. Here and there, never a voice.
+  tone(1975, 0, 0.06, { gain: 0.06 });
+  tone(1568, 0.09, 0.08, { gain: 0.05 });
 }
 
 // ── Music bed ────────────────────────────────────────────────────────────────

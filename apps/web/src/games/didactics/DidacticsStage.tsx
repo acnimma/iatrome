@@ -17,7 +17,10 @@ import styles from './Didactics.module.css';
 export function DidacticsStage({ view, game }: { view: RoomView; game: DidacticsView }) {
   const phase = game.phase.name;
   useEffect(() => {
-    if (phase === 'reveal') play('reveal');
+    if (phase === 'reveal') {
+      play('reveal');
+      if (game.number === game.total) play('cheer');
+    }
     if (phase === 'teams' || phase === 'standings' || phase === 'lightning' || phase === 'wager') play('whoosh');
     if (phase === 'huddle') play('pop');
   }, [phase, game.number]); // eslint-disable-line react-hooks/exhaustive-deps

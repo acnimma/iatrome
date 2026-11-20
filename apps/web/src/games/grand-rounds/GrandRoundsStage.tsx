@@ -14,6 +14,7 @@ import { haptic } from '@/lib/haptics';
 import { Icon } from '@/components/icons/Icon';
 import { ROUND_NAMES, ROUND_BLURBS } from './rounds';
 import { Pathognomonic } from './Pathognomonic';
+import { SpotlightSweep, spotlitClass } from '@/components/ui/Spotlight';
 import styles from './GrandRounds.module.css';
 
 export function GrandRoundsStage({ view, game }: { view: RoomView; game: GrandRoundsView }) {
@@ -154,6 +155,16 @@ function Matchup({ view, game, matchup, onPhone = false }: { view: RoomView; gam
         {result && !matchup.finale && elapsed >= reveal.winnerAt && <ResultBanner result={result} />}
       </div>
 
+      <SpotlightSweep
+        active={
+          Boolean(result) &&
+          (matchup.finale
+            ? elapsed >= finaleRevealTiming(matchup.entries.length).listAt(matchup.entries.length - 1) - GRAND_ROUNDS.drumroll &&
+              elapsed < finaleRevealTiming(matchup.entries.length).listAt(matchup.entries.length - 1)
+            : elapsed < reveal.winnerAt)
+        }
+      />
+
       {result?.consensus && result.winner !== null && (
         <Pathognomonic
           show={elapsed >= (matchup.finale ? finaleRevealTiming(matchup.entries.length).listAt(matchup.entries.length - 1) : reveal.winnerAt)}
@@ -225,6 +236,7 @@ function AnswerCard({
   // Nobody wins until the drumroll is over: both cards stay neutral while the votes land.
   const decided = result && elapsed >= reveal.winnerAt;
   const won = decided && result.winner === side;
+  const inTheLight = won && elapsed < reveal.winnerAt + 2_600;
   const lost = decided && result.winner !== null && result.winner !== side && !matchup.finale;
   const all = result?.playerVotes ?? [];
   // Voters land one at a time, alternating sides, in the order they're listed.
@@ -239,7 +251,7 @@ function AnswerCard({
 
   return (
     <motion.div
-      className={`${styles.answer} ${jelly()} ${won ? styles.won : ''} ${lost ? styles.lost : ''} ${waiting ? styles.waiting : ''}`}
+      className={`${styles.answer} ${jelly()} ${won ? styles.won : ''} ${lost ? styles.lost : ''} ${waiting ? styles.waiting : ''} ${inTheLight ? spotlitClass : ''}`}
       initial={{ y: 40, opacity: 0, rotate: tilt }}
       animate={{ y: 0, opacity: 1, rotate: 0 }}
       transition={{ type: 'spring', stiffness: 260, damping: 20 }}
@@ -410,6 +422,7 @@ function useMatchupShow(matchup: MatchupView, phase: string, elapsed: number, re
           cue(`rank-${rank}`, timing.listAt(rank), () => {
             const last = rank === matchup.entries.length - 1;
             play(last ? (r.consensus ? 'pathognomonic' : 'win') : 'reveal');
+            if (last && r.winner !== null) play('cheer');
             buzz(last ? 'success' : 'tap');
           }),
         );
@@ -427,6 +440,7 @@ function useMatchupShow(matchup: MatchupView, phase: string, elapsed: number, re
         );
         cue('winner', reveal.winnerAt, () => {
           play(r.outcome === 'duplicate' ? 'buzz' : r.consensus ? 'pathognomonic' : r.winner === null ? 'tick' : 'reveal');
+          if (r.winner !== null && r.outcome === 'vote') play(r.consensus ? 'cheer' : 'applause');
           buzz('success');
         });
       }

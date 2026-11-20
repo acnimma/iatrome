@@ -18,7 +18,10 @@ export function PoisonStage({ view, game }: { view: RoomView; game: PoisonView }
   const phase = game.phase.name;
   useEffect(() => {
     if (phase === 'reveal') play(game.majority === 'tie' ? 'buzz' : 'reveal');
-    if (phase === 'verdict') play(game.flips.length ? 'reveal' : 'buzz');
+    if (phase === 'verdict') {
+      play(game.flips.length ? 'reveal' : 'buzz');
+      if (game.flips.length) play('applause');
+    }
   }, [phase, game.number]); // eslint-disable-line react-hooks/exhaustive-deps
   // Every flip gets a sound as the avatar slides across.
   useEffect(() => {

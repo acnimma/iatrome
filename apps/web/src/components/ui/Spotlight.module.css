@@ -1,0 +1,46 @@
+/*
+ * A spotlight on a light stage is a dimmed room with a hole of light in it.
+ * The hole is a radial gradient, swept by moving the (oversized) background.
+ */
+.sweep {
+  position: fixed;
+  inset: 0;
+  z-index: 14;
+  pointer-events: none;
+  background-image: radial-gradient(circle at 50% 52%, rgb(14 16 27 / 0) 0, rgb(14 16 27 / 0) 9%, rgb(14 16 27 / 0.42) 17%);
+  background-size: 260% 100%;
+  background-repeat: no-repeat;
+  animation: sweep 1.6s ease-in-out both;
+}
+
+@keyframes sweep {
+  0% {
+    background-position: 10% 0;
+  }
+  30% {
+    background-position: 90% 0;
+  }
+  60% {
+    background-position: 22% 0;
+  }
+  100% {
+    background-position: 50% 0;
+  }
+}
+
+/* The winner, in the light: everything else dims and the card glows warm. */
+.spotlit {
+  position: relative;
+  z-index: 15;
+  box-shadow:
+    0 0 0 200vmax rgb(14 16 27 / 0.38),
+    0 0 70px 18px rgb(255 228 150 / 0.65),
+    0 26px 50px -18px rgb(14 16 27 / 0.55);
+  transition: box-shadow 450ms ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sweep {
+    animation: none;
+  }
+}

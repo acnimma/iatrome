@@ -19,7 +19,7 @@ export function SketchStage({ view, game }: { view: RoomView; game: SketchView }
   const drawer = game.drawer ? people.get(game.drawer) : null;
   const drawing = useDrawing(game.drawingId);
   const nudges = useNewNudges(game.nudges);
-  useSketchSounds(game);
+  useSketchSounds(game, view);
 
   if (game.phase.name === 'intro')
     return (
@@ -185,14 +185,18 @@ function Gallery({ view, game }: { view: RoomView; game: SketchView }) {
   );
 }
 
-function useSketchSounds(game: SketchView) {
+function useSketchSounds(game: SketchView, view: RoomView) {
   const solved = useRef(0);
   useEffect(() => {
     if (game.solved.length > solved.current) play('correct');
     solved.current = game.solved.length;
   }, [game.solved.length]);
   useEffect(() => {
-    if (game.phase.name === 'reveal') play(game.solved.length ? 'reveal' : 'lose');
+    if (game.phase.name === 'reveal') {
+      play(game.solved.length ? 'reveal' : 'lose');
+      // The whole room read the drawing: the artist earned a hand.
+      if (game.solved.length && game.solved.length >= view.people.filter((p) => p.inGame).length - 1) play('applause');
+    }
     if (game.phase.name === 'draw' || game.phase.name === 'gallery') play('whoosh');
   }, [game.phase.name, game.turn]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {

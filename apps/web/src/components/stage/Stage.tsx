@@ -231,6 +231,7 @@ function useStageSounds(view: RoomView) {
       if (view.stage === 'over') {
         play('drumroll');
         setTimeout(() => play('win'), REVEAL.podium - 200);
+        setTimeout(() => play('cheer'), REVEAL.podium);
       }
       else if (view.game && ['intro', 'scores'].includes(view.game.phase.name)) play('whoosh');
     }
