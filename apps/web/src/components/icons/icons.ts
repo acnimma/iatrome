@@ -1,5 +1,5 @@
 /*
- * iatrome icon set — original glossy, chunky icons that replace emoji in the UI.
+ * iatrome icon set: original glossy, chunky icons that replace emoji in the UI.
  *
  * Each value is the inner markup of a `0 0 64 64` SVG. Every icon shares the same recipe:
  * flat palette fills, a 3-unit ink outline with round joins, and one soft white gloss

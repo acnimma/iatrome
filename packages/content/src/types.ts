@@ -3,7 +3,7 @@
  *
  * House rules for every item:
  *  - Original writing only. Never transcribe or paraphrase another game's prompts.
- *  - Punch at medicine, training culture, history and wordplay — never at patients
+ *  - Punch at medicine, training culture, history and wordplay, never at patients
  *    or people living with a condition.
  *  - Generic drug names only. No real hospitals, brands or living people.
  *  - `breadth: 'universal'` = Normal mode: anyone gets it, including people with no

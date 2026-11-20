@@ -120,7 +120,7 @@ test('moderation: password, kick and ban', async ({ browser }) => {
 
   await stage.getByText('Troll').hover();
   await stage.getByRole('button', { name: 'Ban Troll' }).click();
-  await expect(phone.getByText('You’ve been discharged')).toBeVisible();
+  await expect(phone.getByText('You’ve been banned from this room')).toBeVisible();
 
   // Coming back with a new name, even with the right password, doesn't work: the device is banned.
   await phone.goto(`/play/${code}`);

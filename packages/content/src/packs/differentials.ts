@@ -126,7 +126,7 @@ export const differentials: DifferentialPrompt[] = [
     id: "diff-021",
     text: "Three rejected slogans for hand sanitizer",
     breadth: "universal",
-    beep: ["Smells like a cold hug", "Now stings 40% more!", "The 0.1% are plotting revenge"],
+    beep: ["Smells like a decision", "Now stings 40% more!", "The 0.1% are plotting revenge"],
   },
   {
     id: "diff-022",
@@ -162,7 +162,7 @@ export const differentials: DifferentialPrompt[] = [
     id: "diff-027",
     text: "Three things the uvula does in its free time",
     breadth: "universal",
-    beep: ["Swings", "Hangs out", "Waits for its “aaah” moment"],
+    beep: ["Tickles things it shouldn’t", "Rehearses its scream face", "Waits for its “aaah” moment"],
   },
   {
     id: "diff-028",
@@ -402,7 +402,7 @@ export const differentials: DifferentialPrompt[] = [
     id: "diff-067",
     text: "Three things a scalpel says on a first date",
     breadth: "universal",
-    beep: ["I’m very sharp", "I like to cut to the chase", "I’ve been told I’m a lot to handle"],
+    beep: ["I’m very sharp. People say that.", "I don’t do small talk. I do incisions.", "I’ve been told I’m a lot to handle"],
   },
   {
     id: "diff-068",
@@ -534,7 +534,7 @@ export const differentials: DifferentialPrompt[] = [
     id: "diff-089",
     text: "Three rejected names for the hiccups",
     breadth: "universal",
-    beep: ["The Hics", "Throat Burps", "The Diaphragm Disco"],
+    beep: ["The Hics", "Throat Burps", "Involuntary Gulp Syndrome"],
   },
   {
     id: "diff-090",
