@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { Wordmark } from '@/components/brand/Wordmark';
 import { JoinCodeForm } from '@/components/home/JoinCodeForm';
 import { jelly } from '@/components/ui/jelly';
+import { AdSlot } from '@/components/ads/AdSlot';
 import buttons from '@/components/ui/Button.module.css';
 import styles from './page.module.css';
 
@@ -19,6 +20,7 @@ export default function HomePage() {
       <Link href="/host" className={`${buttons.button} ${buttons.xl} ${jelly('pearl')} ${styles.host}`}>
         Host a game
       </Link>
+      <AdSlot placement="home" />
     </main>
   );
 }

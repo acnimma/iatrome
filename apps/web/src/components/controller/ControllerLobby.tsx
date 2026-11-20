@@ -1,5 +1,6 @@
 'use client';
 
+import { track } from '@vercel/analytics';
 import { motion } from 'motion/react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -120,7 +121,10 @@ export function ControllerLobby({ view }: { view: RoomView }) {
 
       {isVip && (
         <div className={styles.vip}>
-          <Button size="xl" block disabled={needed > 0} onClick={() => room.command({ type: 'start' })}>
+          <Button size="xl" block disabled={needed > 0} onClick={() => {
+            room.command({ type: 'start' });
+            track('game_started', { game: view.settings.game, players: players.length, screen: view.screen ? 'big' : 'phones' });
+          }}>
             {needed > 0 ? `Need ${needed} more` : 'Everybody’s in. Start!'}
           </Button>
           <p className={styles.vipNote}>You’re the VIP, so you can start the game.</p>
@@ -185,7 +189,10 @@ export function ControllerResults({ view, result }: { view: RoomView; result: Ga
         </>
       )}
       {isVip && (
-        <Button size="lg" block onClick={() => room.command({ type: 'start' })}>
+        <Button size="lg" block onClick={() => {
+            room.command({ type: 'start' });
+            track('game_started', { game: view.settings.game, screen: view.screen ? 'big' : 'phones', again: true });
+          }}>
           Play again
         </Button>
       )}

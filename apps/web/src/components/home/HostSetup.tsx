@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/Button';
 import { TextInput } from '@/components/ui/Field';
 import { GamePicker, ModePicker, type ScreenChoice, ScreenPicker, TimeToggle } from '@/components/room/GameSettings';
 import { unlockAudio } from '@/lib/sound';
+import { track } from '@vercel/analytics';
 import { useTurnstile } from './Turnstile';
 import styles from './HostSetup.module.css';
 
@@ -43,6 +44,7 @@ export function HostSetup() {
       if (!res.ok) throw new Error('Couldn’t open a room. Try again in a moment.');
       const { code, hostToken } = (await res.json()) as CreateRoomResponse;
       rememberHost(code, hostToken);
+      track('room_created', { game: settings.game, mode: settings.mode, screen });
       rememberPassword(code, password.trim());
       router.push(screen === 'phones' ? `/play/${code}` : `/host/${code}`);
     } catch (e) {

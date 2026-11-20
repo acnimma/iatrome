@@ -1,0 +1,27 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: min(680px, 100%);
+  margin: 0 auto;
+  padding: max(16px, env(safe-area-inset-top)) 20px 48px;
+  line-height: 1.6;
+}
+
+.page h1 {
+  margin-top: 12px;
+  font-size: clamp(2rem, 5vw, 2.8rem);
+  font-weight: 900;
+  letter-spacing: -0.03em;
+}
+
+.page h2 {
+  margin-top: 10px;
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+.page p {
+  color: var(--ink-soft);
+  font-weight: 500;
+}

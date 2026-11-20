@@ -1,0 +1,36 @@
+.banner {
+  position: fixed;
+  left: max(12px, env(safe-area-inset-left));
+  bottom: max(12px, env(safe-area-inset-bottom));
+  z-index: 90;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: min(340px, calc(100vw - 24px));
+  padding: 14px 16px;
+  border-radius: var(--radius-lg);
+  background: var(--card);
+  box-shadow:
+    inset 0 0 0 1.5px rgb(31 42 77 / 0.1),
+    var(--shadow-lg);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.banner a {
+  color: var(--ink);
+  font-weight: 800;
+}
+
+.bannerActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* A quiet, fixed-size box so an ad never shoves the page around. */
+.slot {
+  width: min(728px, 100%);
+  min-height: 90px;
+  margin: 0 auto;
+}
