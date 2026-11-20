@@ -57,20 +57,46 @@
 }
 
 /* the palette glimpsed inside the tablet as it cracks open */
-.flash {
+.flashClip {
   position: absolute;
-  opacity: 0;
-  transform-origin: 50% 100%;
-  filter: drop-shadow(0 0 0.25em color-mix(in srgb, var(--royal-gold) 60%, transparent));
-  will-change: transform, opacity;
+  z-index: 2;
+  overflow: hidden;
   pointer-events: none;
 }
 
+.flash {
+  position: absolute;
+  inset: auto 0 0;
+  height: 70%; /* room above for the spring overshoot, so it's never cut off */
+  opacity: 0;
+  transform-origin: 50% 100%;
+  will-change: transform, opacity;
+}
+
+/* The helix scrolls by one full twist, on a loop, so it reads as spiralling. */
 .helix {
   display: block;
   width: 100%;
   height: 100%;
-  overflow: visible;
+  /* soft ends, so the scrolling strand trails off instead of stopping dead */
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 12%, #000 90%, transparent);
+  mask-image: linear-gradient(to bottom, transparent, #000 12%, #000 90%, transparent);
+}
+
+.spiral {
+  animation: spiral 1.1s linear infinite;
+}
+
+@keyframes spiral {
+  to {
+    transform: translateY(-66.67px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spiral {
+    animation: none;
+  }
 }
 
 /*

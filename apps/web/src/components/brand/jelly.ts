@@ -133,7 +133,7 @@ export class JellyLetter {
 
 // ── The tablet "o": two halves that crack apart and snap back ────────────────
 
-const HOLD_OPEN = 0.5; // s the halves stay apart before snapping back
+const HOLD_OPEN = 1.4; // s the halves stay apart (long enough to admire the helix)
 const OPEN = { stiffness: 170, damping: 11 };
 const SNAP = { stiffness: 320, damping: 13 };
 
@@ -172,13 +172,16 @@ export class JellyTablet {
   get halves() {
     const o = this.open.x;
     const half = (side: number) =>
-      `translate3d(${(side * o * 7).toFixed(2)}%,${(-o * 5).toFixed(2)}%,0) rotate(${(side * o * 20).toFixed(2)}deg)`;
+      `translate3d(${(side * o * 14).toFixed(2)}%,${(-o * 4).toFixed(2)}%,0) rotate(${(side * o * 26).toFixed(2)}deg)`;
     return [half(-1), half(1)] as const;
   }
 
-  /** The double helix glimpsed inside while it is open. */
+  /** The double helix springs up out of the crack while it is open. */
   get flash() {
     const o = clamp(this.open.x, 0, 1.4);
-    return { transform: `scale(${(0.4 + o * 0.6).toFixed(3)})`, opacity: clamp(o * 1.6, 0, 1).toFixed(3) };
+    return {
+      transform: `translate3d(0,${((1 - o) * 45).toFixed(2)}%,0) scale(${(0.25 + o * 0.75).toFixed(3)})`,
+      opacity: clamp(o * 2, 0, 1).toFixed(3),
+    };
   }
 }

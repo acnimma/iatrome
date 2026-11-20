@@ -11,8 +11,8 @@ export default function HomePage() {
       <h1 className={styles.logo}>
         <Wordmark className={styles.wordmark} />
       </h1>
-      <p className={styles.say} aria-label="Pronounced i-uh-trome">
-        i·uh·trome
+      <p className={styles.say} aria-label="Pronounced EYE-uh-trohm">
+        /ˈaɪ.ə.troʊm/
       </p>
       <p className={styles.tagline}>The party game that speaks fluent medicine.</p>
       <JoinCodeForm />

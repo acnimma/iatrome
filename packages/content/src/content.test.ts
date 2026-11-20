@@ -17,15 +17,41 @@ const packs = { quips, playerQuips, playerDifferentials, doodles, differentials,
 
 describe('every pack', () => {
   for (const [name, pack] of Object.entries(packs)) {
-    it(`${name}: unique ids, mostly universal, no duplicate text`, () => {
+    it(`${name}: unique ids and no duplicate text`, () => {
       const ids = pack.map((x) => x.id);
       expect(new Set(ids).size).toBe(ids.length);
-      const universal = pack.filter((x) => x.breadth === 'universal').length;
-      expect(universal / pack.length).toBeGreaterThanOrEqual(0.75);
-      const texts = pack.map((x) => JSON.stringify(x).replace(/"id":"[^"]+",?/, '').toLowerCase());
+      const texts = pack.map((x) => JSON.stringify(x).replace(/"id":"[^"]+",?/, '').replace(/"breadth":"\w+",?/, '').toLowerCase());
       expect(new Set(texts).size).toBe(texts.length);
     });
   }
+});
+
+describe('Normal and Pro mode', () => {
+  // Enough fresh items for many games in each mode (Normal draws only universal items; Pro mostly clinical).
+  const minimum: Record<keyof typeof packs, [number, number]> = {
+    quips: [250, 150],
+    playerQuips: [80, 40],
+    playerDifferentials: [20, 12],
+    doodles: [100, 45],
+    differentials: [50, 35],
+    dilemmas: [100, 55],
+    sketchTerms: [160, 60],
+    trivia: [110, 100],
+  };
+  for (const [name, [normal, pro]] of Object.entries(minimum)) {
+    it(`${name}: ≥ ${normal} Normal and ≥ ${pro} Pro items`, () => {
+      const pack = packs[name as keyof typeof packs];
+      expect(pack.filter((x) => x.breadth === 'universal').length).toBeGreaterThanOrEqual(normal);
+      expect(pack.filter((x) => x.breadth === 'clinical').length).toBeGreaterThanOrEqual(pro);
+    });
+  }
+});
+
+describe('no em dashes', () => {
+  it('appear anywhere in the content', () => {
+    const all = JSON.stringify({ ...packs, hostLines, curbsideGeneric });
+    expect(all).not.toContain('—');
+  });
 });
 
 describe('Grand Rounds', () => {
