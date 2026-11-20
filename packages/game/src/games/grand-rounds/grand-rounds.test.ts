@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { finalePairs, mixedKinds, ring, spreadOrder } from './assign';
-import { scoreForfeit, scoreVotes } from './scoring';
+import { mixedKinds, ring, spreadOrder } from './assign';
+import { scoreFinale, scoreForfeit, scoreVotes } from './scoring';
 
 describe('ring assignment', () => {
   for (const n of [3, 4, 5, 6, 7, 8]) {
@@ -38,20 +38,6 @@ describe('round 2 mix', () => {
         expect(doodles).toBeLessThanOrEqual(1);
       }
     }
-  });
-});
-
-describe('finale pairs', () => {
-  it('pairs everyone with an even count', () => {
-    const pairs = finalePairs(['a', 'b', 'c', 'd'], 'c');
-    expect(pairs.flat().sort()).toEqual(['a', 'b', 'c', 'd']);
-  });
-
-  it('puts last place against Beep with an odd count', () => {
-    const pairs = finalePairs(['a', 'b', 'c', 'd', 'e'], 'd');
-    expect(pairs).toHaveLength(3);
-    expect(pairs.find((p) => p.includes('beep'))).toEqual(['d', 'beep']);
-    expect(pairs.flat().filter((x) => x !== 'beep').sort()).toEqual(['a', 'b', 'c', 'd', 'e']);
   });
 });
 
@@ -115,5 +101,34 @@ describe('scoring', () => {
 
   it('gives a forfeit the whole pool plus bonus', () => {
     expect(scoreForfeit(1, 3, false)).toEqual([0, 3300]);
+  });
+});
+
+describe('finale scoring', () => {
+  it('pays per vote and gives the top list a bonus', () => {
+    const r = scoreFinale({ votes: [2, 1, 0, 0], audience: [0, 0, 0, 0], multiplier: 4 });
+    expect(r.winner).toBe(0);
+    expect(r.consensus).toBe(false);
+    expect(r.points).toEqual([5000, 2000, 0, 0]);
+  });
+
+  it('pays the sweep bonus when everyone picked the same list', () => {
+    const r = scoreFinale({ votes: [0, 3, 0], audience: [0, 1, 0], multiplier: 1 });
+    expect(r.consensus).toBe(true);
+    expect(r.points[1]).toBe(Math.round((3.3 * 500 + 500) / 10) * 10);
+  });
+
+  it('has no winner on a tie at the top, and nothing for nobody', () => {
+    const r = scoreFinale({ votes: [1, 1, 0], audience: [0, 0, 0], multiplier: 1 });
+    expect(r.winner).toBeNull();
+    expect(r.points).toEqual([500, 500, 0]);
+    expect(scoreFinale({ votes: [0, 0], audience: [0, 0], multiplier: 4 }).winner).toBeNull();
+  });
+
+  it('weights audience votes below player votes', () => {
+    // One player vote beats three audience votes.
+    const r = scoreFinale({ votes: [1, 0], audience: [0, 3], multiplier: 1 });
+    expect(r.winner).toBe(0);
+    expect(r.shares[1]).toBeCloseTo(0.9 / 1.9);
   });
 });

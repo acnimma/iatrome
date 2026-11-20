@@ -131,12 +131,10 @@
 
 /* ── Team podium ─────────────────────────────────────── */
 .teamWinner {
+  composes: blackText from '../ui/Jelly.module.css';
   font-family: var(--font-display);
   font-size: clamp(2.6rem, 6vw, 4.6rem);
   font-weight: 400;
-  color: var(--royal-gold);
-  -webkit-text-stroke: 2px var(--ink);
-  paint-order: stroke fill;
   text-align: center;
 }
 

@@ -3,7 +3,7 @@
  *
  * Rounds 1–2 use a ring: prompt i goes to players i and i+1, so every player answers
  * exactly two prompts against two different opponents, for any N ≥ 3.
- * The finale pairs players up; with an odd count the last-place player faces Beep.
+ * The finale gives everyone the same prompt (see index.ts), so it needs no assignment.
  */
 
 export function ring(playerIds: readonly string[]): [string, string][] {
@@ -19,19 +19,8 @@ export function mixedKinds(n: number): ('quip' | 'doodle')[] {
   return Array.from({ length: n }, (_, i) => (i % 2 === 0 && !(n % 2 === 1 && i === n - 1) ? 'doodle' : 'quip'));
 }
 
-/** Finale pairs. `ranked` is best-first; with an odd count the last-ranked plays Beep. */
-export function finalePairs(shuffled: readonly string[], lastPlace: string): [string, string][] {
-  const pool = shuffled.filter((id) => id !== lastPlace);
-  const odd = shuffled.length % 2 === 1;
-  if (!odd) pool.push(lastPlace);
-  const pairs: [string, string][] = [];
-  for (let i = 0; i + 1 < pool.length; i += 2) pairs.push([pool[i], pool[i + 1]]);
-  if (odd) pairs.push([lastPlace, BEEP]);
-  return pairs;
-}
-
 /** Order matchups so nobody appears in two reveals back to back where avoidable. */
-export function spreadOrder<T extends { playerIds: [string, string] }>(items: T[]): T[] {
+export function spreadOrder<T extends { playerIds: readonly string[] }>(items: T[]): T[] {
   const left = items.slice();
   const out: T[] = [];
   while (left.length) {

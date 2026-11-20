@@ -23,6 +23,13 @@
   --font-body: var(--font-inter), system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   /* Dogbangy: display moments only (room codes, round titles, winners). */
   --font-display: var(--font-dogbangy), var(--font-body);
+  /*
+   * The game's voice: prompts, questions and everyone's answers set in the bubbly display face,
+   * raised off the page like the logo. Long case stems fall back to the body face.
+   */
+  --font-play: var(--font-dogbangy), var(--font-body);
+  --play-raised: 0 1px 0 rgb(255 255 255 / 0.9), 0 3px 0 rgb(31 42 77 / 0.1), 0 10px 24px rgb(31 42 77 / 0.12);
+  --play-on-jelly: 0 2px 0 rgb(14 16 27 / 0.28), 0 6px 14px rgb(14 16 27 / 0.22);
 
   /* ── Shape & depth: round, thin ink outline, soft gloss ─ */
   --radius-sm: 12px;

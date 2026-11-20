@@ -1,3 +1,4 @@
+/* ── Game picker: rows by default ─────────────────────── */
 .games {
   display: flex;
   flex-direction: column;
@@ -9,9 +10,16 @@
   align-items: center;
   gap: 14px;
   min-width: 0;
-  padding: 12px 16px 12px 12px;
-  border-radius: 24px;
+  padding: 10px 16px 10px 10px;
+  border-radius: 22px;
   text-align: left;
+  transition: transform 220ms var(--ease-spring);
+}
+
+@media (hover: hover) {
+  .game:hover {
+    transform: translateY(-2px);
+  }
 }
 
 .icon {
@@ -31,40 +39,30 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 1px;
   min-width: 0;
-}
-
-.gameHead {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
 }
 
 .gameTitle {
   font-size: 1.05rem;
   font-weight: 900;
   letter-spacing: -0.01em;
+  line-height: 1.25;
 }
 
-/* Taglines are written to fit one line. */
 .tagline {
-  overflow: hidden;
   font-size: 0.88rem;
   font-weight: 600;
+  line-height: 1.3;
   opacity: 0.68;
 }
 
 .meta {
   flex: none;
-  padding: 3px 10px;
-  border: 2px solid color-mix(in srgb, currentColor 22%, transparent);
-  border-radius: var(--radius-pill);
   font-size: 0.78rem;
   font-weight: 800;
-  opacity: 0.8;
+  opacity: 0.6;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .compact .game {
@@ -77,53 +75,83 @@
   border-radius: 13px;
 }
 
+/* "players" only where there's room for it (the tiles). */
+.metaWord {
+  display: none;
+}
+
+/* ── Tiles: one row of five when there's room ─────────── */
+@media (min-width: 900px) {
+  .tiles {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .tiles .game {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    min-height: 210px;
+    padding: 16px 16px 14px;
+    border-radius: 26px;
+  }
+
+  .tiles .icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 20px;
+  }
+
+  .tiles .gameText {
+    flex: 1;
+    gap: 4px;
+  }
+
+  .tiles .gameTitle {
+    font-size: 1.15rem;
+  }
+
+  .tiles .metaWord {
+    display: inline;
+  }
+}
+
+/* ── Segmented choices ────────────────────────────────── */
+.choice {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.blurb {
+  min-height: 2.6em; /* two lines, so switching doesn't make the page jump */
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--ink-soft);
+}
+
 .options {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.modes {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-}
-
-.mode {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 12px 16px;
-  border-radius: 22px;
-  text-align: left;
-}
-
-.modeTitle {
-  font-weight: 900;
-}
-
-.modeBlurb {
-  font-size: 0.85rem;
-  font-weight: 600;
-  opacity: 0.68;
-}
-
-@media (max-width: 480px) {
-  .tagline {
-    font-size: 0.82rem;
-  }
-}
-
 @media (max-width: 400px) {
   .game {
     gap: 10px;
-    padding: 10px 12px 10px 10px;
+    padding: 9px 12px 9px 9px;
   }
 
   .icon {
     width: 44px;
     height: 44px;
     border-radius: 14px;
+  }
+
+  .tagline {
+    font-size: 0.82rem;
   }
 }
 

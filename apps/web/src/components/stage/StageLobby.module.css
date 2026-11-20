@@ -109,12 +109,11 @@
 }
 
 .gameTitle {
+  composes: blackText from '../ui/Jelly.module.css';
   font-family: var(--font-display);
   font-size: clamp(1.8rem, 3vw, 2.6rem);
   font-weight: 400;
   line-height: 1.05;
-  color: var(--cool-sky);
-  -webkit-text-stroke: 1px var(--ink);
 }
 
 .tagline {
@@ -141,7 +140,8 @@
   overflow-y: auto;
   gap: 14px 8px;
   margin: 0;
-  padding: 0;
+  /* room for shadows and the host's buttons, which the scroll box would otherwise clip */
+  padding: 8px 4px;
   list-style: none;
 }
 
@@ -152,33 +152,45 @@
   align-items: center;
 }
 
+/* Host-only, on hover: stacked on the avatar itself, so nothing pokes out of the list. */
 .playerActions {
   position: absolute;
-  top: -8px;
+  top: calc(var(--bubble, 64px) / 2);
+  left: 50%;
+  z-index: 2;
   display: flex;
+  flex-direction: column;
   gap: 4px;
   opacity: 0;
-  transition: opacity 150ms ease;
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(0.85);
+  transition:
+    opacity 150ms ease,
+    transform 200ms var(--ease-spring);
 }
 
 .player:hover .playerActions,
 .player:focus-within .playerActions {
   opacity: 1;
+  pointer-events: auto;
+  transform: translate(-50%, -50%) scale(1);
 }
 
-.playerActions button {
-  padding: 2px 8px;
-  border: var(--outline);
+.kick {
+  composes: jelly pearl from '../ui/Jelly.module.css';
+}
+
+.ban {
+  composes: jelly rose from '../ui/Jelly.module.css';
+}
+
+.kick,
+.ban {
+  min-width: 56px;
+  padding: 4px 12px;
   border-radius: var(--radius-pill);
-  background: var(--card);
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 800;
-  cursor: pointer;
-}
-
-.playerActions button:last-child {
-  background: var(--rose-kiss);
-  color: #fff;
 }
 
 .empty {

@@ -68,15 +68,16 @@ function Writing({ view, game }: { view: RoomView; game: GrandRoundsView }) {
 function Matchup({ view, game, matchup }: { view: RoomView; game: GrandRoundsView; matchup: MatchupView }) {
   const phase = game.phase.name;
   const result = phase === 'results' ? matchup.result : null;
-  const { at, scale } = useRevealClock(game, matchup.kind);
+  const { at, scale } = useRevealClock(game, matchup);
   useMatchupSounds(matchup, phase);
+  const listGap = GRAND_ROUNDS.presentPerList / 1000;
 
   return (
     <div className={styles.matchup}>
       <div className={styles.matchupTop}>
         <Pill>
           <Icon name={matchup.kind === 'doodle' ? 'pencil' : matchup.kind === 'differential' ? 'list' : 'speech'} size={20} />
-          {matchup.kind === 'doodle' ? 'Doodle' : matchup.kind === 'differential' ? 'Differential' : 'Quip'} · {matchup.index + 1} of {matchup.total}
+          {matchup.finale ? 'The Differential · everyone’s answer' : `${matchup.kind === 'doodle' ? 'Doodle' : 'Quip'} · ${matchup.index + 1} of ${matchup.total}`}
         </Pill>
         {phase === 'vote' && <TimerRing phase={game.phase} pausedAt={view.pausedAt} size={72} ticks />}
       </div>
@@ -85,12 +86,19 @@ function Matchup({ view, game, matchup }: { view: RoomView; game: GrandRoundsVie
         {matchup.prompt}
       </motion.h2>
 
+      {matchup.finale ? (
+        <div className={styles.board} style={{ '--cols': boardColumns(matchup.entries.length) } as React.CSSProperties}>
+          {matchup.entries.map((_, side) => (
+            <AnswerCard key={side} view={view} matchup={matchup} side={side} phase={phase} delay={at(0.6 + side * listGap)} lineGap={0.6 * scale} replayMs={4200 * scale} />
+          ))}
+        </div>
+      ) : (
       <div className={styles.versus}>
         {([0, 1] as const).map((side) => (
           <AnswerCard key={side} view={view} matchup={matchup} side={side} phase={phase} delay={at(ENTRY[matchup.kind][side])} lineGap={0.85 * scale} replayMs={4200 * scale} />
         ))}
         <motion.span
-          className={`${styles.vs} ${jelly()}`}
+          className={`${styles.vs} ${jelly('pearl')}`}
           initial={{ scale: 0 }}
           animate={{ scale: 1, rotate: [0, -10, 10, 0] }}
           transition={{ delay: at(ENTRY[matchup.kind][1] + 0.2), scale: { type: 'spring', stiffness: 400, damping: 12 }, rotate: { duration: 0.6 } }}
@@ -98,6 +106,7 @@ function Matchup({ view, game, matchup }: { view: RoomView; game: GrandRoundsVie
           VS
         </motion.span>
       </div>
+      )}
 
       <div className={styles.footer}>
         {phase === 'vote' && (
@@ -123,21 +132,26 @@ const ENTRY = {
   differential: [0.8, 3.8],
 } as const;
 
+/** Two to a row up to four lists, then three, then four. */
+const boardColumns = (n: number) => (n <= 4 ? 2 : n <= 6 || n === 9 ? 3 : 4);
+
 /**
  * Reveal timing synced to the server: delays scale with the phase's real length and
  * account for time already elapsed (so a reconnecting stage catches up instantly).
  */
-function useRevealClock(game: GrandRoundsView, kind: MatchupView['kind']) {
+function useRevealClock(game: GrandRoundsView, matchup: MatchupView) {
   const room = useRoom();
   const { startedAt, endsAt, name } = game.phase;
   const present = name === 'present' && endsAt !== null;
-  const scale = present ? (endsAt - startedAt) / GRAND_ROUNDS.present[kind] : 0;
+  const lists = matchup.finale ? matchup.entries.filter((e) => e.items).length : 0;
+  const expected = GRAND_ROUNDS.present[matchup.kind] + lists * GRAND_ROUNDS.presentPerList;
+  const scale = present ? (endsAt - startedAt) / expected : 0;
   const elapsed = present ? Math.max(0, (room.serverNow() - startedAt) / 1000) : 0;
   const at = (seconds: number) => (present ? Math.max(0, seconds * scale - elapsed) : 0);
   return { at, scale };
 }
 
-function AnswerCard({ view, matchup, side, phase, delay, lineGap, replayMs }: { view: RoomView; matchup: MatchupView; side: 0 | 1; phase: string; delay: number; lineGap: number; replayMs: number }) {
+function AnswerCard({ view, matchup, side, phase, delay, lineGap, replayMs }: { view: RoomView; matchup: MatchupView; side: number; phase: string; delay: number; lineGap: number; replayMs: number }) {
   const people = usePeople(view);
   const entry = matchup.entries[side];
   const result = phase === 'results' ? matchup.result : null;
@@ -146,12 +160,13 @@ function AnswerCard({ view, matchup, side, phase, delay, lineGap, replayMs }: { 
   const voters = result?.playerVotes.filter((v) => v.side === side) ?? [];
   const share = result ? Math.round(result.shares[side] * 100) : 0;
   const author = entry.author ? people.get(entry.author) : null;
+  const tilt = matchup.finale ? (side % 2 ? 2 : -2) : side === 0 ? -3 : 3;
 
   return (
     <motion.div
-      className={`${styles.answer} ${jelly(side === 0 ? 'rose' : 'blue')} ${won ? styles.won : ''} ${lost ? styles.lost : ''}`}
-      initial={{ y: 40, opacity: 0, rotate: side === 0 ? -3 : 3 }}
-      animate={{ y: 0, opacity: 1, rotate: won ? (side === 0 ? -1.5 : 1.5) : 0, scale: won ? 1.04 : lost ? 0.96 : 1 }}
+      className={`${styles.answer} ${jelly()} ${won ? styles.won : ''} ${lost ? styles.lost : ''}`}
+      initial={{ y: 40, opacity: 0, rotate: tilt }}
+      animate={{ y: 0, opacity: 1, rotate: won ? tilt / 2 : 0, scale: won ? 1.04 : lost ? 0.97 : 1 }}
       transition={{ delay, type: 'spring', stiffness: 260, damping: 20 }}
     >
       <AnswerContent entry={entry} kind={matchup.kind} replayMs={phase === 'present' ? replayMs : 0} delay={delay} lineGap={lineGap} />
@@ -168,10 +183,16 @@ function AnswerCard({ view, matchup, side, phase, delay, lineGap, replayMs }: { 
               ) : null;
             })}
           </div>
-          <div className={styles.shareBar}>
-            <motion.span initial={{ width: 0 }} animate={{ width: `${share}%` }} transition={{ delay: 0.4, duration: 1, ease: [0.22, 1, 0.36, 1] }} />
-            <CountUp className={styles.share} value={share} duration={1200} />
-          </div>
+          {matchup.finale ? (
+            <span className={styles.voteCount}>
+              {voters.length} {voters.length === 1 ? 'vote' : 'votes'}
+            </span>
+          ) : (
+            <div className={styles.shareBar}>
+              <motion.span initial={{ width: 0 }} animate={{ width: `${share}%` }} transition={{ delay: 0.4, duration: 1, ease: [0.22, 1, 0.36, 1] }} />
+              <CountUp className={styles.share} value={share} duration={1200} />
+            </div>
+          )}
           <motion.div className={styles.author} initial={{ rotateX: 90, opacity: 0 }} animate={{ rotateX: 0, opacity: 1 }} transition={{ delay: 1.6, type: 'spring', stiffness: 300, damping: 20 }}>
             {entry.author === 'beep' ? (
               <span className={styles.authorName}>Beep, your host</span>
@@ -247,7 +268,7 @@ function useMatchupSounds(matchup: MatchupView, phase: string) {
     if (phase === 'present') {
       play('whoosh');
       const [a, b] = matchup.entries;
-      const say = matchup.kind === 'quip' ? `${matchup.prompt}. ${a.text ?? ''}. Or. ${b.text ?? ''}` : matchup.prompt;
+      const say = matchup.kind === 'quip' && !matchup.finale ? `${matchup.prompt}. ${a.text ?? ''}. Or. ${b.text ?? ''}` : matchup.prompt;
       speak(say);
     }
     if (phase === 'vote') play('vote');

@@ -32,7 +32,11 @@ export const GRAND_ROUNDS = {
   writeMixed: 120_000,
   writeDifferential: 75_000,
   present: { quip: 4_000, doodle: 6_500, differential: 7_500 },
+  /** The finale reveals every list one after another: this long per list, on top of the base. */
+  presentPerList: 2_600,
   vote: 15_000,
+  /** Reading everyone's list takes longer than reading two. */
+  voteFinale: 25_000,
   results: 6_500,
   scores: 7_000,
   pool: 1_000,
@@ -44,6 +48,13 @@ export const GRAND_ROUNDS = {
   audienceWeight: 1 / 3,
   /** With a single voter, the winner's share is capped so one person can't swing a full pool. */
   soloVoteCap: 0.65,
+  /** Finale: every vote is worth this (before the multiplier); the most-voted list gets a bonus. */
+  finaleVote: 500,
+  /** An audience vote in the finale is worth this much of a player's. */
+  finaleAudienceVote: 0.3,
+  finaleWinBonus: 250,
+  /** Every voter picked the same list. */
+  finaleSweepBonus: 500,
   /** Beep nags when this much writing time is left. */
   nagAt: 20_000,
 } as const;

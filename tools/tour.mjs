@@ -4,6 +4,8 @@ import { chromium, devices } from '@playwright/test';
 import { mkdirSync } from 'node:fs';
 
 const [game = 'survive', out = '.', speed = '0.5'] = process.argv.slice(2);
+// STAGE_SIZES=1280x720,1920x1080 also captures the stage at each of those sizes.
+const sizes = (process.env.STAGE_SIZES ?? '').split(',').filter(Boolean).map((s) => s.split('x').map(Number));
 const WEB = 'http://localhost:3000';
 const REALTIME = 'http://localhost:8787';
 mkdirSync(out, { recursive: true });
@@ -40,6 +42,13 @@ async function snap(tag) {
     if (seen.has(key)) continue;
     seen.add(key);
     await page.screenshot({ path: `${out}/${String(++n).padStart(3, '0')}-${who}-${tag}.png` });
+    if (who === 'stage')
+      for (const [width, height] of sizes) {
+        await page.setViewportSize({ width, height });
+        await page.waitForTimeout(250);
+        await page.screenshot({ path: `${out}/${String(n).padStart(3, '0')}-size${width}x${height}-${tag}.png` });
+      }
+    if (who === 'stage' && sizes.length) await page.setViewportSize({ width: 1440, height: 900 });
   }
 }
 await snap('lobby');

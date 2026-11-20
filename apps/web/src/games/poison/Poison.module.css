@@ -15,11 +15,10 @@
 }
 
 .ask {
+  composes: blackText from '../../components/ui/Jelly.module.css';
   font-family: var(--font-display);
   font-size: clamp(2rem, 4.4vw, 3.6rem);
   font-weight: 400;
-  color: var(--rose-kiss);
-  -webkit-text-stroke: 1.5px var(--ink);
 }
 
 .sides {
@@ -48,10 +47,12 @@
 }
 
 .option {
-  font-size: clamp(1.4rem, 2.6vw, 2.2rem);
-  font-weight: 800;
-  line-height: 1.2;
-  letter-spacing: -0.02em;
+  font-family: var(--font-play);
+  font-size: clamp(1.5rem, 2.7vw, 2.3rem);
+  font-weight: 400;
+  line-height: 1.15;
+  letter-spacing: 0.01em;
+  text-shadow: var(--play-on-jelly);
 }
 
 .stampSpot {

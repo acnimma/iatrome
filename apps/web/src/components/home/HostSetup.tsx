@@ -9,7 +9,7 @@ import { rememberHost, rememberPassword } from '@/realtime/identity';
 import { BackButton } from '@/components/ui/BackButton';
 import { Button } from '@/components/ui/Button';
 import { TextInput } from '@/components/ui/Field';
-import { GamePicker, RoomOptions, type ScreenChoice, ScreenPicker } from '@/components/room/GameSettings';
+import { GamePicker, ModePicker, type ScreenChoice, ScreenPicker, TimeToggle } from '@/components/room/GameSettings';
 import { unlockAudio } from '@/lib/sound';
 import styles from './HostSetup.module.css';
 
@@ -50,52 +50,54 @@ export function HostSetup() {
 
   return (
     <main className={styles.page}>
-      <motion.div className={styles.card} initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}>
-        <div className={styles.top}>
+      <motion.div className={styles.shell} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}>
+        <header className={styles.top}>
           <BackButton href="/" />
           <img src="/brand/wordmark.svg" alt="iatrome" className={styles.logo} />
-        </div>
-        <div>
+        </header>
+
+        <div className={styles.intro}>
           <h1 className={styles.title}>Host a game</h1>
-          <p className={styles.sub}>Everyone plays on their phone. A shared screen makes it better, but it’s optional.</p>
+          <p className={styles.sub}>You pick. Everyone else plays on their phone, which they were going to look at anyway.</p>
         </div>
 
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Where’s everyone looking</h2>
-          <ScreenPicker value={screen} onChange={setScreen} />
-          {screen === 'big' && <p className={styles.hint}>Open this page on the screen everyone can see.</p>}
-        </section>
+        <GamePicker tiles value={settings.game} onChange={(game) => setSettings((s) => ({ ...s, game }))} />
 
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Pick a game</h2>
-          <GamePicker value={settings.game} onChange={(game) => setSettings((s) => ({ ...s, game }))} />
-        </section>
+        <div className={styles.settings}>
+          <section className={styles.setting}>
+            <h2 className={styles.label}>Screen</h2>
+            <ScreenPicker value={screen} onChange={setScreen} />
+          </section>
+          <section className={styles.setting}>
+            <h2 className={styles.label}>Crowd</h2>
+            <ModePicker value={settings.mode} onChange={(mode) => setSettings((s) => ({ ...s, mode }))} />
+          </section>
+          <section className={styles.setting}>
+            <h2 className={styles.label}>Password</h2>
+            <TextInput
+              aria-label="Room password (optional)"
+              hint="Optional. Strangers with the code still can’t get in."
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              maxLength={ROOM.maxPasswordLength}
+              placeholder="e.g. scrubs"
+            />
+          </section>
+        </div>
 
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Who’s playing</h2>
-          <RoomOptions settings={settings} onChange={(patch) => setSettings((s) => ({ ...s, ...patch }))} />
-        </section>
-
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>Keep it private</h2>
-          <TextInput
-            label="Room password (optional)"
-            hint="Share it with your group. Strangers with the code still can’t get in."
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            maxLength={ROOM.maxPasswordLength}
-            placeholder="e.g. scrubs"
-          />
-        </section>
-
-        {error && (
-          <p className={styles.error} role="alert">
-            {error}
-          </p>
-        )}
-        <Button size="xl" block onClick={create} disabled={busy}>
-          {busy ? 'Opening the room…' : 'Create room'}
-        </Button>
+        <div className={styles.go}>
+          <div className={styles.time}>
+            <TimeToggle settings={settings} onChange={(patch) => setSettings((s) => ({ ...s, ...patch }))} />
+          </div>
+          {error && (
+            <p className={styles.error} role="alert">
+              {error}
+            </p>
+          )}
+          <Button size="xl" className={styles.create} onClick={create} disabled={busy}>
+            {busy ? 'Opening the room…' : 'Create room'}
+          </Button>
+        </div>
       </motion.div>
     </main>
   );

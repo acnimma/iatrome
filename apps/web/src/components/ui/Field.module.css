@@ -21,7 +21,7 @@
 .input,
 .area {
   width: 100%;
-  border: var(--outline);
+  border: 2px solid color-mix(in srgb, var(--ink) 22%, transparent);
   border-radius: var(--radius-md);
   background: var(--card);
   box-shadow: inset 0 2px 4px rgb(31 42 77 / 0.08);
@@ -30,7 +30,9 @@
   font-size: 1.1rem; /* ≥ 16px so iOS doesn't zoom on focus */
   font-weight: 600;
   outline: none;
-  transition: box-shadow 150ms ease;
+  transition:
+    box-shadow 150ms ease,
+    border-color 150ms ease;
 }
 
 .input {
@@ -40,6 +42,7 @@
 
 .input:focus,
 .area:focus {
+  border-color: var(--ink);
   box-shadow:
     inset 0 2px 4px rgb(31 42 77 / 0.08),
     0 0 0 4px color-mix(in srgb, var(--sky-blue) 45%, transparent);

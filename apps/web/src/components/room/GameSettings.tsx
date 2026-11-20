@@ -4,6 +4,7 @@ import { motion } from 'motion/react';
 import { type ContentMode, type GameId, type RoomSettings, gameInfo } from '@iatrome/game/client';
 import { Icon } from '@/components/icons/Icon';
 import type { IconName } from '@/components/icons/icons';
+import { Segmented } from '@/components/ui/Segmented';
 import { Toggle } from '@/components/ui/Toggle';
 import { jelly } from '@/components/ui/jelly';
 import styles from './GameSettings.module.css';
@@ -27,10 +28,10 @@ const GAME_TONES: Record<GameId, string> = {
 /** The flagship first, then the big-group party game. */
 const ORDER: GameId[] = ['grand-rounds', 'didactics', 'sketch', 'survive', 'poison'];
 
-/** Pick a game. */
-export function GamePicker({ value, onChange, compact }: { value: GameId; onChange: (g: GameId) => void; compact?: boolean }) {
+/** Pick a game: a list on phones and in dialogs, a row of tiles when `tiles` and there's room. */
+export function GamePicker({ value, onChange, compact, tiles }: { value: GameId; onChange: (g: GameId) => void; compact?: boolean; tiles?: boolean }) {
   return (
-    <div className={`${styles.games} ${compact ? styles.compact : ''}`} role="radiogroup" aria-label="Game">
+    <div className={`${styles.games} ${compact ? styles.compact : ''} ${tiles ? styles.tiles : ''}`} role="radiogroup" aria-label="Game">
       {ORDER.map((id) => {
         const info = gameInfo[id];
         const picked = id === value;
@@ -43,21 +44,19 @@ export function GamePicker({ value, onChange, compact }: { value: GameId; onChan
             className={`${styles.game} ${jelly(picked ? 'black' : 'pearl')}`}
             style={{ '--tone': GAME_TONES[id] } as React.CSSProperties}
             onClick={() => onChange(id)}
-            whileTap={{ scaleX: 1.02, scaleY: 0.94 }}
-            animate={{ scale: picked ? [1, 1.03, 1] : 1 }}
-            transition={{ default: { type: 'spring', stiffness: 600, damping: 15 }, scale: { duration: 0.32, ease: 'easeOut' } }}
+            whileTap={{ scale: 0.96 }}
+            transition={{ type: 'spring', stiffness: 600, damping: 18 }}
           >
             <span className={styles.icon}>
               <Icon name={GAME_ICONS[id]} size={compact ? 30 : 38} />
             </span>
             <span className={styles.gameText}>
-              <span className={styles.gameHead}>
-                <span className={styles.gameTitle}>{info.title}</span>
-                <span className={styles.meta}>
-                  {info.min}–{info.max}
-                </span>
-              </span>
+              <span className={styles.gameTitle}>{info.title}</span>
               <span className={styles.tagline}>{info.tagline}</span>
+            </span>
+            <span className={styles.meta} aria-label={`${info.min} to ${info.max} players`}>
+              {info.min}–{info.max}
+              <span className={styles.metaWord}> players</span>
             </span>
           </motion.button>
         );
@@ -66,15 +65,14 @@ export function GamePicker({ value, onChange, compact }: { value: GameId; onChan
   );
 }
 
-const MODES: { id: ContentMode; title: string; blurb: string }[] = [
-  { id: 'normal', title: 'Normal', blurb: 'Anyone can play' },
-  { id: 'pro', title: 'Pro', blurb: 'For healthcare people' },
-];
+const MODES = [
+  { id: 'normal', title: 'Normal', blurb: 'Anyone can play. No medical degree required.' },
+  { id: 'pro', title: 'Pro', blurb: 'Jargon, board-style questions and inside jokes. For people in healthcare.' },
+] as const satisfies readonly { id: ContentMode; title: string; blurb: string }[];
 
-/** The only options: who it's for, and how much time. */
 const SCREENS = [
-  { id: 'big', title: 'Big screen', blurb: 'A TV, laptop or video call' },
-  { id: 'phones', title: 'Just phones', blurb: 'Everyone plays on their own' },
+  { id: 'big', title: 'Big screen', blurb: 'Open this page on the TV, laptop or video call everyone can see.' },
+  { id: 'phones', title: 'Just phones', blurb: 'No TV needed. Everyone plays on their own phone.' },
 ] as const;
 
 export type ScreenChoice = (typeof SCREENS)[number]['id'];
@@ -82,43 +80,33 @@ export type ScreenChoice = (typeof SCREENS)[number]['id'];
 /** Where everyone will be looking. Phones-only rooms skip the stage entirely. */
 export function ScreenPicker({ value, onChange }: { value: ScreenChoice; onChange: (v: ScreenChoice) => void }) {
   return (
-    <div className={styles.modes} role="radiogroup" aria-label="Where everyone looks">
-      {SCREENS.map((s) => (
-        <button
-          key={s.id}
-          type="button"
-          role="radio"
-          aria-checked={value === s.id}
-          className={`${styles.mode} ${jelly(value === s.id ? 'black' : 'pearl')}`}
-          onClick={() => onChange(s.id)}
-        >
-          <span className={styles.modeTitle}>{s.title}</span>
-          <span className={styles.modeBlurb}>{s.blurb}</span>
-        </button>
-      ))}
+    <div className={styles.choice}>
+      <Segmented label="Where everyone looks" options={SCREENS} value={value} onChange={onChange} />
+      <p className={styles.blurb}>{SCREENS.find((s) => s.id === value)?.blurb}</p>
     </div>
   );
 }
 
+/** Who it's for. */
+export function ModePicker({ value, onChange }: { value: ContentMode; onChange: (v: ContentMode) => void }) {
+  return (
+    <div className={styles.choice}>
+      <Segmented label="Who’s playing" options={MODES} value={value} onChange={onChange} />
+      <p className={styles.blurb}>{MODES.find((m) => m.id === value)?.blurb}</p>
+    </div>
+  );
+}
+
+export function TimeToggle({ settings, onChange }: { settings: RoomSettings; onChange: (patch: Partial<RoomSettings>) => void }) {
+  return <Toggle label="More time" hint="Slower timers. Good for video calls." checked={settings.extendedTimers} onChange={(extendedTimers) => onChange({ extendedTimers })} />;
+}
+
+/** Who it's for and how much time: the lobby's settings dialog. */
 export function RoomOptions({ settings, onChange }: { settings: RoomSettings; onChange: (patch: Partial<RoomSettings>) => void }) {
   return (
     <div className={styles.options}>
-      <div className={styles.modes} role="radiogroup" aria-label="Who’s playing">
-        {MODES.map((m) => (
-          <button
-            key={m.id}
-            type="button"
-            role="radio"
-            aria-checked={settings.mode === m.id}
-            className={`${styles.mode} ${jelly(settings.mode === m.id ? 'black' : 'pearl')}`}
-            onClick={() => onChange({ mode: m.id })}
-          >
-            <span className={styles.modeTitle}>{m.title}</span>
-            <span className={styles.modeBlurb}>{m.blurb}</span>
-          </button>
-        ))}
-      </div>
-      <Toggle label="More time" hint="Slower timers. Great on video calls." checked={settings.extendedTimers} onChange={(extendedTimers) => onChange({ extendedTimers })} />
+      <ModePicker value={settings.mode} onChange={(mode) => onChange({ mode })} />
+      <TimeToggle settings={settings} onChange={onChange} />
     </div>
   );
 }

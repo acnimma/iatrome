@@ -1,21 +1,21 @@
+/*
+ * Phones: one column, top to bottom.
+ * Wide screens: the five games in a row, the three settings in a row under them, and
+ * "Create room" at the bottom right. All of it fits on a laptop without scrolling.
+ */
 .page {
   min-height: 100dvh;
   display: flex;
   justify-content: center;
-  padding: clamp(16px, 4vw, 48px) 16px;
+  padding: max(12px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom));
 }
 
-.card {
+.shell {
   display: flex;
   flex-direction: column;
   gap: 22px;
-  width: min(720px, 100%);
+  width: min(1180px, 100%);
   height: fit-content;
-  padding: clamp(20px, 4vw, 40px);
-  border: var(--outline);
-  border-radius: 36px;
-  background: var(--card);
-  box-shadow: var(--shadow-lg);
 }
 
 .top {
@@ -26,7 +26,7 @@
 }
 
 .logo {
-  height: 36px;
+  height: 30px;
   width: auto;
   min-width: 0;
   max-width: 55%;
@@ -34,29 +34,45 @@
 }
 
 .title {
-  font-size: clamp(1.8rem, 4vw, 2.4rem);
+  font-size: clamp(1.9rem, 4vw, 2.8rem);
   font-weight: 900;
-  letter-spacing: -0.03em;
+  line-height: 1.05;
+  letter-spacing: -0.035em;
 }
 
 .sub {
-  margin-top: 4px;
+  max-width: 52ch;
+  margin-top: 6px;
   font-weight: 500;
   color: var(--ink-soft);
 }
 
-.section {
+.settings {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 18px;
 }
 
-.sectionTitle {
-  font-size: 0.8rem;
+.setting {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.label {
+  font-size: 0.95rem;
   font-weight: 800;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--ink-soft);
+}
+
+.go {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.create {
+  width: 100%;
 }
 
 .error {
@@ -67,35 +83,44 @@
   font-weight: 700;
 }
 
-.hint {
-  margin-top: -4px;
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--ink-soft);
-}
-
-/* Phones: the page is the card. No frame eating the edges. */
-@media (max-width: 560px) {
+@media (min-width: 900px) {
   .page {
-    padding: max(12px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom));
+    align-items: center;
+    padding: 28px 40px;
   }
 
-  .card {
-    gap: 20px;
-    padding: 0;
-    border: 0;
-    border-radius: 0;
-    background: none;
-    box-shadow: none;
+  .shell {
+    gap: 28px;
   }
 
   .logo {
-    height: 30px;
+    height: 38px;
   }
-}
 
-@media (max-width: 360px) {
-  .page {
-    padding-inline: 12px;
+  .settings {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 28px;
+  }
+
+  .go {
+    flex-direction: row;
+    align-items: center;
+    gap: 28px;
+  }
+
+  .time {
+    flex: 1;
+    max-width: 360px;
+  }
+
+  .error {
+    flex: 1;
+  }
+
+  .create {
+    width: auto;
+    min-width: 320px;
+    margin-left: auto;
   }
 }

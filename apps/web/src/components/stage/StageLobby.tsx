@@ -114,10 +114,10 @@ export function StageLobby({ view, hideCode }: { view: RoomView; hideCode: boole
               >
                 <Avatar avatar={p.avatar} size={bubble} name={p.name} dim={!p.connected} badge={view.vip === p.id ? <Icon name="star" size={Math.round(bubble * 0.32)} label="VIP" /> : undefined} />
                 <span className={styles.playerActions}>
-                  <button type="button" onClick={() => room.host({ type: 'kick', id: p.id })} aria-label={`Kick ${p.name}`}>
+                  <button type="button" className={styles.kick} onClick={() => room.host({ type: 'kick', id: p.id })} aria-label={`Kick ${p.name}`}>
                     Kick
                   </button>
-                  <button type="button" onClick={() => room.host({ type: 'ban', id: p.id })} aria-label={`Ban ${p.name}`}>
+                  <button type="button" className={styles.ban} onClick={() => room.host({ type: 'ban', id: p.id })} aria-label={`Ban ${p.name}`}>
                     Ban
                   </button>
                 </span>

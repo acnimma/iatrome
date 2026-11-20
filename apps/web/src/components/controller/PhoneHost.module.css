@@ -101,13 +101,11 @@
 }
 
 .small {
-  min-height: 38px;
-  padding: 4px 14px;
-  border: var(--outline);
+  composes: jelly pearl from '../ui/Jelly.module.css';
+  flex: none;
+  min-height: 40px;
+  padding: 4px 16px;
   border-radius: var(--radius-pill);
-  background: var(--card);
   font-size: 0.85rem;
   font-weight: 800;
-  cursor: pointer;
-  box-shadow: var(--gloss), var(--shadow-md);
 }

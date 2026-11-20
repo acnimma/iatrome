@@ -27,11 +27,26 @@ export interface StagePrefs {
   readAloud: boolean;
 }
 
+/** The stage is laid out for this screen and scaled to fit whatever it's really on, like a TV show. */
+const DESIGN = { width: 1440, height: 900 };
+
+function useStageZoom() {
+  const [zoom, setZoom] = useState(1);
+  useEffect(() => {
+    const fit = () => setZoom(Math.min(2.2, Math.max(0.6, Math.min(innerWidth / DESIGN.width, innerHeight / DESIGN.height))));
+    fit();
+    addEventListener('resize', fit);
+    return () => removeEventListener('resize', fit);
+  }, []);
+  return zoom;
+}
+
 /** The shared screen: on a TV, a laptop, or screen-shared on Zoom. */
 export function Stage({ code }: { code: string }) {
   const client = useRoomConnection(code, true);
   const snap = useSnapshot(client);
   const [prefs, setPrefs] = useState<StagePrefs>({ hideCode: false, muted: false, readAloud: false });
+  const zoom = useStageZoom();
 
   useEffect(() => setPrefs((p) => ({ ...p, muted: isMuted(), readAloud: readAloudEnabled() })), []);
 
@@ -47,7 +62,7 @@ export function Stage({ code }: { code: string }) {
 
   return (
     <RoomContext.Provider value={client}>
-      <div className={styles.stage} onPointerDown={unlockAudio}>
+      <div className={styles.stage} style={{ '--z': zoom } as React.CSSProperties} onPointerDown={unlockAudio}>
         <StageScreen view={snap.view} prefs={prefs} />
         <ReactionLayer view={snap.view} />
         <HostControls view={snap.view} prefs={prefs} onPrefs={updatePrefs} />
@@ -94,7 +109,7 @@ function StageScreen({ view, prefs }: { view: RoomView; prefs: StagePrefs }) {
       {view.stage === 'playing' && <StatCalls view={view} floating />}
       {view.paused && (
         <motion.div className={styles.paused} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-          <span>Paused</span>
+          <span className={styles.pausedText}>Paused</span>
         </motion.div>
       )}
     </>

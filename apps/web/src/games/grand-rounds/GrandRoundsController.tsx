@@ -259,7 +259,15 @@ function MatchupPhone({ view, game, matchup }: { view: RoomView; game: GrandRoun
   // The big screen reveals votes, then authors: don't let the phone announce the winner first.
   const heldBack = useAfter(phase === 'results' && view.screen ? REVEAL.results - 200 : 0, `${matchup.id}-${phase}`);
 
+  const sides = matchup.entries.map((_, i) => i);
+
   if (phase === 'present') {
+    if (matchup.finale)
+      return (
+        <PhoneMessage icon="eye" title="Read everyone’s list">
+          Then pick your favourite. Yours doesn’t count.
+        </PhoneMessage>
+      );
     return matchup.yours !== null ? (
       <PhoneMessage icon="shush" title="This one’s yours">
         Keep a straight face.
@@ -272,39 +280,47 @@ function MatchupPhone({ view, game, matchup }: { view: RoomView; game: GrandRoun
   }
 
   if (phase === 'vote') {
-    if (matchup.yours !== null || !matchup.canVote) {
+    if (!matchup.finale && (matchup.yours !== null || !matchup.canVote)) {
       const title = matchup.yours !== null ? 'Votes are coming in…' : 'Players are voting';
       if (view.screen) return <PhoneMessage icon={matchup.yours !== null ? 'sweat' : 'popcorn'} title={title}>{matchup.yours !== null ? 'Keep a straight face.' : ''}</PhoneMessage>;
       return (
         <PhoneStack>
           <PhonePrompt label={title} prompt={matchup.prompt} phase={game.phase} pausedAt={view.pausedAt} />
-          {([0, 1] as const).map((side) => (
-            <Choice key={side} tone={side === 0 ? 'rose' : 'blue'} disabled>
+          {sides.map((side) => (
+            <Choice key={side} tone="black" disabled>
               <VoteContent matchup={matchup} side={side} />
             </Choice>
           ))}
         </PhoneStack>
       );
     }
+    if (!matchup.canVote)
+      return <PhoneMessage icon="popcorn" title="Everyone’s voting" />;
+    const options = sides.filter((side) => !matchup.entries[side].hidden && (matchup.entries[side].text || matchup.entries[side].items || matchup.entries[side].drawingId));
     return (
       <PhoneStack>
-        <PhonePrompt label="Vote for the best" prompt={matchup.prompt} phase={game.phase} pausedAt={view.pausedAt} />
-        {([0, 1] as const).map((side) => (
-          <Choice
-            key={side}
-            tone={side === 0 ? 'rose' : 'blue'}
-            picked={matchup.myVote === side}
-            dimmed={matchup.myVote !== null && matchup.myVote !== side}
-            onClick={() => {
-              if (matchup.myVote !== null) return;
-              haptic('success');
-              play('vote');
-              room.command({ type: 'vote', side });
-            }}
-          >
-            <VoteContent matchup={matchup} side={side} />
-          </Choice>
-        ))}
+        <PhonePrompt label={matchup.finale ? 'Pick your favourite' : 'Vote for the best'} prompt={matchup.prompt} phase={game.phase} pausedAt={view.pausedAt} />
+        {options.map((side) => {
+          const own = matchup.yours === side;
+          return (
+            <Choice
+              key={side}
+              tone={own ? 'pearl' : 'black'}
+              disabled={own}
+              picked={matchup.myVote === side}
+              dimmed={own || (matchup.myVote !== null && matchup.myVote !== side)}
+              onClick={() => {
+                if (matchup.myVote !== null || own) return;
+                haptic('success');
+                play('vote');
+                room.command({ type: 'vote', side });
+              }}
+            >
+              <VoteContent matchup={matchup} side={side} />
+              {own && <span className={styles.yours}>Yours</span>}
+            </Choice>
+          );
+        })}
         {matchup.myVote !== null && <p className={styles.taskNav}>Vote locked in</p>}
       </PhoneStack>
     );
@@ -337,6 +353,8 @@ function MatchupPhone({ view, game, matchup }: { view: RoomView; game: GrandRoun
 /** Results on the phone when there's no big screen: both answers, authors, the split and the points. */
 function MatchupReveal({ view, matchup }: { view: RoomView; matchup: MatchupView }) {
   const people = usePeople(view);
+  // Best first in the finale; a duel keeps its two sides in order.
+  const sides = matchup.entries.map((_, i) => i).sort((a, b) => (matchup.finale ? matchup.result!.points[b] - matchup.result!.points[a] : 0));
   const r = matchup.result!;
   const mine = matchup.yours;
   const headline =
@@ -344,7 +362,7 @@ function MatchupReveal({ view, matchup }: { view: RoomView; matchup: MatchupView
   return (
     <PhoneStack>
       <PhonePrompt label={headline} prompt={matchup.prompt} />
-      {([0, 1] as const).map((side, i) => {
+      {sides.map((side, i) => {
         const entry = matchup.entries[side];
         const won = r.winner === side;
         return (
@@ -362,7 +380,7 @@ function MatchupReveal({ view, matchup }: { view: RoomView; matchup: MatchupView
                 {mine === side ? ' (you)' : ''}
                 {entry.curbside ? ' · curbside' : ''}
               </span>
-              <span>{Math.round(r.shares[side] * 100)}%</span>
+              <span>{matchup.finale ? `${r.playerVotes.filter((v) => v.side === side).length} votes` : `${Math.round(r.shares[side] * 100)}%`}</span>
               <strong>+{r.points[side].toLocaleString()}</strong>
             </div>
           </motion.div>
@@ -373,7 +391,7 @@ function MatchupReveal({ view, matchup }: { view: RoomView; matchup: MatchupView
   );
 }
 
-function VoteContent({ matchup, side }: { matchup: MatchupView; side: 0 | 1 }) {
+function VoteContent({ matchup, side }: { matchup: MatchupView; side: number }) {
   const entry = matchup.entries[side];
   const drawing = useDrawing(entry.drawingId);
   const list = useMemo(() => entry.items ?? [], [entry.items]);

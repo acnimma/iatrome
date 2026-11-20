@@ -57,3 +57,42 @@ export function scoreForfeit(winner: Side, multiplier: number, curbside: boolean
   const full = tidy(((GR.pool + GR.winBonus) * multiplier) / (curbside ? 2 : 1));
   return winner === 0 ? [full, 0] : [0, full];
 }
+
+export interface FinaleInput {
+  /** Player votes per list. */
+  votes: number[];
+  /** Audience votes per list. */
+  audience: number[];
+  multiplier: number;
+}
+
+export interface FinaleOutput {
+  /** Each list's share of all the (weighted) votes, for the bars. */
+  shares: number[];
+  points: number[];
+  /** The single most-voted list, or null on a tie at the top (or no votes). */
+  winner: number | null;
+  /** Every voter (at least two) picked the winner. */
+  consensus: boolean;
+}
+
+/**
+ * The finale, Last-Lash style: everyone answered the same prompt and everyone voted for a
+ * favourite that isn't theirs. Points per vote (audience votes count for less), plus a bonus
+ * for the top list and a bigger one if the whole room agreed.
+ */
+export function scoreFinale({ votes, audience, multiplier }: FinaleInput): FinaleOutput {
+  const weighted = votes.map((v, i) => v + audience[i] * GR.finaleAudienceVote);
+  const total = weighted.reduce((a, b) => a + b, 0);
+  const shares = weighted.map((w) => (total ? w / total : 0));
+  const top = Math.max(0, ...weighted);
+  const leaders = weighted.flatMap((w, i) => (w === top && top > 0 ? [i] : []));
+  const winner = leaders.length === 1 ? leaders[0] : null;
+  const voters = votes.reduce((a, b) => a + b, 0) + audience.reduce((a, b) => a + b, 0);
+  const consensus = winner !== null && voters >= 2 && votes[winner] + audience[winner] === voters;
+  const points = weighted.map((w, i) => {
+    const bonus = i === winner ? (consensus ? GR.finaleSweepBonus : GR.finaleWinBonus) : 0;
+    return tidy((w * GR.finaleVote + bonus) * multiplier);
+  });
+  return { shares, points, winner, consensus };
+}

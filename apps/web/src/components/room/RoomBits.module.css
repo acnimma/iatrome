@@ -114,16 +114,11 @@
 }
 
 .introTitle {
+  composes: blackText from '../ui/Jelly.module.css';
   font-family: var(--font-display);
   font-size: clamp(2.6rem, 7vw, 5.6rem);
   font-weight: 400;
-  line-height: 1;
-  background: linear-gradient(90deg, var(--cool-sky), var(--sky-blue) 30%, #b9b5ad 50%, var(--royal-gold) 70%, var(--rose-kiss));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  -webkit-text-stroke: 1.5px var(--ink);
-  paint-order: stroke fill;
+  line-height: 1.05;
 }
 
 .introBody {

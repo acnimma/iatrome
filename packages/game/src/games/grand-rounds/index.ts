@@ -13,8 +13,8 @@ import {
   standings,
   statted,
 } from '../context';
-import { BEEP, finalePairs, mixedKinds, ring, spreadOrder } from './assign';
-import { type Side, scoreForfeit, scoreVotes } from './scoring';
+import { BEEP, mixedKinds, ring, spreadOrder } from './assign';
+import { type Side, scoreFinale, scoreForfeit, scoreVotes } from './scoring';
 
 // ── State ────────────────────────────────────────────────────────────────────
 
@@ -32,23 +32,30 @@ interface Entry {
   hidden: boolean;
 }
 
+/** Per-entry arrays line up with the matchup's entries (two in a duel, everyone in the finale). */
 export interface MatchupResult {
   outcome: 'vote' | 'forfeit' | 'duplicate' | 'empty';
-  shares: [number, number];
-  points: [number, number];
-  winner: Side | null;
+  shares: number[];
+  points: number[];
+  winner: number | null;
   consensus: boolean;
-  playerVotes: { voterId: string; side: Side }[];
+  playerVotes: { voterId: string; side: number }[];
 }
 
+/**
+ * Rounds 1–2 are duels: two players, one prompt, everyone else votes.
+ * The finale is one prompt for everybody (plus Beep), and everyone votes for a favourite
+ * that isn't theirs, like Quiplash's last round.
+ */
 interface Matchup {
   id: string;
   kind: MatchupKind;
   prompt: string;
   curbside: [string, string] | null;
-  playerIds: [string, string];
-  entries: [Entry, Entry];
-  votes: Record<string, Side>;
+  playerIds: string[];
+  entries: Entry[];
+  /** voterId → entry index. */
+  votes: Record<string, number>;
   result: MatchupResult | null;
 }
 
@@ -71,7 +78,7 @@ export type GrandRoundsAction =
   | { type: 'list'; matchupId: string; items: string[]; final: boolean }
   | { type: 'doodle'; matchupId: string; drawing: Drawing; final: boolean }
   | { type: 'curbside'; matchupId: string }
-  | { type: 'vote'; side: Side };
+  | { type: 'vote'; side: number };
 
 // ── Views ────────────────────────────────────────────────────────────────────
 
@@ -91,16 +98,18 @@ export interface MatchupView {
   prompt: string;
   index: number;
   total: number;
-  entries: [EntryView, EntryView];
+  /** Everyone's answer, all at once: the finale. */
+  finale: boolean;
+  entries: EntryView[];
   result: MatchupResult | null;
   /** How many votes are in (shown during voting, not who for). */
   votesIn: number;
   votersExpected: number;
   /** Viewer-specific. */
   canVote: boolean;
-  myVote: Side | null;
-  /** Which side is the viewer's own answer (only ever told to its author). */
-  yours: Side | null;
+  myVote: number | null;
+  /** Which entry is the viewer's own answer (only ever told to its author). */
+  yours: number | null;
 }
 
 export interface TaskView {
@@ -180,7 +189,7 @@ export const grandRounds: GameModule<GrandRoundsState, GrandRoundsAction, GrandR
         beginPresent(state, ctx, 0);
         return;
       case 'present':
-        if (needsVote(state, ctx)) setPhase(state, ctx, 'vote', GR.vote, 'input');
+        if (needsVote(state, ctx)) setPhase(state, ctx, 'vote', isFinale(state.matchups[state.current]) ? GR.voteFinale : GR.vote, 'input');
         else finish(state, ctx);
         return;
       case 'vote':
@@ -207,13 +216,13 @@ export const grandRounds: GameModule<GrandRoundsState, GrandRoundsAction, GrandR
     else if (state.phase.name === 'vote') {
       const m = state.matchups[state.current];
       const v = voters(state, ctx, m);
-      if (!live(m, ctx, 0) || !live(m, ctx, 1) || (v.length > 0 && votingDone(state, ctx, m))) finish(state, ctx);
+      if (liveCount(m, ctx) < 2 || (v.length > 0 && votingDone(state, ctx, m))) finish(state, ctx);
     }
   },
 
   hide(state, ctx, target) {
     const matchup = state.matchups[state.current];
-    if (!matchup || !['present', 'vote', 'results'].includes(state.phase.name)) return;
+    if (!matchup || isFinale(matchup) || !['present', 'vote', 'results'].includes(state.phase.name)) return;
     const side = target === 'a' ? 0 : target === 'b' ? 1 : -1;
     if (side === -1) return;
     matchup.entries[side].hidden = true;
@@ -283,8 +292,10 @@ export const grandRounds: GameModule<GrandRoundsState, GrandRoundsAction, GrandR
     }
     if (state.phase.name === 'vote') {
       const m = state.matchups[state.current];
-      if (m.playerIds.includes(botId) || botId in m.votes) return false;
-      vote(state, ctx, botId, ctx.rng.int(2) as Side);
+      if (botId in m.votes || !voters(state, ctx, m).includes(botId)) return false;
+      const options = m.entries.flatMap((e, i) => (e.playerId !== botId && live(m, ctx, i) ? [i] : []));
+      if (!options.length) return false;
+      vote(state, ctx, botId, ctx.rng.pick(options));
       return true;
     }
     return false;
@@ -330,21 +341,17 @@ function startRound(state: GrandRoundsState, ctx: GameContext) {
       }),
     );
   } else {
-    const lastPlace = order.slice().sort((a, b) => state.scores[a] - state.scores[b])[0];
-    const pairs = finalePairs(order, lastPlace);
-    const personal = insideJokes ? ctx.draw(playerDifferentials, Math.round(pairs.length * PERSONAL_SHARE)) : [];
-    const prompts = ctx.rng.shuffle([...personal, ...ctx.draw(differentials, pairs.length - personal.length)]);
-    state.matchups = pairs.map((pair, i) => {
-      let p = prompts[i];
-      let text = p.text.includes('{player}') ? personalize(p.text, pair) : p.text;
-      if (text === null) {
-        p = ctx.draw(differentials, 1)[0];
-        text = p.text;
-      }
-      const m = newMatchup(ctx, 'differential', text, null, pair);
-      if (pair[1] === BEEP) Object.assign(m.entries[1], { items: [...p.beep], final: true });
-      return m;
-    });
+    // The finale: one prompt for everybody. Beep answers too, so even three players have a real choice.
+    const personal = insideJokes && ctx.rng.int(10) < PERSONAL_SHARE * 10 ? ctx.draw(playerDifferentials, 1) : [];
+    let p = personal[0] ?? ctx.draw(differentials, 1)[0];
+    let text = p.text.includes('{player}') ? p.text.replace('{player}', () => ctx.person(ctx.rng.pick(order))!.name) : p.text;
+    if (!text) {
+      p = ctx.draw(differentials, 1)[0];
+      text = p.text;
+    }
+    const m = newMatchup(ctx, 'differential', text, null, [...order, BEEP]);
+    Object.assign(m.entries[m.entries.length - 1], { items: [...p.beep], final: true });
+    state.matchups = [m];
   }
 
   ctx.say(state.round === 0 ? 'roundOneIntro' : state.round === 1 ? 'roundTwoIntro' : 'finalIntro');
@@ -356,7 +363,7 @@ function newMatchup(
   kind: MatchupKind,
   prompt: string,
   curbside: [string, string] | null,
-  playerIds: [string, string],
+  playerIds: string[],
 ): Matchup {
   const entry = (playerId: string): Entry => ({
     playerId,
@@ -373,7 +380,7 @@ function newMatchup(
     prompt,
     curbside,
     playerIds,
-    entries: [entry(playerIds[0]), entry(playerIds[1])],
+    entries: playerIds.map(entry),
     votes: {},
     result: null,
   };
@@ -464,16 +471,23 @@ function beginPresent(state: GrandRoundsState, ctx: GameContext, index: number) 
   const m = state.matchups[index];
   // Drafts that never got submitted still count when the timer runs out.
   for (const e of m.entries) e.final = e.final || hasContent(e);
-  setPhase(state, ctx, 'present', GR.present[m.kind]);
+  const lists = isFinale(m) ? m.entries.filter((e) => hasContent(e)).length : 0;
+  setPhase(state, ctx, 'present', GR.present[m.kind] + lists * GR.presentPerList);
 }
 
-function live(m: Matchup, ctx: GameContext, side: Side) {
+function live(m: Matchup, ctx: GameContext, side: number) {
   const e = m.entries[side];
-  const present = e.playerId === BEEP || ctx.person(e.playerId);
+  const present = e?.playerId === BEEP || (e && ctx.person(e.playerId));
   return Boolean(present && !e.hidden && hasContent(e));
 }
 
+const liveCount = (m: Matchup, ctx: GameContext) => m.entries.filter((_, i) => live(m, ctx, i)).length;
+
+/** The finale is everybody's answer to one prompt (more than two entries). */
+const isFinale = (m: Matchup) => m.entries.length > 2;
+
 function isDuplicate(m: Matchup) {
+  if (isFinale(m)) return false;
   const [a, b] = m.entries;
   if (m.kind === 'quip') return Boolean(a.text && b.text && sameAnswer(a.text, b.text));
   if (m.kind === 'differential' && a.items && b.items)
@@ -481,9 +495,13 @@ function isDuplicate(m: Matchup) {
   return false;
 }
 
-/** Who may vote on the current matchup: everyone in the room except its two authors, audience included. */
+/**
+ * Who may vote: in a duel, everyone in the room except its two authors, audience included.
+ * In the finale everyone votes (just never for their own list).
+ */
 function voters(_state: GrandRoundsState, ctx: GameContext, m: Matchup) {
-  return ctx.connectedPlayers(ctx.room.people.map((p) => p.id)).filter((id) => !m.playerIds.includes(id));
+  const everyone = ctx.connectedPlayers(ctx.room.people.map((p) => p.id));
+  return isFinale(m) ? everyone : everyone.filter((id) => !m.playerIds.includes(id));
 }
 
 /** Voting closes early once every player who can vote has; the audience never holds it up. */
@@ -500,15 +518,15 @@ function leaderOf(scores: Record<string, number>) {
 
 function needsVote(state: GrandRoundsState, ctx: GameContext) {
   const m = state.matchups[state.current];
-  if (!live(m, ctx, 0) || !live(m, ctx, 1) || isDuplicate(m)) return false;
+  if (liveCount(m, ctx) < 2 || isDuplicate(m)) return false;
   return voters(state, ctx, m).length > 0;
 }
 
-function vote(state: GrandRoundsState, ctx: GameContext, voterId: string, side: Side): ActionOutcome | void {
+function vote(state: GrandRoundsState, ctx: GameContext, voterId: string, side: number): ActionOutcome | void {
   const m = state.matchups[state.current];
   if (state.phase.name !== 'vote' || !m) return { error: 'Voting is closed.' };
-  if (side !== 0 && side !== 1) return;
-  if (m.playerIds.includes(voterId)) return { error: 'No voting for yourself!' };
+  if (!Number.isInteger(side) || !live(m, ctx, side)) return;
+  if (m.entries[side].playerId === voterId || (!isFinale(m) && m.playerIds.includes(voterId))) return { error: 'No voting for yourself!' };
   const eligible = voters(state, ctx, m);
   if (!eligible.includes(voterId)) return { error: 'You can’t vote on this one.' };
   m.votes[voterId] = side;
@@ -519,10 +537,11 @@ function vote(state: GrandRoundsState, ctx: GameContext, voterId: string, side: 
 
 function finish(state: GrandRoundsState, ctx: GameContext) {
   const m = state.matchups[state.current];
+  if (isFinale(m)) return finishFinale(state, ctx, m);
   const multiplier = GR.multipliers[state.round];
   const curbside: [boolean, boolean] = [m.entries[0].curbside, m.entries[1].curbside];
   const alive: [boolean, boolean] = [live(m, ctx, 0), live(m, ctx, 1)];
-  const playerVotes = Object.entries(m.votes).map(([voterId, side]) => ({ voterId, side }));
+  const playerVotes = Object.entries(m.votes).map(([voterId, side]) => ({ voterId, side: side as Side }));
   const base = { playerVotes, consensus: false };
 
   // Beep waits for the stage to finish revealing before reacting.
@@ -561,13 +580,36 @@ function finish(state: GrandRoundsState, ctx: GameContext) {
     else if (score.shares[w] >= 0.75) say('blowout');
   }
 
-  result.points = result.points.map((p, side) => statted(state, m.entries[side].playerId, m.id, p)) as [number, number];
+  settleResult(state, ctx, m, result);
+}
+
+function finishFinale(state: GrandRoundsState, ctx: GameContext, m: Matchup) {
+  const say = (event: HostEvent) => ctx.say(event, undefined, REVEAL.results);
+  const playerVotes = Object.entries(m.votes).map(([voterId, side]) => ({ voterId, side }));
+  const votes = m.entries.map(() => 0);
+  const audience = m.entries.map(() => 0);
+  for (const v of playerVotes) if (live(m, ctx, v.side)) (state.playerIds.includes(v.voterId) ? votes : audience)[v.side] += 1;
+  const score = scoreFinale({ votes, audience, multiplier: GR.multipliers[state.round] });
+  const alive = liveCount(m, ctx);
+  const result: MatchupResult = { outcome: alive ? 'vote' : 'empty', playerVotes, ...score };
+  const w = score.winner;
+  if (!alive) say('forfeit');
+  else if (!playerVotes.length) say('noVotes');
+  else if (w === null) say('tie');
+  else if (m.entries[w].playerId === BEEP) say('beepWins');
+  else if (score.consensus) say('consensus');
+  else if (score.shares[w] >= 0.6) say('blowout');
+  settleResult(state, ctx, m, result);
+}
+
+function settleResult(state: GrandRoundsState, ctx: GameContext, m: Matchup, result: MatchupResult) {
+  result.points = result.points.map((p, side) => statted(state, m.entries[side].playerId, m.id, p));
   m.result = result;
   m.entries.forEach((e, side) => {
     if (e.playerId !== BEEP && e.playerId in state.scores) state.scores[e.playerId] += result.points[side];
   });
   state.archive.push({ round: state.round, prompt: m.prompt, kind: m.kind, entries: m.entries, result });
-  setPhase(state, ctx, 'results', GR.results);
+  setPhase(state, ctx, 'results', isFinale(m) ? GR.results + 1_500 * m.entries.length : GR.results);
 }
 
 function matchupView(state: GrandRoundsState, ctx: GameContext, m: Matchup, viewer: Viewer): MatchupView {
@@ -593,13 +635,14 @@ function matchupView(state: GrandRoundsState, ctx: GameContext, m: Matchup, view
     prompt: m.prompt,
     index: state.current,
     total: state.matchups.length,
-    entries: [entry(m.entries[0]), entry(m.entries[1])],
+    finale: isFinale(m),
+    entries: m.entries.map(entry),
     result: revealed ? m.result : null,
     votesIn: Object.keys(m.votes).length,
     votersExpected: v.length,
     canVote,
     myVote: viewerId ? (m.votes[viewerId] ?? null) : null,
-    yours: viewerId && m.playerIds.includes(viewerId) ? (m.playerIds.indexOf(viewerId) as Side) : null,
+    yours: viewerId && m.playerIds.includes(viewerId) ? m.playerIds.indexOf(viewerId) : null,
   };
 }
 
