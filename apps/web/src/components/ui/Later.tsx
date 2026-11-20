@@ -3,6 +3,9 @@
 import { useEffect, useState } from 'react';
 
 /** True once `ms` have passed since mount (or since `key` changed). */
+/** The held beat in trivia reveals: show how the room split, wait, then show who was right. */
+export const REVEAL_BEAT = 1_300;
+
 export function useAfter(ms: number, key?: unknown) {
   const [done, setDone] = useState(ms <= 0);
   useEffect(() => {

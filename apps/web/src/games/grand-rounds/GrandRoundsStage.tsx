@@ -166,7 +166,7 @@ function AnswerCard({ view, matchup, side, phase, delay, lineGap, replayMs }: { 
     <motion.div
       className={`${styles.answer} ${jelly()} ${won ? styles.won : ''} ${lost ? styles.lost : ''}`}
       initial={{ y: 40, opacity: 0, rotate: tilt }}
-      animate={{ y: 0, opacity: 1, rotate: won ? tilt / 2 : 0, scale: won ? 1.04 : lost ? 0.97 : 1 }}
+      animate={{ y: 0, opacity: 1, rotate: 0 }}
       transition={{ delay, type: 'spring', stiffness: 260, damping: 20 }}
     >
       <AnswerContent entry={entry} kind={matchup.kind} replayMs={phase === 'present' ? replayMs : 0} delay={delay} lineGap={lineGap} />

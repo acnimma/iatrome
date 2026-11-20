@@ -190,27 +190,6 @@ export const sketch: GameModule<SketchState, SketchAction, SketchView> = {
     return { key: `t${state.turn}`, revealed: state.phase.name === 'reveal' };
   },
 
-  bot(state, ctx, botId) {
-    const drawer = state.turns[state.turn];
-    if (state.phase.name === 'choose' && botId === drawer) {
-      beginDrawing(state, ctx, ctx.rng.pick(state.choices));
-      return true;
-    }
-    if (state.phase.name === 'draw') {
-      if (botId === drawer) {
-        const d = ctx.room.drawings[state.drawingId!];
-        if (d.strokes.length >= 4) return false;
-        const p: number[] = [];
-        for (let i = 0; i < 16; i++) p.push(150 + ctx.rng.int(700), 150 + ctx.rng.int(700));
-        applyDrawOp(d, { op: 'begin', c: ctx.rng.int(5), w: 1, p });
-        return true;
-      }
-      if (state.solved.some((s) => s.playerId === botId) || state.feed.some((f) => f.playerId === botId)) return false;
-      guess(state, ctx, botId, ctx.rng.next() < 0.6 ? state.term!.answer : ctx.rng.pick(sketchTerms).answer);
-      return true;
-    }
-    return false;
-  },
 };
 
 function beginChoosing(state: SketchState, ctx: GameContext) {
@@ -267,7 +246,8 @@ function guess(state: SketchState, ctx: GameContext, playerId: string, raw: stri
   if (outcome === 'correct') {
     const elapsed = (ctx.now - state.phase.startedAt) / ((state.phase.endsAt ?? ctx.now) - state.phase.startedAt || 1);
     const round = `t${state.turn}`;
-    const points = statted(state, playerId, round, tidy(SK.guessMax - (SK.guessMax - SK.guessMin) * Math.min(1, Math.max(0, elapsed))));
+    const pay = SK.difficultyPay[state.term.difficulty - 1] ?? 1;
+    const points = statted(state, playerId, round, tidy((SK.guessMax - (SK.guessMax - SK.guessMin) * Math.min(1, Math.max(0, elapsed))) * pay));
     const art = statted(state, drawer, round, tidy(points * SK.drawerShare));
     if (!state.solved.length) state.firstSolveMs = ctx.now - state.phase.startedAt;
     state.solved.push({ playerId, points });

@@ -276,30 +276,6 @@ export const grandRounds: GameModule<GrandRoundsState, GrandRoundsAction, GrandR
     return true;
   },
 
-  bot(state, ctx, botId) {
-    if (state.phase.name === 'write') {
-      const mine = state.matchups.filter((m) => m.playerIds.includes(botId) && !m.entries[m.playerIds.indexOf(botId)].final);
-      if (!mine.length) return false;
-      for (const m of mine) {
-        const entry = m.entries[m.playerIds.indexOf(botId)];
-        if (m.kind === 'doodle') write(m, entry, ctx, { type: 'doodle', matchupId: m.id, drawing: scribble(ctx), final: true });
-        else if (m.kind === 'differential')
-          write(m, entry, ctx, { type: 'list', matchupId: m.id, items: [0, 1, 2].map(() => ctx.rng.pick(curbsideGeneric)), final: true });
-        else write(m, entry, ctx, { type: 'curbside', matchupId: m.id });
-      }
-      if (allWritten(state, ctx)) beginPresent(state, ctx, 0);
-      return true;
-    }
-    if (state.phase.name === 'vote') {
-      const m = state.matchups[state.current];
-      if (botId in m.votes || !voters(state, ctx, m).includes(botId)) return false;
-      const options = m.entries.flatMap((e, i) => (e.playerId !== botId && live(m, ctx, i) ? [i] : []));
-      if (!options.length) return false;
-      vote(state, ctx, botId, ctx.rng.pick(options));
-      return true;
-    }
-    return false;
-  },
 };
 
 // ── Rounds ───────────────────────────────────────────────────────────────────
@@ -341,7 +317,7 @@ function startRound(state: GrandRoundsState, ctx: GameContext) {
       }),
     );
   } else {
-    // The finale: one prompt for everybody. Beep answers too, so even three players have a real choice.
+    // The finale: one prompt for everybody, and everybody votes.
     const personal = insideJokes && ctx.rng.int(10) < PERSONAL_SHARE * 10 ? ctx.draw(playerDifferentials, 1) : [];
     let p = personal[0] ?? ctx.draw(differentials, 1)[0];
     let text = p.text.includes('{player}') ? p.text.replace('{player}', () => ctx.person(ctx.rng.pick(order))!.name) : p.text;
@@ -349,9 +325,7 @@ function startRound(state: GrandRoundsState, ctx: GameContext) {
       p = ctx.draw(differentials, 1)[0];
       text = p.text;
     }
-    const m = newMatchup(ctx, 'differential', text, null, [...order, BEEP]);
-    Object.assign(m.entries[m.entries.length - 1], { items: [...p.beep], final: true });
-    state.matchups = [m];
+    state.matchups = [newMatchup(ctx, 'differential', text, null, order)];
   }
 
   ctx.say(state.round === 0 ? 'roundOneIntro' : state.round === 1 ? 'roundTwoIntro' : 'finalIntro');
@@ -483,8 +457,8 @@ function live(m: Matchup, ctx: GameContext, side: number) {
 
 const liveCount = (m: Matchup, ctx: GameContext) => m.entries.filter((_, i) => live(m, ctx, i)).length;
 
-/** The finale is everybody's answer to one prompt (more than two entries). */
-const isFinale = (m: Matchup) => m.entries.length > 2;
+/** The finale is everybody's answer to one prompt (the only differential round). */
+const isFinale = (m: Matchup) => m.kind === 'differential';
 
 function isDuplicate(m: Matchup) {
   if (isFinale(m)) return false;
@@ -679,21 +653,4 @@ function highlights(state: GrandRoundsState, ctx: GameContext): Highlight[] {
   if (fav && ctx.person(fav[0])) out.push({ title: 'Crowd favourite', playerId: fav[0], detail: `${fav[1]} votes` });
 
   return out;
-}
-
-// ── Bots ─────────────────────────────────────────────────────────────────────
-
-function scribble(ctx: GameContext): Drawing {
-  const strokes = Array.from({ length: 3 + ctx.rng.int(4) }, () => {
-    const p: number[] = [];
-    let x = 200 + ctx.rng.int(600);
-    let y = 200 + ctx.rng.int(600);
-    for (let i = 0; i < 24; i++) {
-      x = Math.max(20, Math.min(980, x + ctx.rng.int(90) - 45));
-      y = Math.max(20, Math.min(980, y + ctx.rng.int(90) - 45));
-      p.push(x, y);
-    }
-    return { c: ctx.rng.int(5), w: ctx.rng.int(3), p };
-  });
-  return { strokes };
 }

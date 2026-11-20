@@ -75,7 +75,7 @@ export function PoisonStage({ view, game }: { view: RoomView; game: PoisonView }
               key={`${game.number}-${side}`}
               className={`${styles.side} ${jelly(side === 'a' ? 'rose' : 'blue')} ${majority ? styles.majority : ''}`}
               initial={{ x: i ? 60 : -60, opacity: 0 }}
-              animate={{ x: 0, opacity: 1, scale: majority ? 1.03 : 1 }}
+              animate={{ x: 0, opacity: 1 }}
               transition={{ delay: 0.2 + i * 0.2, type: 'spring', stiffness: 260, damping: 20 }}
             >
               <p className={styles.option}>{side === 'a' ? game.a : game.b}</p>

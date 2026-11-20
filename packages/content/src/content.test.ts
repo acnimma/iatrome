@@ -36,7 +36,7 @@ describe('Normal and Pro mode', () => {
     doodles: [100, 45],
     differentials: [50, 35],
     dilemmas: [100, 55],
-    sketchTerms: [160, 60],
+    sketchTerms: [180, 100],
     trivia: [110, 100],
   };
   for (const [name, [normal, pro]] of Object.entries(minimum)) {
@@ -115,7 +115,7 @@ describe('Inside jokes', () => {
 
 describe('Sketch', () => {
   it('has terms at every difficulty, with clean alternatives', () => {
-    for (const d of [1, 2, 3]) expect(sketchTerms.filter((t) => t.difficulty === d).length).toBeGreaterThanOrEqual(20);
+    for (const d of [1, 2, 3]) expect(sketchTerms.filter((t) => t.difficulty === d).length).toBeGreaterThanOrEqual(45);
     for (const t of sketchTerms) {
       expect(t.answer.length, t.id).toBeLessThanOrEqual(24);
       expect(t.accept.map((a) => a.toLowerCase()), t.id).not.toContain(t.answer.toLowerCase());

@@ -77,8 +77,6 @@ export interface GameModule<S extends BaseGameState, A extends { type: string },
   wakeAt?(state: S): number[];
   /** Called on every wake; act on any moment that has arrived. Return true if anything changed. */
   tick?(state: S, ctx: GameContext): boolean;
-  /** Dev bots: act if there's something to do. Return true if the bot did something. */
-  bot(state: S, ctx: GameContext, botId: string): boolean;
 }
 
 // ── Helpers shared by game modules ───────────────────────────────────────────

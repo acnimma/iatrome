@@ -23,7 +23,7 @@ npm run dev      # site on :3000, game server on :8787
 1. On your laptop open **http://localhost:3000/host** → pick a game → **Create room**.
 2. On your phone (same Wi-Fi) open **http://&lt;your-laptop-ip&gt;:3000** and type the room code: or scan the QR code on screen.
    Your laptop’s IP is printed by `npm run dev` (look for `http://192.168…:8787`).
-3. Playing solo? In the lobby, click **🤖 Add a bot** a few times (development only).
+3. Testing alone? Open a few private browser windows as extra phones. Every mode is for real people only.
 
 ## Repo layout
 

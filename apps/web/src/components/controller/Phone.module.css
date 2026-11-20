@@ -91,12 +91,10 @@
   filter: none;
 }
 
-/* Your pick: a white halo with an ink ring, so it reads at a glance on any colour. */
+/* Your pick: a white ring inside the edge, so it reads on any colour and never grows. */
 .picked {
-  box-shadow:
-    0 0 0 3px var(--warm-white),
-    0 0 0 6px var(--ink),
-    0 14px 26px -10px rgb(14 16 27 / 0.6);
+  outline: 3px solid #fff;
+  outline-offset: -7px;
 }
 
 .dimmed {

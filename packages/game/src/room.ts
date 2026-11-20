@@ -65,7 +65,7 @@ export type JoinError = 'banned' | 'locked' | 'full' | 'name-taken' | 'name-inva
 
 export type JoinResult = { ok: true; person: Person } | { ok: false; error: JoinError };
 
-export function join(room: RoomState, opts: { deviceId: string; name: string; now: number; isBot?: boolean }): JoinResult {
+export function join(room: RoomState, opts: { deviceId: string; name: string; now: number }): JoinResult {
   if (room.bannedDevices.includes(opts.deviceId)) return { ok: false, error: 'banned' };
   if (room.locked) return { ok: false, error: 'locked' };
   if (room.people.length >= ROOM.maxPeople) return { ok: false, error: 'full' };
@@ -92,7 +92,6 @@ export function join(room: RoomState, opts: { deviceId: string; name: string; no
     connected: true,
     disconnectedAt: null,
     joinedAt: opts.now,
-    isBot: opts.isBot ?? false,
   };
   room.people.push(person);
   if (lateEntry && room.game) games[room.game.game].addPlayer!(room.game, context(room, opts.now), person.id);
@@ -105,7 +104,7 @@ export function findByToken(room: RoomState, token: string): Person | null {
 
 export function setConnected(room: RoomState, personId: string, connected: boolean, now: number) {
   const p = room.people.find((x) => x.id === personId);
-  if (!p || p.isBot) return;
+  if (!p) return;
   p.connected = connected;
   p.disconnectedAt = connected ? null : now;
 }
@@ -119,7 +118,7 @@ export function setAvatar(room: RoomState, personId: string, avatar: number) {
 
 /** The VIP is the earliest-joined present player: they can start the game from their phone. */
 export function vipId(room: RoomState): string | null {
-  return room.people.filter((p) => p.role === 'player' && p.connected && !p.isBot).sort((a, b) => a.joinedAt - b.joinedAt)[0]?.id ?? null;
+  return room.people.filter((p) => p.role === 'player' && p.connected).sort((a, b) => a.joinedAt - b.joinedAt)[0]?.id ?? null;
 }
 
 // ── Host controls ────────────────────────────────────────────────────────────
@@ -137,8 +136,7 @@ export type HostCommand =
   | { type: 'kick'; id: string }
   | { type: 'ban'; id: string }
   | { type: 'hide'; target: string }
-  | { type: 'settings'; settings: Partial<RoomSettings> }
-  | { type: 'add-bot' };
+  | { type: 'settings'; settings: Partial<RoomSettings> };
 
 /** Returns an error message for the host, if any. */
 export function hostCommand(room: RoomState, cmd: HostCommand, now: number): string | void {
@@ -179,7 +177,7 @@ export function hostCommand(room: RoomState, cmd: HostCommand, now: number): str
       const p = room.people.find((x) => x.id === cmd.id);
       if (!p) return;
       room.people = room.people.filter((x) => x.id !== cmd.id);
-      if (cmd.type === 'ban' && !p.isBot) room.bannedDevices.push(p.deviceId);
+      if (cmd.type === 'ban') room.bannedDevices.push(p.deviceId);
       if (room.game) {
         games[room.game.game].settle(room.game, ctx);
         checkFinished(room, now);
@@ -192,13 +190,6 @@ export function hostCommand(room: RoomState, cmd: HostCommand, now: number): str
     case 'settings':
       room.settings = sanitizeSettings({ ...room.settings, ...cmd.settings }, room.devMode);
       return;
-    case 'add-bot': {
-      if (!room.devMode) return 'Bots are only available in development.';
-      const names = ['Dr. Bot', 'Nurse Bot', 'PA Bot', 'DDS Bot', 'PharmBot', 'Intern Bot', 'Resident Bot', 'Scrub Bot'];
-      const name = names.find((n) => !room.people.some((p) => p.name === n)) ?? `Bot ${room.people.length}`;
-      const r = join(room, { deviceId: `bot-${name}`, name, now, isBot: true });
-      return r.ok ? undefined : 'Couldn’t add a bot.';
-    }
   }
 }
 
@@ -309,7 +300,6 @@ export function playerCommand(room: RoomState, personId: string, cmd: PlayerComm
 
 // ── Time ─────────────────────────────────────────────────────────────────────
 
-const BOT_TICK = 900;
 /** Share of Pro-mode content drawn from the clinical pool. */
 const PRO_SHARE = 0.7;
 
@@ -322,11 +312,10 @@ export function nextWake(room: RoomState, now: number): number | null {
   for (const p of room.people)
     if (!p.connected && p.disconnectedAt !== null && p.disconnectedAt + ROOM.reconnectGrace > now)
       times.push(p.disconnectedAt + ROOM.reconnectGrace);
-  if (room.people.some((p) => p.isBot && room.game!.playerIds.includes(p.id))) times.push(now + BOT_TICK * room.settings.speed);
   return times.length ? Math.min(...times) : null;
 }
 
-/** Run deadlines, reconnect-grace expiries and bots. Returns true if anything changed. */
+/** Run deadlines and reconnect-grace expiries. Returns true if anything changed. */
 export function advance(room: RoomState, now: number): boolean {
   if (room.pausedAt !== null || !room.game) return false;
   let changed = false;
@@ -347,11 +336,6 @@ export function advance(room: RoomState, now: number): boolean {
     let acted = false;
 
     if (module.tick?.(game, ctx)) acted = true;
-
-    const bots = room.people.filter((p) => p.isBot && game.playerIds.includes(p.id));
-    bots.forEach((bot, i) => {
-      if (now >= game.phase.startedAt + (1200 + i * 700) * room.settings.speed && module.bot(game, ctx, bot.id)) acted = true;
-    });
 
     if (game.phase.endsAt !== null && game.phase.endsAt <= now) {
       module.timeout(game, ctx);
@@ -435,7 +419,6 @@ export interface PersonView {
   avatar: number;
   role: 'player' | 'audience';
   connected: boolean;
-  isBot: boolean;
   /** Playing in the current game (vs watching). */
   inGame: boolean;
 }
@@ -490,7 +473,6 @@ export function viewFor(room: RoomState, viewer: Viewer, now: number, screen = f
       avatar: p.avatar,
       role: p.role,
       connected: p.connected,
-      isBot: p.isBot,
       inGame: inGame(p.id),
     })),
     vip: vipId(room),

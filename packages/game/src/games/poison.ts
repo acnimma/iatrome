@@ -2,7 +2,7 @@ import { type Dilemma, dilemmas } from '@iatrome/content';
 import { LIMITS, POISON as PO } from '../constants';
 import { cleanText } from '../text';
 import type { GameResult, Highlight, Phase } from '../types';
-import { type ActionOutcome, type BaseGameState, type GameContext, type GameModule, setPhase, standings, statted } from './context';
+import { type ActionOutcome, type BaseGameState, type GameContext, type GameModule, setPhase, standings, statted, tidy } from './context';
 
 /**
  * Pick Your Poison: would you rather. Pick a side AND predict the majority.
@@ -202,29 +202,6 @@ export const poison: GameModule<PoisonState, PoisonAction, PoisonView> = {
     return { key: live ? `d${state.index}` : null, revealed: state.phase.name !== 'choose' };
   },
 
-  bot(state, ctx, botId) {
-    if (state.phase.name === 'choose') {
-      const p = state.picks[botId];
-      if (p?.side && p?.predict) return false;
-      const side = (): Side => (ctx.rng.next() < 0.5 ? 'a' : 'b');
-      poison.act(state, ctx, botId, { type: 'pick', side: side() });
-      poison.act(state, ctx, botId, { type: 'predict', side: side() });
-      return true;
-    }
-    if (state.phase.name === 'volunteer' && !state.defender && inMinority(state, botId)) {
-      poison.act(state, ctx, botId, { type: 'volunteer' });
-      return true;
-    }
-    if (state.phase.name === 'defence' && state.defender && state.picks[botId]?.side === state.majority && !state.converts.includes(botId) && ctx.rng.next() < 0.4) {
-      poison.act(state, ctx, botId, { type: 'convinced' });
-      return true;
-    }
-    if (state.phase.name === 'defend' && state.defender === botId) {
-      poison.act(state, ctx, botId, { type: 'defend', text: 'I regret nothing. Ask my attending.' });
-      return true;
-    }
-    return false;
-  },
 };
 
 function ask(state: PoisonState, ctx: GameContext) {
@@ -243,9 +220,11 @@ function reveal(state: PoisonState, ctx: GameContext) {
   const a = sides.filter((s) => s === 'a').length;
   const b = sides.filter((s) => s === 'b').length;
   state.majority = a === b ? 'tie' : a > b ? 'a' : 'b';
+  // Reading a 51/49 room is harder than a 90/10 one: closeness 0 (unanimous) to 1 (dead even).
+  const closeness = a + b ? 1 - Math.abs(a - b) / (a + b) : 0;
   for (const [id, p] of Object.entries(state.picks)) {
     if (!p.predict) continue;
-    const base = state.majority === 'tie' ? PO.predictPoints / 2 : p.predict === state.majority ? PO.predictPoints : 0;
+    const base = state.majority === 'tie' ? PO.predictPoints / 2 : p.predict === state.majority ? tidy(PO.predictPoints * (1 + closeness)) : 0;
     const points = statted(state, id, `d${state.index}`, base);
     if (points) {
       state.scores[id] += points;

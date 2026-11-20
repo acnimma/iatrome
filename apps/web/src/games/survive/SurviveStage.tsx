@@ -12,10 +12,13 @@ import styles from './Survive.module.css';
 import { Icon } from '@/components/icons/Icon';
 import { ANSWER_TONES, AnswerLetter, LETTERS } from '@/components/room/answers';
 import { jelly } from '@/components/ui/jelly';
+import { REVEAL_BEAT, useAfter } from '@/components/ui/Later';
 
 
 export function SurviveStage({ view, game }: { view: RoomView; game: SurviveView }) {
   const revealed = game.phase.name === 'reveal';
+  // The room's split lands first; the right answer a beat later.
+  const answerShown = useAfter(revealed ? REVEAL_BEAT : 0, `${game.number}-${revealed}`);
   useEffect(() => {
     if (game.phase.name === 'question' && game.question) speak(`${game.question} ${game.options.map((o, i) => `${LETTERS[i]}: ${o}.`).join(' ')}`);
     if (revealed) play(game.last?.clockedOut.length ? 'lose' : 'reveal');
@@ -30,6 +33,7 @@ export function SurviveStage({ view, game }: { view: RoomView; game: SurviveView
         <Pill>
           Question {game.number} of {game.total}
         </Pill>
+        {game.lastCall && <Pill tone="gold">Last call · double points</Pill>}
         {game.phase.name === 'question' && <TimerRing phase={game.phase} pausedAt={view.pausedAt} size={72} ticks />}
       </div>
       <motion.h2 key={game.number} className={styles.question} data-long={(game.question?.length ?? 0) > 140 || undefined} initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
@@ -37,14 +41,14 @@ export function SurviveStage({ view, game }: { view: RoomView; game: SurviveView
       </motion.h2>
       <div className={styles.options}>
         {game.options.map((option, i) => {
-          const right = revealed && game.answer === i;
-          const wrong = revealed && game.answer !== i;
+          const right = answerShown && game.answer === i;
+          const wrong = answerShown && game.answer !== i;
           return (
             <motion.div
               key={`${game.number}-${i}`}
               className={`${styles.option} ${jelly(ANSWER_TONES[i])} ${right ? styles.right : ''} ${wrong ? styles.wrong : ''}`}
               initial={{ scale: 0.8, opacity: 0 }}
-              animate={{ scale: right ? 1.05 : 1, opacity: 1 }}
+              animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: revealed ? 0 : 0.3 + i * 0.12, type: 'spring', stiffness: 400, damping: 22 }}
             >
               <AnswerLetter index={i} size="lg" />
@@ -53,13 +57,13 @@ export function SurviveStage({ view, game }: { view: RoomView; game: SurviveView
             </motion.div>
           );
         })}
-        {revealed && game.last?.mercy && (
+        {answerShown && game.last?.mercy && (
           <span className={styles.stampSpot}>
             <Stamp tone="sky">Mercy rule: everyone keeps their coffee</Stamp>
           </span>
         )}
       </div>
-      {revealed && game.fact && (
+      {answerShown && game.fact && (
         <motion.div className={styles.fact} initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.6 }}>
           <span className={styles.factLabel}>Chart note</span>
           {game.fact}

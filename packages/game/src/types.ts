@@ -37,7 +37,6 @@ export interface Person {
   /** When they dropped; they keep their place for a short grace period. */
   disconnectedAt: number | null;
   joinedAt: number;
-  isBot: boolean;
 }
 
 export interface Phase<Name extends string = string> {
@@ -93,7 +92,7 @@ export interface HostLine {
 export interface RoomState {
   code: string;
   createdAt: number;
-  /** Dev mode allows bots and the speed setting. Set by the server from its environment. */
+  /** Dev mode allows the speed setting. Set by the server from its environment. */
   devMode: boolean;
   rng: RngState;
   settings: RoomSettings;

@@ -74,8 +74,7 @@ export function Choice({
       disabled={disabled}
       aria-pressed={picked || undefined}
       whileTap={disabled ? undefined : { scaleX: 1.04, scaleY: 0.9 }}
-      animate={picked ? { scale: [1, 1.05, 1] } : { scale: 1 }}
-      transition={{ default: { type: 'spring', stiffness: 600, damping: 15 }, scale: { duration: 0.32, ease: 'easeOut' } }}
+      transition={{ type: 'spring', stiffness: 600, damping: 15 }}
       layout
       data-choice
     >

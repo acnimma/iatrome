@@ -100,19 +100,6 @@ describe('full games', () => {
       expect(room.stage).toBe('over');
     }
   });
-
-  it('bots can play a whole game on their own in dev mode', () => {
-    for (const game of ['grand-rounds', 'sketch', 'survive', 'poison', 'didactics'] as GameId[]) {
-      const clock = { now: START };
-      const room = createRoom({ code: 'BOTBOT', seed: 3, now: clock.now, devMode: true, settings: { game, speed: 0.05 } });
-      for (let i = 0; i < 4; i++) expect(hostCommand(room, { type: 'add-bot' }, clock.now)).toBeUndefined();
-      hostCommand(room, { type: 'start' }, clock.now);
-      for (let i = 0; i < 5000 && room.stage === 'playing'; i++) step(room, clock);
-      expect(room.stage).toBe('over');
-      // Bots answer quickly: a whole game at 5% speed should take minutes, not hours.
-      expect(clock.now - START).toBeLessThan(30 * 60_000);
-    }
-  });
 });
 
 describe('Grand Rounds rules', () => {

@@ -106,10 +106,9 @@
 
 /* The right answer keeps its colour and gets a green halo; the rest step back. */
 .option.right {
-  box-shadow:
-    0 0 0 4px var(--warm-white),
-    0 0 0 10px #3f9d6e,
-    0 26px 50px -18px rgb(14 16 27 / 0.55);
+  /* drawn inside the edge: the card never grows into its neighbours */
+  outline: 5px solid #3f9d6e;
+  outline-offset: -5px;
 }
 
 .option.wrong {

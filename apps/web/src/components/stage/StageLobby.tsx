@@ -147,11 +147,6 @@ export function StageLobby({ view, hideCode }: { view: RoomView; hideCode: boole
             <Button tone="pearl" size="sm" onClick={() => room.host({ type: view.locked ? 'unlock' : 'lock' })}>
               <Icon name="lock" size={22} /> {view.locked ? 'Unlock room' : 'Lock room'}
             </Button>
-            {view.devMode && (
-              <Button tone="pearl" size="sm" onClick={() => room.host({ type: 'add-bot' })}>
-                <Icon name="robot" size={22} /> Add a bot
-              </Button>
-            )}
           </div>
         </div>
       </section>

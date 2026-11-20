@@ -25,7 +25,7 @@ export function HostMenu({ view }: { view: RoomView }) {
   const room = useRoom();
   const [open, setOpen] = useState(false);
   const playing = view.stage === 'playing';
-  const others = view.people.filter((p) => p.id !== view.you?.id && !p.isBot);
+  const others = view.people.filter((p) => p.id !== view.you?.id);
 
   useEffect(() => {
     if (!open) return;
@@ -70,12 +70,6 @@ export function HostMenu({ view }: { view: RoomView }) {
                     <Icon name="skip" size={22} /> Skip ahead
                   </button>
                 </div>
-              )}
-
-              {view.devMode && view.stage === 'lobby' && (
-                <button type="button" className={styles.action} onClick={() => run({ type: 'add-bot' })}>
-                  <Icon name="robot" size={22} /> Add a bot
-                </button>
               )}
 
               <Toggle label="Lock room" hint="Nobody new can join." checked={view.locked} onChange={(locked) => room.host({ type: locked ? 'lock' : 'unlock' })} />

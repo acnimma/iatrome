@@ -69,6 +69,8 @@ export const SKETCH = {
   /** Points for a correct guess scale from max → min with elapsed time. */
   guessMax: 500,
   guessMin: 100,
+  /** Harder words pay more, for guessers and the artist: easy, medium, hard. */
+  difficultyPay: [1, 1.5, 2] as const,
   /** The artist earns this share of every correct guess, so drawing clearly pays as well as guessing. */
   drawerShare: 0.5,
   /** Hint letters appear at these points of the drawing time. */
@@ -82,7 +84,10 @@ export const SURVIVE = {
   question: 15_000,
   reveal: 6_500,
   coffees: 2,
-  maxQuestions: 20,
+  /** Short and tense beats long and grinding: Trivia Murder Party runs about 7–9. */
+  maxQuestions: 12,
+  /** The last question is "last call": worth this much more. */
+  lastCallFactor: 2,
   /** Correct answers score base + up to speedBonus for answering fast. */
   base: 100,
   speedBonus: 100,
@@ -107,6 +112,7 @@ export const POISON = {
   /** The majority reads the defence and can tap "Convinced". */
   defence: 9_000,
   rounds: 8,
+  /** Calling the majority pays this, up to double when the room was nearly split. */
   predictPoints: 100,
   defendPoints: 50,
   /** Per person the defence convinced. */

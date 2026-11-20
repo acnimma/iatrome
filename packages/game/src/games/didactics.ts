@@ -202,12 +202,6 @@ export const didactics: GameModule<DidacticsState, DidacticsAction, DidacticsVie
     return { key: `q${state.index}`, revealed: state.phase.name === 'reveal' };
   },
 
-  bot(state, ctx, botId) {
-    if (state.phase.name !== 'question' || botId in state.answers || !state.playerIds.includes(botId)) return false;
-    const q = state.questions[state.index];
-    didactics.act(state, ctx, botId, { type: 'pick-option', option: ctx.rng.next() < 0.6 ? q.answer : ctx.rng.int(4) });
-    return true;
-  },
 };
 
 const isLightning = (state: DidacticsState) => state.index >= state.questions.length - DC.lightning;

@@ -40,10 +40,9 @@
 }
 
 .majority {
-  box-shadow:
-    0 0 0 4px var(--warm-white),
-    0 0 0 10px var(--royal-gold),
-    0 26px 50px -18px rgb(14 16 27 / 0.55);
+  /* drawn inside the edge: the card never grows into its neighbours */
+  outline: 5px solid var(--royal-gold);
+  outline-offset: -5px;
 }
 
 .option {

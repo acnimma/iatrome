@@ -44,7 +44,7 @@ export function GamePicker({ value, onChange, compact, tiles }: { value: GameId;
             className={`${styles.game} ${jelly(picked ? 'black' : 'pearl')}`}
             style={{ '--tone': GAME_TONES[id] } as React.CSSProperties}
             onClick={() => onChange(id)}
-            whileTap={{ scale: 0.96 }}
+            whileTap={{ scale: 0.97 }}
             transition={{ type: 'spring', stiffness: 600, damping: 18 }}
           >
             <span className={styles.icon}>

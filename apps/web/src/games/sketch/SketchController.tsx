@@ -16,7 +16,7 @@ import { haptic } from '@/lib/haptics';
 import { play } from '@/lib/sound';
 import styles from './Sketch.module.css';
 
-const DIFFICULTY = ['', 'Easy', 'Medium', 'Hard'];
+const DIFFICULTY = ['', 'Easy · ×1', 'Medium · ×1.5', 'Hard · ×2'];
 
 export function SketchController({ view, game }: { view: RoomView; game: SketchView }) {
   const room = useRoom();

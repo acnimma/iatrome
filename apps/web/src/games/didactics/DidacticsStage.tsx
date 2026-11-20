@@ -11,6 +11,7 @@ import { speak } from '@/lib/speech';
 import { teamTone } from './teams';
 import { ANSWER_TONES, AnswerLetter, LETTERS } from '@/components/room/answers';
 import { jelly } from '@/components/ui/jelly';
+import { REVEAL_BEAT, useAfter } from '@/components/ui/Later';
 import styles from './Didactics.module.css';
 
 export function DidacticsStage({ view, game }: { view: RoomView; game: DidacticsView }) {
@@ -64,6 +65,8 @@ function Teams({ view, game }: { view: RoomView; game: DidacticsView }) {
 
 function Question({ view, game }: { view: RoomView; game: DidacticsView }) {
   const revealed = game.phase.name === 'reveal';
+  // How the room answered lands first; the right answer a beat later.
+  const answerShown = useAfter(revealed ? REVEAL_BEAT : 0, `${game.number}-${revealed}`);
   const answered = new Set(game.answered);
   return (
     <div className={styles.stage}>
@@ -79,13 +82,13 @@ function Question({ view, game }: { view: RoomView; game: DidacticsView }) {
       </motion.h2>
       <div className={styles.options}>
         {game.options.map((option, i) => {
-          const right = revealed && game.answer === i;
+          const right = answerShown && game.answer === i;
           return (
             <motion.div
               key={`${game.number}-${i}`}
-              className={`${styles.option} ${jelly(ANSWER_TONES[i])} ${right ? styles.right : ''} ${revealed && !right ? styles.wrong : ''}`}
+              className={`${styles.option} ${jelly(ANSWER_TONES[i])} ${right ? styles.right : ''} ${answerShown && !right ? styles.wrong : ''}`}
               initial={{ scale: 0.85, opacity: 0 }}
-              animate={{ scale: right ? 1.04 : 1, opacity: 1 }}
+              animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: revealed ? 0 : 0.25 + i * 0.1, type: 'spring', stiffness: 380, damping: 22 }}
             >
               <AnswerLetter index={i} size="lg" />
@@ -95,7 +98,7 @@ function Question({ view, game }: { view: RoomView; game: DidacticsView }) {
           );
         })}
       </div>
-      {revealed && game.fact && (
+      {answerShown && game.fact && (
         <motion.p className={styles.fact} initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.5 }}>
           {game.fact}
         </motion.p>

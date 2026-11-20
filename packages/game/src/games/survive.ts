@@ -33,6 +33,8 @@ export interface SurviveView {
   phase: Phase<PhaseName>;
   number: number;
   total: number;
+  /** The final question: worth double. */
+  lastCall: boolean;
   question: string | null;
   options: string[];
   /** Revealed at the reveal. */
@@ -145,6 +147,7 @@ export const survive: GameModule<SurviveState, SurviveAction, SurviveView> = {
       phase: state.phase,
       number: state.index + 1,
       total: state.questions.length,
+      lastCall: state.index === state.questions.length - 1,
       question: showing ? q.question : null,
       options: showing ? [...q.options] : [],
       answer: revealed ? q.answer : null,
@@ -168,12 +171,6 @@ export const survive: GameModule<SurviveState, SurviveAction, SurviveView> = {
     return { key: `q${state.index}`, revealed: state.phase.name === 'reveal' };
   },
 
-  bot(state, ctx, botId) {
-    if (state.phase.name !== 'question' || botId in state.answers || !state.playerIds.includes(botId)) return false;
-    const q = state.questions[state.index];
-    survive.act(state, ctx, botId, { type: 'pick-option', option: ctx.rng.next() < 0.6 ? q.answer : ctx.rng.int(4) });
-    return true;
-  },
 };
 
 function survivors(state: SurviveState, ctx: GameContext) {
@@ -205,7 +202,8 @@ function reveal(state: SurviveState, ctx: GameContext) {
     const ghost = id in state.clockedOut;
     if (correct(id)) {
       const speed = 1 - Math.min(1, (state.answers[id].at - state.phase.startedAt) / duration);
-      points[id] = statted(state, id, `q${state.index}`, tidy((SV.base + SV.speedBonus * speed) * (ghost ? SV.ghostFactor : 1)));
+      const lastCall = state.index === state.questions.length - 1 ? SV.lastCallFactor : 1;
+      points[id] = statted(state, id, `q${state.index}`, tidy((SV.base + SV.speedBonus * speed) * (ghost ? SV.ghostFactor : 1) * lastCall));
       state.scores[id] += points[id];
       if (ghost) {
         state.ghostStreak[id] = (state.ghostStreak[id] ?? 0) + 1;
