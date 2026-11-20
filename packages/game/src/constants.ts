@@ -71,6 +71,9 @@ export const SKETCH = {
   guessMin: 100,
   /** Harder words pay more, for guessers and the artist: easy, medium, hard. */
   difficultyPay: [1, 1.5, 2] as const,
+  /** The last third of the turns are worth double, so the bottom of the board can still win. */
+  finalStretch: 1 / 3,
+  finalStretchFactor: 2,
   /** The artist earns this share of every correct guess, so drawing clearly pays as well as guessing. */
   drawerShare: 0.5,
   /** Hint letters appear at these points of the drawing time. */
@@ -93,8 +96,8 @@ export const SURVIVE = {
   speedBonus: 100,
   /** Clocked-out players keep answering for a share of the points. */
   ghostFactor: 0.5,
-  /** This many right in a row as a ghost puts you back on shift with one coffee (once a game). */
-  ghostRevive: 3,
+  /** This many right in a row as a ghost puts you back on shift with one coffee. As often as you earn it. */
+  ghostRevive: 2,
 } as const;
 
 /** Long questions (Pro vignettes) get extra reading time: per character past `free`, capped. */
@@ -112,6 +115,8 @@ export const POISON = {
   /** The majority reads the defence and can tap "Convinced". */
   defence: 9_000,
   rounds: 8,
+  /** The final dilemma is worth this much more: anyone can still win it. */
+  finalFactor: 3,
   /** Calling the majority pays this, up to double when the room was nearly split. */
   predictPoints: 100,
   defendPoints: 50,

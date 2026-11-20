@@ -40,6 +40,8 @@ export type PoisonAction =
 export interface PoisonView {
   game: 'poison';
   phase: Phase<PhaseName>;
+  /** 3 on the final dilemma, else 1. */
+  multiplier: number;
   number: number;
   total: number;
   a: string | null;
@@ -98,7 +100,7 @@ export const poison: GameModule<PoisonState, PoisonAction, PoisonView> = {
       if (state.phase.name !== 'defence' || !state.defender || state.converts.includes(playerId)) return;
       if (state.picks[playerId]?.side !== state.majority) return { error: 'You already agree with them.' };
       state.converts.push(playerId);
-      const points = statted(state, state.defender, `d${state.index}`, PO.convertPoints);
+      const points = statted(state, state.defender, `d${state.index}`, PO.convertPoints * finalFactor(state));
       state.scores[state.defender] += points;
       state.earned[state.defender] = (state.earned[state.defender] ?? 0) + points;
       return;
@@ -177,6 +179,7 @@ export const poison: GameModule<PoisonState, PoisonAction, PoisonView> = {
       phase: state.phase,
       number: state.index + 1,
       total: state.dilemmas.length,
+      multiplier: finalFactor(state),
       a: asking ? d.a : null,
       b: asking ? d.b : null,
       counts: revealed ? { a: Object.values(sides).filter((s) => s === 'a').length, b: Object.values(sides).filter((s) => s === 'b').length } : null,
@@ -215,6 +218,9 @@ function ask(state: PoisonState, ctx: GameContext) {
   setPhase(state, ctx, 'choose', PO.choose, 'input');
 }
 
+/** The last dilemma is worth triple. */
+const finalFactor = (state: PoisonState) => (state.index === state.dilemmas.length - 1 ? PO.finalFactor : 1);
+
 function reveal(state: PoisonState, ctx: GameContext) {
   const sides = Object.values(state.picks).map((p) => p.side).filter(Boolean);
   const a = sides.filter((s) => s === 'a').length;
@@ -224,7 +230,8 @@ function reveal(state: PoisonState, ctx: GameContext) {
   const closeness = a + b ? 1 - Math.abs(a - b) / (a + b) : 0;
   for (const [id, p] of Object.entries(state.picks)) {
     if (!p.predict) continue;
-    const base = state.majority === 'tie' ? PO.predictPoints / 2 : p.predict === state.majority ? tidy(PO.predictPoints * (1 + closeness)) : 0;
+    const pay = state.majority === 'tie' ? PO.predictPoints / 2 : p.predict === state.majority ? PO.predictPoints * (1 + closeness) : 0;
+    const base = tidy(pay * finalFactor(state));
     const points = statted(state, id, `d${state.index}`, base);
     if (points) {
       state.scores[id] += points;
@@ -239,7 +246,7 @@ function reveal(state: PoisonState, ctx: GameContext) {
 
 function showDefence(state: PoisonState, ctx: GameContext) {
   if (state.defender && state.defence) {
-    const points = statted(state, state.defender, `d${state.index}`, PO.defendPoints);
+    const points = statted(state, state.defender, `d${state.index}`, PO.defendPoints * finalFactor(state));
     state.scores[state.defender] += points;
     state.earned[state.defender] = (state.earned[state.defender] ?? 0) + points;
     setPhase(state, ctx, 'defence', PO.defence);

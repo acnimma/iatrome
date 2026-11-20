@@ -239,3 +239,10 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* The comeback stretch, on the drawer's pick screen. */
+.stretch {
+  font-weight: 800;
+  color: #8a7522;
+  text-align: center;
+}

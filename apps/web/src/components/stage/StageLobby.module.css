@@ -136,12 +136,14 @@
 .players {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(calc(var(--bubble, 64px) + 28px), 1fr));
-  max-height: 46vh;
-  overflow-y: auto;
   gap: 14px 8px;
   margin: 0;
-  /* room for shadows and the host's buttons, which the scroll box would otherwise clip */
-  padding: 8px 4px;
+  /*
+   * Never a scroll box: it would clip bubbles as they pop in (and the VIP star).
+   * Bubbles shrink as the room fills instead, so even 40 people fit.
+   */
+  overflow: visible;
+  padding: 6px 4px 0;
   list-style: none;
 }
 

@@ -60,6 +60,7 @@ export function PoisonStage({ view, game }: { view: RoomView; game: PoisonView }
         <Pill>
           {game.number} of {game.total}
         </Pill>
+        {game.multiplier > 1 && <Pill tone="gold">Final dilemma · triple points</Pill>}
         {phase === 'choose' && <TimerRing phase={game.phase} pausedAt={view.pausedAt} size={72} ticks />}
       </div>
       <h2 className={styles.ask}>Would you rather…</h2>

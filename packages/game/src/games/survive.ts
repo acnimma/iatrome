@@ -207,10 +207,11 @@ function reveal(state: SurviveState, ctx: GameContext) {
       state.scores[id] += points[id];
       if (ghost) {
         state.ghostStreak[id] = (state.ghostStreak[id] ?? 0) + 1;
-        if (state.ghostStreak[id] >= SV.ghostRevive && !state.revived.includes(id)) {
+        if (state.ghostStreak[id] >= SV.ghostRevive) {
           delete state.clockedOut[id];
           state.coffees[id] = 1;
-          state.revived.push(id);
+          state.ghostStreak[id] = 0;
+          if (!state.revived.includes(id)) state.revived.push(id);
           revived.push(id);
         }
       }

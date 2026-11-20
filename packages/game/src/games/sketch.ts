@@ -47,6 +47,8 @@ export interface SketchView {
   phase: Phase<PhaseName>;
   turn: number;
   turns: number;
+  /** 2 in the final stretch, else 1. */
+  multiplier: number;
   drawer: string | null;
   /** The secret: only for the drawer while drawing, and for everyone at the reveal. */
   term: string | null;
@@ -167,6 +169,7 @@ export const sketch: GameModule<SketchState, SketchAction, SketchView> = {
       phase: state.phase,
       turn: state.turn,
       turns: state.turns.length,
+      multiplier: stretchFactor(state),
       drawer,
       term: (isDrawer && state.phase.name === 'draw') || revealing ? term : null,
       mask: revealing ? term : mask(term, state.hintOrder, hintsShown(state, ctx)),
@@ -191,6 +194,12 @@ export const sketch: GameModule<SketchState, SketchAction, SketchView> = {
   },
 
 };
+
+/** The final third of the turns pay double: the comeback stretch. */
+function stretchFactor(state: SketchState) {
+  const fromTurn = state.turns.length - Math.ceil(state.turns.length * SK.finalStretch);
+  return state.turn >= fromTurn ? SK.finalStretchFactor : 1;
+}
 
 function beginChoosing(state: SketchState, ctx: GameContext) {
   // Skip drawers who left the room.
@@ -246,7 +255,7 @@ function guess(state: SketchState, ctx: GameContext, playerId: string, raw: stri
   if (outcome === 'correct') {
     const elapsed = (ctx.now - state.phase.startedAt) / ((state.phase.endsAt ?? ctx.now) - state.phase.startedAt || 1);
     const round = `t${state.turn}`;
-    const pay = SK.difficultyPay[state.term.difficulty - 1] ?? 1;
+    const pay = (SK.difficultyPay[state.term.difficulty - 1] ?? 1) * stretchFactor(state);
     const points = statted(state, playerId, round, tidy((SK.guessMax - (SK.guessMax - SK.guessMin) * Math.min(1, Math.max(0, elapsed))) * pay));
     const art = statted(state, drawer, round, tidy(points * SK.drawerShare));
     if (!state.solved.length) state.firstSolveMs = ctx.now - state.phase.startedAt;

@@ -39,6 +39,7 @@ export function SketchController({ view, game }: { view: RoomView; game: SketchV
             <h2 className={styles.phoneTitle}>Pick something to draw</h2>
             <TimerRing phase={game.phase} pausedAt={view.pausedAt} size={52} />
           </div>
+          {game.multiplier > 1 && <p className={styles.stretch}>Final stretch: everything pays double</p>}
           <StatButton view={view} label="Call your Stat on your turn ×2" />
           {game.choices.map((c, i) => (
             <Choice key={c.answer} tone={(['sky', 'gold', 'rose'] as const)[i]} onClick={() => room.command({ type: 'choose', index: i })}>

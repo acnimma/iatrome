@@ -49,7 +49,7 @@ export function PoisonController({ view, game }: { view: RoomView; game: PoisonV
     return (
       <PhoneStack>
         <PhonePrompt
-          label={step === 'pick' ? 'Step 1 of 2' : 'Step 2 of 2'}
+          label={`${game.multiplier > 1 ? 'Final dilemma · ×3 · ' : ''}${step === 'pick' ? 'Step 1 of 2' : 'Step 2 of 2'}`}
           prompt={step === 'pick' ? 'Would you rather…' : 'What did MOST people pick?'}
           phase={game.phase}
           pausedAt={view.pausedAt}

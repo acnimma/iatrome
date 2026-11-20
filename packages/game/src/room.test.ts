@@ -391,23 +391,28 @@ describe('polish rules', () => {
     expect(g.coffees[ids[0]]).toBe(1); // present, didn't answer
   });
 
-  it('Survive: three right in a row as a ghost puts you back on shift, once', () => {
+  it('Survive: two right in a row as a ghost puts you back on shift, as often as you earn it', () => {
     const { room, ids, clock } = setup(3, { game: 'survive' });
     hostCommand(room, { type: 'start' }, clock.now);
     const g = () => (room.game?.game === 'survive' ? room.game : null)!;
-    while (room.game?.phase.name !== 'question') step(room, clock);
-    g().coffees[ids[0]] = 0;
-    g().clockedOut[ids[0]] = 0;
-    for (let q = 0; q < 3; q++) {
+    const answerRight = () => {
       while (room.game?.phase.name !== 'question') step(room, clock);
       const answer = g().questions[g().index].answer;
       for (const id of ids) playerCommand(room, id, { type: 'pick-option', option: answer }, clock.now);
       while (room.game?.phase.name === 'question') step(room, clock);
+    };
+    while (room.game?.phase.name !== 'question') step(room, clock);
+    for (let comeback = 0; comeback < 2; comeback++) {
+      g().coffees[ids[0]] = 0;
+      g().clockedOut[ids[0]] = g().index;
+      answerRight();
+      expect(ids[0] in g().clockedOut).toBe(true);
+      answerRight();
+      expect(ids[0] in g().clockedOut).toBe(false);
+      expect(g().coffees[ids[0]]).toBe(1);
+      expect(g().last?.revived).toEqual([ids[0]]);
+      expect(room.hostLine?.event).toBe('ghostRevive');
     }
-    expect(ids[0] in g().clockedOut).toBe(false);
-    expect(g().coffees[ids[0]]).toBe(1);
-    expect(g().last?.revived).toEqual([ids[0]]);
-    expect(room.hostLine?.event).toBe('ghostRevive');
   });
 
   it('Pick Your Poison: nobody is forced to defend; the first volunteer gets the mic', () => {

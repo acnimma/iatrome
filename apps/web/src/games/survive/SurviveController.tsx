@@ -39,7 +39,7 @@ export function SurviveController({ view, game }: { view: RoomView; game: Surviv
     return (
       <PhoneStack>
         <PhonePrompt
-          label={out ? 'Ghost mode · half points · 3 right in a row gets you back' : `${game.lastCall ? 'Last call · double points' : `Question ${game.number}`} · ${game.coffees[me]} ${game.coffees[me] === 1 ? 'coffee' : 'coffees'} left`}
+          label={out ? 'Ghost mode · 2 right in a row gets you back on shift' : `${game.lastCall ? 'Last call · double points' : `Question ${game.number}`} · ${game.coffees[me]} ${game.coffees[me] === 1 ? 'coffee' : 'coffees'} left`}
           prompt={game.question ?? ''}
           phase={game.phase}
           pausedAt={view.pausedAt}
@@ -81,7 +81,7 @@ export function SurviveController({ view, game }: { view: RoomView; game: Surviv
         </PhoneMessage>
       ) : justOut ? (
         <PhoneMessage icon="ghost" title="You clocked out">
-          Keep answering as a ghost for half points.
+          Keep answering as a ghost. Two right in a row and you’re back on shift.
         </PhoneMessage>
       ) : right ? (
         <PhoneMessage icon="target" title="Correct!">

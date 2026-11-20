@@ -35,7 +35,7 @@ export function StageLobby({ view, hideCode }: { view: RoomView; hideCode: boole
   const ready = players.filter((p) => p.connected).length;
   const needed = Math.max(0, info.min - ready);
   // Shrink the bubbles as the room fills (team trivia takes up to 40).
-  const bubble = players.length > 20 ? 40 : players.length > 10 ? 52 : 64;
+  const bubble = players.length > 30 ? 34 : players.length > 20 ? 40 : players.length > 10 ? 52 : 64;
   const joinUrl = site ? `${window.location.protocol}//${window.location.host}/${view.code}` : '';
 
   return (

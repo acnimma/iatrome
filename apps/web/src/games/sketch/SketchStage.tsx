@@ -27,6 +27,7 @@ export function SketchStage({ view, game }: { view: RoomView; game: SketchView }
         <Pill>
           Turn {game.turn + 1} of {game.turns}
         </Pill>
+        {game.multiplier > 1 && <Pill tone="gold">Final stretch · double points</Pill>}
       </div>
     );
 
