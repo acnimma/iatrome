@@ -16,6 +16,11 @@
   justify-content: center;
 }
 
+/* Capped by height too, so a phone on its side still has room around it. */
+.wordmark {
+  width: min(88vw, 780px, 110dvh);
+}
+
 .say {
   margin-top: calc(clamp(20px, 3.5vw, 36px) * -0.55);
   font-size: clamp(0.8rem, 2.6vw, 0.92rem);

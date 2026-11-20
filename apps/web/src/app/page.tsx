@@ -5,7 +5,7 @@ export default function ComingSoonPage() {
   return (
     <main className={styles.page}>
       <h1 className={styles.logo}>
-        <Wordmark />
+        <Wordmark className={styles.wordmark} />
       </h1>
       <p className={styles.say} aria-label="Pronounced EYE-uh-trohm">
         eye-uh-trohm
