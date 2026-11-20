@@ -11,6 +11,6 @@ export type { RoomView, PersonView, HostCommand, PlayerCommand, JoinError } from
 export type { GameView } from './games/registry';
 export type { Viewer } from './games/context';
 export type { GrandRoundsView, MatchupView, EntryView, TaskView, MatchupResult, MatchupKind } from './games/grand-rounds';
-export type { SketchyView } from './games/sketchy';
+export type { SketchView } from './games/sketch';
 export type { SurviveView } from './games/survive';
 export type { PoisonView } from './games/poison';

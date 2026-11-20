@@ -5,10 +5,10 @@ import { type GameId, type RoomSettings, gameInfo } from '@iatrome/game/client';
 import { Toggle } from '@/components/ui/Toggle';
 import styles from './GameSettings.module.css';
 
-const GAME_ICONS: Record<GameId, string> = { 'grand-rounds': '🎤', sketchy: '✏️', survive: '☕', poison: '🧪' };
+const GAME_ICONS: Record<GameId, string> = { 'grand-rounds': '🎤', sketch: '✏️', survive: '☕', poison: '🧪' };
 const GAME_TONES: Record<GameId, string> = {
   'grand-rounds': 'var(--rose-kiss)',
-  sketchy: 'var(--cool-sky)',
+  sketch: 'var(--cool-sky)',
   survive: 'var(--royal-gold)',
   poison: 'var(--sky-blue)',
 };
@@ -52,9 +52,17 @@ export function RoomOptions({ settings, onChange }: { settings: RoomSettings; on
   return (
     <div className={styles.options}>
       {settings.game === 'grand-rounds' && (
-        <Toggle label="Doodle prompts" hint="Round 2 mixes in drawing duels." checked={settings.doodles} onChange={(doodles) => onChange({ doodles })} />
+        <>
+          <Toggle
+            label="Inside jokes"
+            hint="Some prompts are about the players: “Why is Sam in the ER at 3 a.m.?”"
+            checked={settings.insideJokes}
+            onChange={(insideJokes) => onChange({ insideJokes })}
+          />
+          <Toggle label="Doodle prompts" hint="Round 2 mixes in drawing duels." checked={settings.doodles} onChange={(doodles) => onChange({ doodles })} />
+        </>
       )}
-      {settings.game === 'sketchy' && (
+      {settings.game === 'sketch' && (
         <Toggle
           label="Everyone draws twice"
           hint="Longer game, more chaos."

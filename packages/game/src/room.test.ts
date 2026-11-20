@@ -38,9 +38,9 @@ function actFor(room: RoomState, id: string, now: number, i: number) {
       }
       if (g.matchup?.canVote && g.matchup.myVote === null) playerCommand(room, id, { type: 'vote', side: (i % 2) as 0 | 1 }, now);
       return;
-    case 'sketchy': {
+    case 'sketch': {
       if (g.drawer === id && g.phase.name === 'choose') playerCommand(room, id, { type: 'choose', index: 0 }, now);
-      const state = room.game!.game === 'sketchy' ? room.game : null;
+      const state = room.game!.game === 'sketch' ? room.game : null;
       if (g.phase.name === 'draw' && g.drawer !== id && !g.youSolved && state && 'term' in state && state.term)
         playerCommand(room, id, { type: 'guess', text: state.term.answer }, now);
       return;
@@ -70,7 +70,7 @@ describe('full games', () => {
     ['grand-rounds', 3],
     ['grand-rounds', 5],
     ['grand-rounds', 8],
-    ['sketchy', 4],
+    ['sketch', 4],
     ['survive', 6],
     ['poison', 5],
   ];
@@ -87,7 +87,7 @@ describe('full games', () => {
   }
 
   it('finishes every game even when nobody does anything', () => {
-    for (const game of ['grand-rounds', 'sketchy', 'survive', 'poison'] as GameId[]) {
+    for (const game of ['grand-rounds', 'sketch', 'survive', 'poison'] as GameId[]) {
       const { room, ids, clock } = setup(4, { game });
       hostCommand(room, { type: 'start' }, clock.now);
       playToEnd(room, ids, clock, false);
@@ -96,7 +96,7 @@ describe('full games', () => {
   });
 
   it('bots can play a whole game on their own in dev mode', () => {
-    for (const game of ['grand-rounds', 'sketchy', 'survive', 'poison'] as GameId[]) {
+    for (const game of ['grand-rounds', 'sketch', 'survive', 'poison'] as GameId[]) {
       const clock = { now: START };
       const room = createRoom({ code: 'BOTBOT', seed: 3, now: clock.now, devMode: true, settings: { game, speed: 0.05 } });
       for (let i = 0; i < 4; i++) expect(hostCommand(room, { type: 'add-bot' }, clock.now)).toBeUndefined();
@@ -179,6 +179,36 @@ describe('Grand Rounds rules', () => {
     const g = viewFor(room, { kind: 'stage' }, clock.now).game;
     if (g?.game !== 'grand-rounds') throw new Error('wrong game');
     expect(g.matchup?.entries[0].text).toBeNull();
+  });
+
+  it('writes inside jokes about someone other than the two people answering', () => {
+    const names = ['Zorblat', 'Quimby', 'Xanthe', 'Pellaquin', 'Brunhild'];
+    let personal = 0;
+    for (let seed = 0; seed < 20; seed++) {
+      const clock = { now: START };
+      const room = createRoom({ code: 'JOKESA', seed, now: clock.now, settings: { game: 'grand-rounds' } });
+      names.forEach((name, i) => join(room, { deviceId: `device-${i}`, name, now: clock.now }));
+      hostCommand(room, { type: 'start' }, clock.now);
+      const game = room.game!;
+      if (game.game !== 'grand-rounds') throw new Error('wrong game');
+      for (const m of game.matchups) {
+        expect(m.prompt).not.toContain('{player}');
+        const subject = names.find((n) => m.prompt.includes(n));
+        if (!subject) continue;
+        personal++;
+        const authors = m.playerIds.map((id) => room.people.find((p) => p.id === id)!.name);
+        expect(authors).not.toContain(subject);
+      }
+    }
+    expect(personal).toBeGreaterThan(20);
+  });
+
+  it('leaves players out of the prompts when inside jokes are off', () => {
+    const { room, clock } = setup(5, { game: 'grand-rounds', insideJokes: false });
+    hostCommand(room, { type: 'start' }, clock.now);
+    const game = room.game!;
+    if (game.game !== 'grand-rounds') throw new Error('wrong game');
+    for (const m of game.matchups) for (const p of room.people) expect(m.prompt).not.toContain(p.name);
   });
 
   it('rejects filtered answers with a nudge instead of masking them', () => {

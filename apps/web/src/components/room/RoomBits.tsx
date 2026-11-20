@@ -217,7 +217,7 @@ export function AvatarRow({ ids, view, size = 52, done }: { ids: string[]; view:
               initial={{ scale: 0 }}
               animate={{ scale: 1, y: isDone ? [0, -14, 0] : 0 }}
               exit={{ scale: 0 }}
-              transition={{ type: 'spring', stiffness: 500, damping: 18 }}
+              transition={{ scale: { type: 'spring', stiffness: 500, damping: 18 }, y: { duration: 0.45, ease: 'easeOut' } }}
             >
               <Avatar avatar={p.avatar} size={size} name={p.name} dim={done ? !isDone : !p.connected} badge={isDone ? '✓' : undefined} />
             </motion.span>

@@ -2,22 +2,22 @@
 
 import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useRef } from 'react';
-import type { RoomView, SketchyView } from '@iatrome/game/client';
+import type { RoomView, SketchView } from '@iatrome/game/client';
 import { useDrawing } from '@/realtime/use-room';
 import { DrawingView } from '@/components/drawing/DrawingView';
 import { Avatar } from '@/components/ui/Avatar';
 import { TimerRing } from '@/components/ui/TimerRing';
 import { IntroCard, Pill, Scoreboard, nameOf, usePeople } from '@/components/room/RoomBits';
 import { play } from '@/lib/sound';
-import styles from './Sketchy.module.css';
+import styles from './Sketch.module.css';
 
-export function SketchyStage({ view, game }: { view: RoomView; game: SketchyView }) {
+export function SketchStage({ view, game }: { view: RoomView; game: SketchView }) {
   const people = usePeople(view);
   const drawer = game.drawer ? people.get(game.drawer) : null;
   const drawing = useDrawing(game.drawingId);
-  useSketchySounds(game);
+  useSketchSounds(game);
 
-  if (game.phase.name === 'intro') return <IntroCard eyebrow="Up next" title="Sketchy Diagnosis" body="One player draws. Everyone races to guess on their phone. Faster guesses score more." />;
+  if (game.phase.name === 'intro') return <IntroCard eyebrow="Up next" title="Sketch" body="One player draws. Everyone races to guess on their phone. Faster guesses score more." />;
 
   if (game.phase.name === 'choose')
     return (
@@ -90,7 +90,7 @@ function Mask({ mask, revealed }: { mask: string; revealed: boolean }) {
   );
 }
 
-function Feed({ view, game }: { view: RoomView; game: SketchyView }) {
+function Feed({ view, game }: { view: RoomView; game: SketchView }) {
   const people = usePeople(view);
   return (
     <div className={styles.feed} aria-live="polite">
@@ -118,7 +118,7 @@ function Feed({ view, game }: { view: RoomView; game: SketchyView }) {
   );
 }
 
-function useSketchySounds(game: SketchyView) {
+function useSketchSounds(game: SketchView) {
   const solved = useRef(0);
   useEffect(() => {
     if (game.solved.length > solved.current) play('correct');

@@ -30,7 +30,7 @@ const playerCommand = z.discriminatedUnion('type', [
   z.object({ type: z.literal('doodle'), matchupId: id, drawing, final: z.boolean() }),
   z.object({ type: z.literal('curbside'), matchupId: id }),
   z.object({ type: z.literal('vote'), side }),
-  // Sketchy Diagnosis
+  // Sketch
   z.object({ type: z.literal('choose'), index: z.number().int().min(0).max(2) }),
   z.object({ type: z.literal('guess'), text: text(LIMITS.guess) }),
   z.object({ type: z.literal('draw'), op: drawOp }),
@@ -44,13 +44,14 @@ const playerCommand = z.discriminatedUnion('type', [
 
 const settings = z
   .object({
-    game: z.enum(['grand-rounds', 'sketchy', 'survive', 'poison']),
+    game: z.enum(['grand-rounds', 'sketch', 'survive', 'poison']),
     filter: z.enum(['standard', 'clean']),
     breadth: z.enum(['universal', 'all']),
     extendedTimers: z.boolean(),
     audience: z.boolean(),
     playersCanStart: z.boolean(),
     doodles: z.boolean(),
+    insideJokes: z.boolean(),
     sketchTurns: z.union([z.literal(1), z.literal(2)]),
     speed: z.number().min(0.02).max(1),
   })

@@ -1,12 +1,12 @@
 import { type SketchTerm, sketchTerms } from '@iatrome/content';
-import { LIMITS, SKETCHY as SK } from '../constants';
+import { LIMITS, SKETCH as SK } from '../constants';
 import { type DrawOp, applyDrawOp } from '../drawing';
 import { cleanText, isAllowed, matchGuess } from '../text';
 import type { GameResult, Phase } from '../types';
 import { type ActionOutcome, type BaseGameState, type GameContext, type GameModule, setPhase, standings, tidy } from './context';
 
 /**
- * Sketchy Diagnosis — one player draws a secret term live; everyone races to guess.
+ * Sketch — one player draws a secret term live; everyone races to guess.
  */
 
 type PhaseName = 'intro' | 'choose' | 'draw' | 'reveal' | 'done';
@@ -17,8 +17,8 @@ interface FeedItem {
   text: string;
 }
 
-export interface SketchyState extends BaseGameState {
-  game: 'sketchy';
+export interface SketchState extends BaseGameState {
+  game: 'sketch';
   phase: Phase<PhaseName>;
   turns: string[];
   turn: number;
@@ -33,13 +33,13 @@ export interface SketchyState extends BaseGameState {
   drawerPoints: number;
 }
 
-export type SketchyAction =
+export type SketchAction =
   | { type: 'choose'; index: number }
   | { type: 'guess'; text: string }
   | { type: 'draw'; op: DrawOp };
 
-export interface SketchyView {
-  game: 'sketchy';
+export interface SketchView {
+  game: 'sketch';
   phase: Phase<PhaseName>;
   turn: number;
   turns: number;
@@ -58,16 +58,16 @@ export interface SketchyView {
   scores: Record<string, number>;
 }
 
-export const sketchy: GameModule<SketchyState, SketchyAction, SketchyView> = {
-  id: 'sketchy',
+export const sketch: GameModule<SketchState, SketchAction, SketchView> = {
+  id: 'sketch',
   minPlayers: SK.minPlayers,
   maxPlayers: SK.maxPlayers,
 
   start(ctx, playerIds) {
     const order = ctx.rng.shuffle(playerIds);
     const turns = Array.from({ length: ctx.room.settings.sketchTurns }, () => order).flat();
-    const state: SketchyState = {
-      game: 'sketchy',
+    const state: SketchState = {
+      game: 'sketch',
       playerIds,
       scores: Object.fromEntries(playerIds.map((id) => [id, 0])),
       phase: { name: 'intro', startedAt: ctx.now, endsAt: null },
@@ -142,7 +142,7 @@ export const sketchy: GameModule<SketchyState, SketchyAction, SketchyView> = {
 
   result(state, ctx): GameResult | null {
     if (state.phase.name !== 'done') return null;
-    return { game: 'sketchy', standings: standings(ctx, state.scores), highlights: [] };
+    return { game: 'sketch', standings: standings(ctx, state.scores), highlights: [] };
   },
 
   view(state, ctx, viewer) {
@@ -151,7 +151,7 @@ export const sketchy: GameModule<SketchyState, SketchyAction, SketchyView> = {
     const revealing = state.phase.name === 'reveal';
     const term = state.term?.answer ?? '';
     return {
-      game: 'sketchy',
+      game: 'sketch',
       phase: state.phase,
       turn: state.turn,
       turns: state.turns.length,
@@ -191,7 +191,7 @@ export const sketchy: GameModule<SketchyState, SketchyAction, SketchyView> = {
   },
 };
 
-function beginChoosing(state: SketchyState, ctx: GameContext) {
+function beginChoosing(state: SketchState, ctx: GameContext) {
   // Skip drawers who left the room.
   while (state.turn < state.turns.length && !ctx.person(state.turns[state.turn])) state.turn += 1;
   if (state.turn >= state.turns.length) {
@@ -208,7 +208,7 @@ function beginChoosing(state: SketchyState, ctx: GameContext) {
   setPhase(state, ctx, 'choose', SK.choose, 'input');
 }
 
-function beginDrawing(state: SketchyState, ctx: GameContext, term: SketchTerm) {
+function beginDrawing(state: SketchState, ctx: GameContext, term: SketchTerm) {
   state.term = term;
   state.drawingId = ctx.rng.id(10);
   ctx.room.drawings[state.drawingId] = { strokes: [] };
@@ -218,7 +218,7 @@ function beginDrawing(state: SketchyState, ctx: GameContext, term: SketchTerm) {
 }
 
 /** Hints unlock at 45% and 70% of the drawing time (more for long answers). */
-function hintsShown(state: SketchyState, ctx: GameContext) {
+function hintsShown(state: SketchState, ctx: GameContext) {
   if (state.phase.name !== 'draw' || !state.phase.endsAt) return 0;
   const elapsed = (ctx.now - state.phase.startedAt) / (state.phase.endsAt - state.phase.startedAt);
   const steps = elapsed >= 0.7 ? 2 : elapsed >= 0.45 ? 1 : 0;
@@ -231,7 +231,7 @@ function mask(term: string, hintOrder: number[], hints: number) {
   return [...term].map((ch, i) => (/[a-z0-9]/i.test(ch) && !shown.has(i) ? '_' : ch)).join('');
 }
 
-function guess(state: SketchyState, ctx: GameContext, playerId: string, raw: string): ActionOutcome | void {
+function guess(state: SketchState, ctx: GameContext, playerId: string, raw: string): ActionOutcome | void {
   const drawer = state.turns[state.turn];
   if (state.phase.name !== 'draw' || !state.term) return { error: 'Hold that thought!' };
   if (playerId === drawer) return { error: 'No guessing your own drawing!' };
@@ -258,7 +258,7 @@ function guess(state: SketchyState, ctx: GameContext, playerId: string, raw: str
   if (outcome === 'close') return { notice: 'close' };
 }
 
-function reveal(state: SketchyState, ctx: GameContext) {
+function reveal(state: SketchState, ctx: GameContext) {
   const guessers = state.playerIds.filter((id) => id !== state.turns[state.turn] && ctx.person(id));
   if (state.solved.length === 0) ctx.say('sketchNobodyGotIt');
   else if (state.solved.length >= guessers.length) ctx.say('sketchEveryoneGotIt');

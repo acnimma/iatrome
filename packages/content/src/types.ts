@@ -36,7 +36,7 @@ export interface DifferentialPrompt {
   beep: [string, string, string];
 }
 
-/** Sketchy Diagnosis: a term to draw. `accept` lists alternative correct guesses. */
+/** Sketch: a term to draw. `accept` lists alternative correct guesses. */
 export interface SketchTerm {
   id: string;
   answer: string;
@@ -83,7 +83,7 @@ export const hostEvents = [
   'beepWins', // Beep (the host) won its finale duel
   'scoreboard', // between rounds, looking at the scores
   'winner', // announcing the overall winner
-  'sketchIntro', // Sketchy Diagnosis begins
+  'sketchIntro', // Sketch begins
   'sketchEveryoneGotIt', // all guessers got the drawing
   'sketchNobodyGotIt', // nobody guessed the drawing
   'surviveIntro', // Survive the Shift begins

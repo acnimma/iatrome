@@ -29,7 +29,7 @@ export function pointCount(d: Drawing): number {
   return d.strokes.reduce((n, s) => n + s.p.length / 2, 0);
 }
 
-/** Live drawing operations streamed during Sketchy Diagnosis. */
+/** Live drawing operations streamed during Sketch. */
 export type DrawOp =
   | { op: 'begin'; c: number; w: number; p: number[] }
   | { op: 'extend'; p: number[] }

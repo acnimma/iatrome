@@ -74,7 +74,7 @@ export function join(room: RoomState, opts: { deviceId: string; name: string; no
   if (!isAllowed(name, room.settings.filter)) return { ok: false, error: 'name-blocked' };
   if (room.people.some((p) => comparable(p.name) === comparable(name))) return { ok: false, error: 'name-taken' };
 
-  const playing = room.stage !== 'lobby';
+  const playing = room.stage === 'playing';
   if (playing && !room.settings.audience) return { ok: false, error: 'in-progress' };
   const playerCount = room.people.filter((p) => p.role === 'player').length;
 
@@ -202,6 +202,7 @@ export function hostCommand(room: RoomState, cmd: HostCommand, now: number): str
 
 function startGame(room: RoomState, now: number): string | void {
   if (room.stage === 'playing') return 'A game is already running.';
+  promoteAudience(room); // whoever's watching between games gets a seat if there's room
   const module = games[room.settings.game];
   const ready = room.people.filter((p) => p.role === 'player' && p.connected).sort((a, b) => a.joinedAt - b.joinedAt);
   if (ready.length < module.minPlayers) return `This game needs at least ${module.minPlayers} players.`;
@@ -375,6 +376,7 @@ function sanitizeSettings(s: RoomSettings, devMode: boolean): RoomSettings {
     audience: Boolean(s.audience),
     playersCanStart: Boolean(s.playersCanStart),
     doodles: Boolean(s.doodles),
+    insideJokes: s.insideJokes !== false,
     sketchTurns: s.sketchTurns === 2 ? 2 : 1,
     speed: devMode && typeof s.speed === 'number' && s.speed >= 0.02 && s.speed <= 1 ? s.speed : 1,
   };
@@ -445,6 +447,6 @@ export function referencedDrawings(view: RoomView): string[] {
   const g = view.game;
   if (!g) return [];
   if (g.game === 'grand-rounds') return (g.matchup?.entries ?? []).map((e) => e.drawingId).filter((x): x is string => Boolean(x));
-  if (g.game === 'sketchy') return g.drawingId ? [g.drawingId] : [];
+  if (g.game === 'sketch') return g.drawingId ? [g.drawingId] : [];
   return [];
 }

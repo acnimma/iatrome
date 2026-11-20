@@ -1,4 +1,4 @@
-import { curbsideGeneric, differentials, doodles, quips } from '@iatrome/content';
+import { curbsideGeneric, differentials, doodles, playerDifferentials, playerQuips, quips } from '@iatrome/content';
 import { GRAND_ROUNDS as GR, LIMITS } from '../../constants';
 import { cleanText, isAllowed, sameAnswer } from '../../text';
 import type { Drawing, GameResult, Highlight, Phase } from '../../types';
@@ -126,6 +126,8 @@ export interface GrandRoundsView {
 // ── Module ───────────────────────────────────────────────────────────────────
 
 const ROUNDS = 3;
+/** Share of prompts that are inside jokes about the players (when enabled). */
+const PERSONAL_SHARE = 0.4;
 
 export const grandRounds: GameModule<GrandRoundsState, GrandRoundsAction, GrandRoundsView> = {
   id: 'grand-rounds',
@@ -260,25 +262,50 @@ function startRound(state: GrandRoundsState, ctx: GameContext) {
   const order = ctx.rng.shuffle(state.playerIds.filter((id) => ctx.person(id)));
   state.current = 0;
 
+  // A name to drop into an inside-joke prompt: anyone except the two people answering.
+  const subjectFor = (pair: readonly string[]) => {
+    const others = order.filter((id) => !pair.includes(id));
+    return others.length ? ctx.person(ctx.rng.pick(others))!.name : null;
+  };
+  const insideJokes = ctx.room.settings.insideJokes && order.length >= 3;
+  const personalize = (text: string, pair: readonly string[]) => {
+    const name = subjectFor(pair);
+    return name ? text.replace('{player}', () => name) : null;
+  };
+
   if (state.round < 2) {
     const kinds: MatchupKind[] =
       state.round === 1 && ctx.room.settings.doodles ? mixedKinds(order.length) : order.map(() => 'quip');
-    const quipPool = ctx.draw(quips, kinds.filter((k) => k === 'quip').length);
+    const quipCount = kinds.filter((k) => k === 'quip').length;
+    const personal = insideJokes ? ctx.draw(playerQuips, Math.round(quipCount * PERSONAL_SHARE)) : [];
+    const quipPool = ctx.rng.shuffle([...personal, ...ctx.draw(quips, quipCount - personal.length)]);
     const doodlePool = ctx.draw(doodles, kinds.filter((k) => k === 'doodle').length);
     state.matchups = spreadOrder(
       ring(order).map((pair, i) => {
         if (kinds[i] === 'doodle') return newMatchup(ctx, 'doodle', doodlePool.pop()!.text, null, pair);
-        const q = quipPool.pop()!;
-        return newMatchup(ctx, 'quip', q.text, q.curbside, pair);
+        let q = quipPool.pop()!;
+        let text = q.text.includes('{player}') ? personalize(q.text, pair) : q.text;
+        if (text === null) {
+          q = ctx.draw(quips, 1)[0];
+          text = q.text;
+        }
+        return newMatchup(ctx, 'quip', text, q.curbside, pair);
       }),
     );
   } else {
     const lastPlace = order.slice().sort((a, b) => state.scores[a] - state.scores[b])[0];
     const pairs = finalePairs(order, lastPlace);
-    const prompts = ctx.draw(differentials, pairs.length);
+    const personal = insideJokes ? ctx.draw(playerDifferentials, Math.round(pairs.length * PERSONAL_SHARE)) : [];
+    const prompts = ctx.rng.shuffle([...personal, ...ctx.draw(differentials, pairs.length - personal.length)]);
     state.matchups = pairs.map((pair, i) => {
-      const m = newMatchup(ctx, 'differential', prompts[i].text, null, pair);
-      if (pair[1] === BEEP) Object.assign(m.entries[1], { items: [...prompts[i].beep], final: true });
+      let p = prompts[i];
+      let text = p.text.includes('{player}') ? personalize(p.text, pair) : p.text;
+      if (text === null) {
+        p = ctx.draw(differentials, 1)[0];
+        text = p.text;
+      }
+      const m = newMatchup(ctx, 'differential', text, null, pair);
+      if (pair[1] === BEEP) Object.assign(m.entries[1], { items: [...p.beep], final: true });
       return m;
     });
   }

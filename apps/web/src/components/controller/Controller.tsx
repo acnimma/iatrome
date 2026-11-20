@@ -11,7 +11,7 @@ import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { haptic } from '@/lib/haptics';
 import { GrandRoundsController } from '@/games/grand-rounds/GrandRoundsController';
-import { SketchyController } from '@/games/sketchy/SketchyController';
+import { SketchController } from '@/games/sketch/SketchController';
 import { SurviveController } from '@/games/survive/SurviveController';
 import { PoisonController } from '@/games/poison/PoisonController';
 import { JoinForm } from './JoinForm';
@@ -81,8 +81,8 @@ function ControllerGame({ view }: { view: RoomView }) {
   switch (view.game?.game) {
     case 'grand-rounds':
       return <GrandRoundsController view={view} game={view.game} />;
-    case 'sketchy':
-      return <SketchyController view={view} game={view.game} />;
+    case 'sketch':
+      return <SketchController view={view} game={view.game} />;
     case 'survive':
       return <SurviveController view={view} game={view.game} />;
     case 'poison':

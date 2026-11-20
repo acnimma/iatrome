@@ -2,8 +2,8 @@
 
 import { AnimatePresence, motion } from 'motion/react';
 import { useEffect } from 'react';
-import type { EntryView, GrandRoundsView, MatchupView, RoomView } from '@iatrome/game/client';
-import { useDrawing } from '@/realtime/use-room';
+import { type EntryView, GRAND_ROUNDS, type GrandRoundsView, type MatchupView, type RoomView } from '@iatrome/game/client';
+import { useDrawing, useRoom } from '@/realtime/use-room';
 import { DrawingView } from '@/components/drawing/DrawingView';
 import { Avatar } from '@/components/ui/Avatar';
 import { TimerRing } from '@/components/ui/TimerRing';
@@ -66,6 +66,7 @@ function Writing({ view, game }: { view: RoomView; game: GrandRoundsView }) {
 function Matchup({ view, game, matchup }: { view: RoomView; game: GrandRoundsView; matchup: MatchupView }) {
   const phase = game.phase.name;
   const result = phase === 'results' ? matchup.result : null;
+  const { at, scale } = useRevealClock(game, matchup.kind);
   useMatchupSounds(matchup, phase);
 
   return (
@@ -83,9 +84,14 @@ function Matchup({ view, game, matchup }: { view: RoomView; game: GrandRoundsVie
 
       <div className={styles.versus}>
         {([0, 1] as const).map((side) => (
-          <AnswerCard key={side} view={view} matchup={matchup} side={side} phase={phase} />
+          <AnswerCard key={side} view={view} matchup={matchup} side={side} phase={phase} delay={at(ENTRY[matchup.kind][side])} lineGap={0.85 * scale} replayMs={4200 * scale} />
         ))}
-        <motion.span className={styles.vs} initial={{ scale: 0 }} animate={{ scale: 1, rotate: [0, -10, 10, 0] }} transition={{ delay: entryDelay(matchup.kind, 1) + 0.2, type: 'spring', stiffness: 400, damping: 12 }}>
+        <motion.span
+          className={styles.vs}
+          initial={{ scale: 0 }}
+          animate={{ scale: 1, rotate: [0, -10, 10, 0] }}
+          transition={{ delay: at(ENTRY[matchup.kind][1] + 0.2), scale: { type: 'spring', stiffness: 400, damping: 12 }, rotate: { duration: 0.6 } }}
+        >
           VS
         </motion.span>
       </div>
@@ -107,14 +113,28 @@ function Matchup({ view, game, matchup }: { view: RoomView; game: GrandRoundsVie
   );
 }
 
-/** When each answer appears during the present phase (seconds). */
-function entryDelay(kind: MatchupView['kind'], side: 0 | 1) {
-  if (kind === 'doodle') return 0.5 + side * 0.4;
-  if (kind === 'differential') return 0.8 + side * 3;
-  return 1.1 + side * 1.2;
+/** When each answer appears during the present phase, in seconds at normal speed. */
+const ENTRY = {
+  quip: [1.1, 2.3],
+  doodle: [0.5, 0.9],
+  differential: [0.8, 3.8],
+} as const;
+
+/**
+ * Reveal timing synced to the server: delays scale with the phase's real length and
+ * account for time already elapsed (so a reconnecting stage catches up instantly).
+ */
+function useRevealClock(game: GrandRoundsView, kind: MatchupView['kind']) {
+  const room = useRoom();
+  const { startedAt, endsAt, name } = game.phase;
+  const present = name === 'present' && endsAt !== null;
+  const scale = present ? (endsAt - startedAt) / GRAND_ROUNDS.present[kind] : 0;
+  const elapsed = present ? Math.max(0, (room.serverNow() - startedAt) / 1000) : 0;
+  const at = (seconds: number) => (present ? Math.max(0, seconds * scale - elapsed) : 0);
+  return { at, scale };
 }
 
-function AnswerCard({ view, matchup, side, phase }: { view: RoomView; matchup: MatchupView; side: 0 | 1; phase: string }) {
+function AnswerCard({ view, matchup, side, phase, delay, lineGap, replayMs }: { view: RoomView; matchup: MatchupView; side: 0 | 1; phase: string; delay: number; lineGap: number; replayMs: number }) {
   const people = usePeople(view);
   const entry = matchup.entries[side];
   const result = phase === 'results' ? matchup.result : null;
@@ -123,16 +143,15 @@ function AnswerCard({ view, matchup, side, phase }: { view: RoomView; matchup: M
   const voters = result?.playerVotes.filter((v) => v.side === side) ?? [];
   const share = result ? Math.round(result.shares[side] * 100) : 0;
   const author = entry.author ? people.get(entry.author) : null;
-  const delay = entryDelay(matchup.kind, side);
 
   return (
     <motion.div
       className={`${styles.answer} ${side === 0 ? styles.left : styles.right} ${won ? styles.won : ''} ${lost ? styles.lost : ''}`}
       initial={{ y: 40, opacity: 0, rotate: side === 0 ? -3 : 3 }}
       animate={{ y: 0, opacity: 1, rotate: won ? (side === 0 ? -1.5 : 1.5) : 0, scale: won ? 1.04 : lost ? 0.96 : 1 }}
-      transition={{ delay: phase === 'present' ? delay : 0, type: 'spring', stiffness: 260, damping: 20 }}
+      transition={{ delay, type: 'spring', stiffness: 260, damping: 20 }}
     >
-      <AnswerContent entry={entry} kind={matchup.kind} replay={phase === 'present'} delay={delay} />
+      <AnswerContent entry={entry} kind={matchup.kind} replayMs={phase === 'present' ? replayMs : 0} delay={delay} lineGap={lineGap} />
 
       {result && (
         <div className={styles.reveal}>
@@ -177,16 +196,16 @@ function AnswerCard({ view, matchup, side, phase }: { view: RoomView; matchup: M
   );
 }
 
-function AnswerContent({ entry, kind, replay, delay }: { entry: EntryView; kind: MatchupView['kind']; replay: boolean; delay: number }) {
+function AnswerContent({ entry, kind, replayMs, delay, lineGap }: { entry: EntryView; kind: MatchupView['kind']; replayMs: number; delay: number; lineGap: number }) {
   const drawing = useDrawing(entry.drawingId);
   if (entry.hidden) return <p className={styles.missing}>🙈 Hidden by the host</p>;
-  if (kind === 'doodle') return entry.drawingId ? <DrawingView drawing={drawing} replayMs={replay ? 4200 : undefined} className={styles.doodle} /> : <p className={styles.missing}>😴 No drawing</p>;
+  if (kind === 'doodle') return entry.drawingId ? <DrawingView drawing={drawing} replayMs={replayMs > 300 ? replayMs : undefined} className={styles.doodle} /> : <p className={styles.missing}>😴 No drawing</p>;
   if (kind === 'differential') {
     if (!entry.items) return <p className={styles.missing}>😴 No answer</p>;
     return (
       <ol className={styles.list}>
         {entry.items.map((item, i) => (
-          <motion.li key={i} initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: replay ? delay + i * 0.85 : 0 }}>
+          <motion.li key={i} initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: replayMs ? delay + i * lineGap : 0 }}>
             {item || '…'}
           </motion.li>
         ))}

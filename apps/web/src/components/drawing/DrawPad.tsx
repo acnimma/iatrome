@@ -9,7 +9,7 @@ import styles from './Drawing.module.css';
 interface Props {
   /** Called after every finished stroke, undo or clear (for autosave). */
   onChange?: (drawing: Drawing) => void;
-  /** Live operations, streamed while drawing (Sketchy Diagnosis). */
+  /** Live operations, streamed while drawing (Sketch). */
   onOp?: (op: DrawOp) => void;
   disabled?: boolean;
 }

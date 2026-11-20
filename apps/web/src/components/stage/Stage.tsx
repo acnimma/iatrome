@@ -12,7 +12,7 @@ import { ReactionLayer, RoomCode } from '@/components/room/RoomBits';
 import { isMuted, play, setMuted, unlockAudio } from '@/lib/sound';
 import { readAloudEnabled, setReadAloud } from '@/lib/speech';
 import { GrandRoundsStage } from '@/games/grand-rounds/GrandRoundsStage';
-import { SketchyStage } from '@/games/sketchy/SketchyStage';
+import { SketchStage } from '@/games/sketch/SketchStage';
 import { SurviveStage } from '@/games/survive/SurviveStage';
 import { PoisonStage } from '@/games/poison/PoisonStage';
 import { StageLobby } from './StageLobby';
@@ -72,7 +72,7 @@ function StageScreen({ view, prefs }: { view: RoomView; prefs: StagePrefs }) {
           </span>
         </header>
       )}
-      <main className={`${styles.main} ${inGame ? styles.inGame : ''}`}>
+      <main className={`${styles.main} ${inGame ? styles.inGame : ''}`} data-phase={`${view.stage}:${view.game?.phase.name ?? ''}`}>
         <AnimatePresence mode="wait">
           <motion.div
             key={view.stage === 'playing' ? `game-${view.game?.game}` : view.stage}
@@ -104,8 +104,8 @@ function StageGame({ view }: { view: RoomView }) {
   switch (view.game?.game) {
     case 'grand-rounds':
       return <GrandRoundsStage view={view} game={view.game} />;
-    case 'sketchy':
-      return <SketchyStage view={view} game={view.game} />;
+    case 'sketch':
+      return <SketchStage view={view} game={view.game} />;
     case 'survive':
       return <SurviveStage view={view} game={view.game} />;
     case 'poison':

@@ -43,7 +43,7 @@ export const GRAND_ROUNDS = {
   multipliers: [1, 2, 3] as const,
 } as const;
 
-export const SKETCHY = {
+export const SKETCH = {
   minPlayers: 3,
   maxPlayers: 10,
   intro: 4_000,

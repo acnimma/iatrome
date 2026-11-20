@@ -2,7 +2,7 @@
 
 import { motion } from 'motion/react';
 import { useEffect, useRef, useState } from 'react';
-import { LIMITS, type RoomView, type SketchyView } from '@iatrome/game/client';
+import { LIMITS, type RoomView, type SketchView } from '@iatrome/game/client';
 import { useDrawing, useRoom, useSnapshot } from '@/realtime/use-room';
 import { Button } from '@/components/ui/Button';
 import { TextInput } from '@/components/ui/Field';
@@ -13,11 +13,11 @@ import { Choice, PhoneMessage, PhoneStack } from '@/components/controller/Phone'
 import { ReactionBar, nameOf, usePeople } from '@/components/room/RoomBits';
 import { haptic } from '@/lib/haptics';
 import { play } from '@/lib/sound';
-import styles from './Sketchy.module.css';
+import styles from './Sketch.module.css';
 
 const DIFFICULTY = ['', 'Easy', 'Medium', 'Hard'];
 
-export function SketchyController({ view, game }: { view: RoomView; game: SketchyView }) {
+export function SketchController({ view, game }: { view: RoomView; game: SketchView }) {
   const room = useRoom();
   const people = usePeople(view);
   const me = view.you?.id;
@@ -27,7 +27,7 @@ export function SketchyController({ view, game }: { view: RoomView; game: Sketch
   switch (game.phase.name) {
     case 'intro':
       return (
-        <PhoneMessage emoji="✏️" title="Sketchy Diagnosis">
+        <PhoneMessage emoji="✏️" title="Sketch">
           When it’s your turn, draw. Otherwise, guess fast!
         </PhoneMessage>
       );
@@ -70,7 +70,7 @@ export function SketchyController({ view, game }: { view: RoomView; game: Sketch
   }
 }
 
-function Drawer({ view, game }: { view: RoomView; game: SketchyView }) {
+function Drawer({ view, game }: { view: RoomView; game: SketchView }) {
   const room = useRoom();
   return (
     <div className={styles.phoneDraw}>
@@ -89,7 +89,7 @@ function Drawer({ view, game }: { view: RoomView; game: SketchyView }) {
   );
 }
 
-function Guesser({ view, game }: { view: RoomView; game: SketchyView }) {
+function Guesser({ view, game }: { view: RoomView; game: SketchView }) {
   const room = useRoom();
   const snap = useSnapshot(room);
   const drawing = useDrawing(game.drawingId);

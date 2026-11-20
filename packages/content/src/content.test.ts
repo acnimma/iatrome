@@ -6,12 +6,14 @@ import {
   doodles,
   hostEvents,
   hostLines,
+  playerDifferentials,
+  playerQuips,
   quips,
   sketchTerms,
   trivia,
 } from './index';
 
-const packs = { quips, doodles, differentials, dilemmas, sketchTerms, trivia };
+const packs = { quips, playerQuips, playerDifferentials, doodles, differentials, dilemmas, sketchTerms, trivia };
 
 describe('every pack', () => {
   for (const [name, pack] of Object.entries(packs)) {
@@ -44,7 +46,21 @@ describe('Grand Rounds', () => {
   });
 });
 
-describe('Sketchy Diagnosis', () => {
+describe('Inside jokes', () => {
+  it('name exactly one player, and fit on screen once the name is in', () => {
+    for (const p of [...playerQuips, ...playerDifferentials]) {
+      expect(p.text.match(/\{player\}/g)?.length, p.id).toBe(1);
+      expect(p.text.replace('{player}', 'Maximilianus').length, p.id).toBeLessThanOrEqual(110);
+    }
+    for (const q of playerQuips) for (const c of q.curbside) expect(c.length, q.id).toBeLessThanOrEqual(60);
+    for (const d of playerDifferentials) for (const b of d.beep) expect(b.length, d.id).toBeLessThanOrEqual(40);
+  });
+  it('keeps {player} out of the general packs', () => {
+    for (const p of [...quips, ...differentials, ...doodles]) expect(p.text, p.id).not.toContain('{player}');
+  });
+});
+
+describe('Sketch', () => {
   it('has terms at every difficulty, with clean alternatives', () => {
     for (const d of [1, 2, 3]) expect(sketchTerms.filter((t) => t.difficulty === d).length).toBeGreaterThanOrEqual(20);
     for (const t of sketchTerms) {

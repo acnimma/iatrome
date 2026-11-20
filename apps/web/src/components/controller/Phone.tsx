@@ -64,6 +64,7 @@ export function Choice({
       disabled={disabled}
       whileTap={disabled ? undefined : { scale: 0.96 }}
       layout
+      data-choice
     >
       {children}
     </motion.button>

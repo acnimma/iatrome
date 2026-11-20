@@ -285,7 +285,7 @@ export class Room extends Server<Env> {
 
   private relayDrawOp(from: Connection<ConnState>, op: DrawOp) {
     const game = this.room?.game;
-    if (!game || game.game !== 'sketchy' || !game.drawingId) return;
+    if (!game || game.game !== 'sketch' || !game.drawingId) return;
     const id = game.drawingId;
     this.markDrawingsDirty();
     this.scheduleFlush();

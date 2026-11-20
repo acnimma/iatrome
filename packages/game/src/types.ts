@@ -3,7 +3,7 @@ import type { RngState } from './rng';
 import type { FilterLevel } from './text';
 import type { GameState } from './games/registry';
 
-export type GameId = 'grand-rounds' | 'sketchy' | 'survive' | 'poison';
+export type GameId = 'grand-rounds' | 'sketch' | 'survive' | 'poison';
 
 export interface RoomSettings {
   game: GameId;
@@ -19,7 +19,9 @@ export interface RoomSettings {
   playersCanStart: boolean;
   /** Grand Rounds: include doodle prompts in round 2. */
   doodles: boolean;
-  /** Sketchy Diagnosis: how many times everyone draws. */
+  /** Grand Rounds: prompts about the players themselves ("Why is {player} in the ER?"). */
+  insideJokes: boolean;
+  /** Sketch: how many times everyone draws. */
   sketchTurns: 1 | 2;
   /** Dev/test only: multiplies every timer (e.g. 0.05 for end-to-end tests). */
   speed: number;
@@ -33,6 +35,7 @@ export const defaultSettings: RoomSettings = {
   audience: true,
   playersCanStart: true,
   doodles: true,
+  insideJokes: true,
   sketchTurns: 1,
   speed: 1,
 };

@@ -42,7 +42,7 @@ function singular(s: string): string {
     .join(' ');
 }
 
-// ── Guess matching (Sketchy Diagnosis) ───────────────────────────────────────
+// ── Guess matching (Sketch) ───────────────────────────────────────
 
 export type GuessResult = 'correct' | 'close' | 'wrong';
 

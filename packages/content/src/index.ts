@@ -1,5 +1,6 @@
 export * from './types';
 export { quips } from './packs/quips';
+export { playerQuips, playerDifferentials } from './packs/player-prompts';
 export { curbsideGeneric } from './packs/curbside';
 export { doodles } from './packs/doodles';
 export { differentials } from './packs/differentials';

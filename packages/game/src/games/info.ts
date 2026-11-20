@@ -1,4 +1,4 @@
-import { GRAND_ROUNDS, POISON, SKETCHY, SURVIVE } from '../constants';
+import { GRAND_ROUNDS, POISON, SKETCH, SURVIVE } from '../constants';
 import type { GameId } from '../types';
 
 export interface GameInfo {
@@ -21,13 +21,13 @@ export const gameInfo: Record<GameId, GameInfo> = {
     min: GRAND_ROUNDS.minPlayers,
     max: GRAND_ROUNDS.maxPlayers,
   },
-  sketchy: {
-    title: 'Sketchy Diagnosis',
+  sketch: {
+    title: 'Sketch',
     tagline: 'One draws, everyone races to guess.',
     howTo: 'Draw your secret term. Everyone else races to guess it.',
     minutes: 10,
-    min: SKETCHY.minPlayers,
-    max: SKETCHY.maxPlayers,
+    min: SKETCH.minPlayers,
+    max: SKETCH.maxPlayers,
   },
   survive: {
     title: 'Survive the Shift',
