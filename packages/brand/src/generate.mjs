@@ -202,22 +202,27 @@ function wordmark() {
   return svgDoc(width, height, jellyDefs(id, look, box), shadowOf(letters.flatMap((l) => l.parts), id, look) + body);
 }
 
-// ── App mark: the tablet on a palette squircle ───────────────────────────────
+// ── App mark: the logo's tablet, bare or on a warm-white plate ─────────────────
 
-/** `minimal` keeps flat shapes and a simple glint so 16–32px favicons stay crisp. */
-function appMark({ size = 512, minimal = false, maskable = false } = {}) {
-  const r = size * (maskable ? 0.27 : minimal ? 0.38 : 0.34); // maskable art stays in the safe zone
+/**
+ * The tablet "o" from the wordmark, as an icon.
+ * - `plate: false`: just the tablet on transparent, for browser tabs (reads on light and dark).
+ * - `plate: true`: on a warm-white plate with a soft warm vignette, for home screens and app icons.
+ * `minimal` keeps flat shapes and a heavier outline so 16 to 32px favicons stay crisp.
+ * `radius` rounds the plate (0 where the OS applies its own mask: iOS and maskable icons).
+ */
+function appMark({ size = 512, minimal = false, maskable = false, plate = true, radius = size * 0.23 } = {}) {
+  const r = size * (maskable ? 0.3 : !plate ? (minimal ? 0.45 : 0.42) : minimal ? 0.38 : 0.34); // maskable art stays in the safe zone
   const look = jellyLook(r * 2.9); // the tablet's equivalent font size
-  const cy = size / 2 - (minimal ? 0 : look.shadow.dy * 0.4); // optically centred over its shadow
+  const cy = size / 2 - (minimal || !plate ? 0 : look.shadow.dy * 0.4); // optically centred over its shadow
   const { parts } = tablet({ cx: size / 2, cy, r, gap: r * 0.02 });
   const id = 'mark';
 
-  const radius = maskable ? 0 : size * 0.23;
   const defs =
-    `<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${palette.skyBlue}"/><stop offset="1" stop-color="${palette.coolSky}"/></linearGradient>` +
+    `<radialGradient id="plate" cx="0.5" cy="0.45" r="0.75"><stop offset="0.5" stop-color="${surface.warmWhite}"/><stop offset="1" stop-color="${surface.vignette}"/></radialGradient>` +
     jellyDefs(id, look, { x1: size / 2 - r, x2: size / 2 + r });
-  const bg = `<rect width="${size}" height="${size}" rx="${round(radius)}" fill="url(#bg)"/>`;
-  // Tiny favicons: a thicker outline and no shadow, so the tablet stays crisp at 16–32px.
+  const bg = plate ? `<rect width="${size}" height="${size}" rx="${round(maskable ? 0 : radius)}" fill="url(#plate)"/>` : '';
+  // Tiny favicons: a thicker outline and no shadow, so the tablet stays crisp at 16 to 32px.
   const outline = minimal ? Math.max(1.3, r * 0.13) : r * PILL_OUTLINE;
   const halves = parts
     .map(
@@ -226,7 +231,7 @@ function appMark({ size = 512, minimal = false, maskable = false } = {}) {
         `<path d="${d}" fill="${pill.body}"${minimal ? '' : ` filter="url(#${id}-pill)"`}/>`,
     )
     .join('');
-  return svgDoc(size, size, defs, bg + (minimal ? '' : shadowOf(parts, id, look)) + halves);
+  return svgDoc(size, size, defs, bg + (minimal || !plate ? '' : shadowOf(parts, id, look)) + halves);
 }
 
 // ── Social card ──────────────────────────────────────────────────────────────
@@ -311,14 +316,14 @@ const markSvg = appMark();
 
 await fs.writeFile(path.join(webPublic, 'wordmark.svg'), wordmarkSvg);
 await fs.writeFile(path.join(webPublic, 'mark.svg'), markSvg);
-await fs.writeFile(path.join(webApp, 'icon.svg'), appMark({ size: 64, minimal: true }));
-await fs.writeFile(path.join(webApp, 'apple-icon.png'), await png(appMark({ size: 180 }), 180));
+await fs.writeFile(path.join(webApp, 'icon.svg'), appMark({ size: 64, minimal: true, plate: false }));
+await fs.writeFile(path.join(webApp, 'apple-icon.png'), await png(appMark({ size: 180, radius: 0 }), 180)); // iOS rounds it
 await fs.writeFile(path.join(webPublic, 'icon-192.png'), await png(appMark({ size: 192 }), 192));
 await fs.writeFile(path.join(webPublic, 'icon-512.png'), await png(markSvg, 512));
 await fs.writeFile(path.join(webPublic, 'icon-maskable-512.png'), await png(appMark({ maskable: true }), 512));
 await fs.writeFile(
   path.join(webApp, 'favicon.ico'),
-  await pngToIco(await Promise.all([16, 32, 48].map((s) => png(appMark({ size: s, minimal: s < 48 }), s)))),
+  await pngToIco(await Promise.all([16, 32, 48].map((s) => png(appMark({ size: s, minimal: s < 48, plate: false }), s)))),
 );
 await fs.writeFile(path.join(webApp, 'opengraph-image.png'), await socialCard(wordmarkSvg));
 await fs.writeFile(
