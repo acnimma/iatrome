@@ -19,12 +19,35 @@ body {
   min-height: 100dvh;
   /*
    * The vignette is painted on the page itself, not on a fixed layer: Safari 26 tints its
-   * top and bottom bars from the page's background colour, and a fixed full-screen layer
-   * would hijack that. It only darkens the sides, so the top and bottom meet the bars in
-   * plain warm white.
+   * bars from the page background, and a fixed full-screen layer would hijack that.
+   * It's nearly rectangular: eased bands along each edge, so the top and bottom fade softly
+   * into the browser bars and the corners blend instead of meeting in a hard contrast.
    */
+  --edge: color-mix(in srgb, var(--vignette) 80%, transparent);
+  --edge-mid: color-mix(in srgb, var(--vignette) 34%, transparent);
+  --edge-soft: color-mix(in srgb, var(--vignette) 10%, transparent);
   background-color: var(--warm-white);
-  background-image: radial-gradient(ellipse 72% 125% at 50% 50%, transparent 58%, color-mix(in srgb, var(--vignette) 85%, transparent) 100%);
+  background-image:
+    linear-gradient(
+      to bottom,
+      var(--edge) 0,
+      var(--edge-mid) 4vh,
+      var(--edge-soft) 9vh,
+      transparent 15vh,
+      transparent calc(100% - 15vh),
+      var(--edge-soft) calc(100% - 9vh),
+      var(--edge-mid) calc(100% - 4vh),
+      var(--edge) 100%
+    ),
+    linear-gradient(
+      to right,
+      var(--edge-mid) 0,
+      var(--edge-soft) 5vw,
+      transparent 11vw,
+      transparent calc(100% - 11vw),
+      var(--edge-soft) calc(100% - 5vw),
+      var(--edge-mid) 100%
+    );
   background-attachment: fixed;
   color: var(--ink);
   font-family: var(--font-body);
