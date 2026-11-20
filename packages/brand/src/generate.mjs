@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 import opentype from 'opentype.js';
 import sharp from 'sharp';
 import pngToIco from 'png-to-ico';
-import { palette, rainbow, surface } from './palette.mjs';
+import { jelly, palette, rainbow, surface } from './palette.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, '../../..');
@@ -20,116 +20,189 @@ const font = opentype.parse((await fs.readFile(fontFile)).buffer);
 const round = (n) => Math.round(n * 100) / 100;
 
 const WORD = 'iatrome';
+const TABLET = WORD.indexOf('o'); // the "o" is drawn as a scored tablet, not the font's glyph
 const WORD_SIZE = 200; // font size the wordmark is laid out at (its user units)
 
-/** Where each palette colour sits along the word (0 = left edge, 1 = right edge). */
+/** Where each palette colour sits along a gradient (0 = left edge, 1 = right edge). */
 const STOP_OFFSETS = [0.04, 0.3, 0.49, 0.66, 0.96];
 const gradientStops = rainbow.map((color, i) => ({ offset: STOP_OFFSETS[i], color }));
 
-// ── The letter treatment ─────────────────────────────────────────────────────
-// A fine ink outline, a soft pillowy gloss inside the letter and a diffuse
-// shadow underneath. Every measure scales with the font size.
-// apps/web/src/components/brand/Wordmark.tsx renders the same layers.
+// ── The black-jelly finish ───────────────────────────────────────────────────
+// A deep black body, a glossy crescent of light just inside each top edge, a
+// faint sheen on the very rim, and the palette glowing through the bottom edge
+// the way light passes through a gummy sweet. Every measure scales with `em`,
+// the font size (or its equivalent) the shape is drawn at.
 
-function treatment(size) {
+function jellyLook(em) {
   return {
-    outline: round(size * 0.017), // visible ink outside the letter edge
-    shadow: { dy: round(size * 0.045), blur: round(size * 0.032), opacity: 0.2 },
-    gloss: { blur: round(size * 0.028), offset: round(size * 0.04), highlight: 0.62, shade: 0.2 },
+    shadow: { dy: round(em * 0.05), blur: round(em * 0.034), opacity: 0.34, color: jelly.shadow },
+    edge: round(em * 0.022), // softness of the rim bands
+    glow: { blur: round(em * 0.04), rise: round(em * 0.042), opacity: 0.8 },
+    sheen: { drop: round(em * 0.02), opacity: 0.32 },
+    shine: { blur: round(em * 0.05), drop: round(em * 0.05), soften: round(em * 0.008), opacity: 0.88 },
   };
 }
 
-const stopsSvg = (stops) => stops.map((s) => `<stop offset="${s.offset}" stop-color="${s.color}"/>`).join('');
-
 /**
- * Filters shared by every rendering of the letters. The gloss lights the top
- * inside edge of each letter and gently shades the bottom one, so the flat
- * fill reads as a soft, rounded pillow.
+ * The paint every jelly shape uses: `${id}-fill` (the palette, which only shows
+ * as the glow), `${id}-jelly` (the finish) and `${id}-shadow` (a soft blur).
+ * The fill gradient runs horizontally from x1 to x2 in user units.
  */
-function filterDefs({ shadow, gloss }) {
-  // a soft band just inside the letter edge: dy > 0 picks the top edge, dy < 0 the bottom
-  const rim = (name, dy, color, opacity) =>
-    `<feOffset in="soft" dy="${dy}" result="${name}-shifted"/>` +
-    `<feComposite in="SourceAlpha" in2="${name}-shifted" operator="out" result="${name}-band"/>` +
-    `<feFlood flood-color="${color}" flood-opacity="${opacity}"/>` +
-    `<feComposite in2="${name}-band" operator="in" result="${name}"/>`;
+function jellyDefs(id, look, { x1, x2 }) {
+  const { edge, glow, sheen, shine } = look;
+  // the part of the shape that `from` (a copy of its silhouette), shifted by dy, no longer covers,
+  // softened and kept inside the shape
+  const band = (from, dy, name) =>
+    `<feOffset in="${from}" dy="${dy}"/><feComposite in="SourceAlpha" operator="out"/>` +
+    `<feGaussianBlur stdDeviation="${edge / 2}"/><feComposite in2="SourceAlpha" operator="in" result="${name}"/>`;
+  const paint = (color, opacity, area, name) =>
+    `<feFlood flood-color="${color}" flood-opacity="${opacity}"/><feComposite in2="${area}" operator="in" result="${name}"/>`;
   return (
-    `<filter id="shadow" x="-20%" y="-20%" width="140%" height="160%"><feGaussianBlur stdDeviation="${shadow.blur}"/></filter>` +
-    `<filter id="gloss" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">` +
-    `<feGaussianBlur in="SourceAlpha" stdDeviation="${gloss.blur}" result="soft"/>` +
-    rim('highlight', gloss.offset, '#fff', gloss.highlight) +
-    rim('shade', -gloss.offset, palette.ink, gloss.shade) +
-    `<feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="shade"/><feMergeNode in="highlight"/></feMerge>` +
-    `</filter>`
+    `<linearGradient id="${id}-fill" gradientUnits="userSpaceOnUse" x1="${round(x1)}" y1="0" x2="${round(x2)}" y2="0">` +
+    gradientStops.map((s) => `<stop offset="${s.offset}" stop-color="${s.color}"/>`).join('') +
+    `</linearGradient>` +
+    `<filter id="${id}-jelly" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">` +
+    paint(jelly.body, 1, 'SourceAlpha', 'body') +
+    // palette glow through the bottom edge, fading softly upwards
+    `<feGaussianBlur in="SourceAlpha" stdDeviation="${glow.blur}" result="deep"/>` +
+    band('deep', -glow.rise, 'low') +
+    `<feComposite in="SourceGraphic" in2="low" operator="in"/>` +
+    `<feComponentTransfer result="glow"><feFuncA type="linear" slope="${glow.opacity}"/></feComponentTransfer>` +
+    // faint sheen on the top-facing rims only
+    band('SourceAlpha', sheen.drop, 'top') +
+    paint('#fff', sheen.opacity, 'top', 'sheen') +
+    // the glossy crescent: the top of an inset copy of the shape
+    `<feGaussianBlur in="SourceAlpha" stdDeviation="${shine.blur}"/>` +
+    `<feComponentTransfer result="inset"><feFuncA type="linear" slope="12" intercept="-6.6"/></feComponentTransfer>` +
+    `<feOffset in="inset" dy="${shine.drop}" result="inset-low"/>` +
+    `<feComposite in="inset" in2="inset-low" operator="out"/>` +
+    `<feGaussianBlur stdDeviation="${shine.soften}" result="crescent"/>` +
+    paint('#fff', shine.opacity, 'crescent', 'shine') +
+    `<feMerge><feMergeNode in="body"/><feMergeNode in="glow"/><feMergeNode in="sheen"/><feMergeNode in="shine"/></feMerge>` +
+    `</filter>` +
+    `<filter id="${id}-shadow" x="-20%" y="-20%" width="140%" height="180%"><feGaussianBlur stdDeviation="${look.shadow.blur}"/></filter>`
   );
 }
 
-/** Shadow, outline, then the glossy fill: one letter (or word) path, fully dressed. */
-function dressed(d, { outline, shadow }, fill) {
-  return (
-    `<path d="${d}" transform="translate(0 ${shadow.dy})" fill="${palette.ink}" opacity="${shadow.opacity}" filter="url(#shadow)"/>` +
-    `<path d="${d}" fill="${palette.ink}" stroke="${palette.ink}" stroke-width="${round(outline * 2)}" stroke-linejoin="round"/>` +
-    `<path d="${d}" fill="${fill}" filter="url(#gloss)"/>`
-  );
-}
+/** Shadow paths for a set of shapes; draw them all before any of the shapes. */
+const shadowOf = (parts, id, { shadow }) =>
+  parts
+    .map((d) => `<path d="${d}" transform="translate(0 ${shadow.dy})" fill="${shadow.color}" opacity="${shadow.opacity}" filter="url(#${id}-shadow)"/>`)
+    .join('');
+
+const jellyOf = (parts, id) => parts.map((d) => `<path d="${d}" fill="url(#${id}-fill)" filter="url(#${id}-jelly)"/>`).join('');
 
 const svgDoc = (w, h, defs, body) =>
   `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${round(w)} ${round(h)}" width="${round(w)}" height="${round(h)}"><defs>${defs}</defs>${body}</svg>`;
 
-// ── Wordmark: "iatrome" ──────────────────────────────────────────────────────
+// ── The tablet: a round pill with a score line ───────────────────────────────
 
-/** Lays the word out so its ink (incl. outline and shadow) starts at the origin. */
-function wordLayout(size = WORD_SIZE) {
-  const t = treatment(size);
-  const pad = t.outline * 2;
-  const raw = font.getPath(WORD, 0, 0, size).getBoundingBox();
-  const x0 = pad - raw.x1;
-  const baseline = pad - raw.y1;
-  const box = font.getPath(WORD, x0, baseline, size).getBoundingBox();
-  return {
-    t,
-    x0,
-    baseline,
-    box,
-    width: box.x2 + pad,
-    height: box.y2 + Math.max(pad, t.shadow.dy + t.shadow.blur * 2),
+const TILT = 10; // degrees the score line leans to the right, for a playful bounce
+
+/**
+ * The two halves of a scored tablet centred on (cx, cy), as path data
+ * [left, right]. The score line is a gap between two D shapes whose inner
+ * corners are softly rounded; `pivot` is the bottom end of the score line,
+ * the hinge the halves open around when the tablet cracks.
+ */
+function tablet({ cx, cy, r, gap = r * 0.075 }) {
+  const a = (TILT * Math.PI) / 180;
+  const at = (x, y) => [round(cx + x * Math.cos(a) - y * Math.sin(a)), round(cy + x * Math.sin(a) + y * Math.cos(a))];
+  const h = gap / 2;
+  const s = Math.sqrt(r * r - h * h);
+  const corner = r * 0.2; // how softly the chord meets the rim
+  const turn = corner / r;
+  const half = (side) => {
+    // side = 1 for the right half; -1 mirrors it
+    const pt = (x, y) => at(side * x, y).join(' ');
+    const top = Math.atan2(-s, h) + turn;
+    const bottom = Math.atan2(s, h) - turn;
+    return (
+      `M${pt(h, -s + corner)}Q${pt(h, -s)} ${pt(r * Math.cos(top), r * Math.sin(top))}` +
+      `A${round(r)} ${round(r)} 0 0 ${side > 0 ? 1 : 0} ${pt(r * Math.cos(bottom), r * Math.sin(bottom))}` +
+      `Q${pt(h, s)} ${pt(h, s - corner)}Z`
+    );
   };
+  const [px, py] = at(0, r);
+  return { parts: [half(-1), half(1)], pivot: { x: px, y: py } };
+}
+
+// ── Wordmark: "iatrome" with a tablet for the "o" ────────────────────────────
+
+/**
+ * Each letter's shapes (one path, or the tablet's two halves) and ink box,
+ * with the word's pen starting at (x, baseline).
+ */
+function wordLetters(x, baseline, size = WORD_SIZE) {
+  const letters = [];
+  font.forEachGlyph(WORD, x, baseline, size, {}, (glyph, gx, gy, gs) => {
+    const p = glyph.getPath(gx, gy, gs);
+    const b = p.getBoundingBox();
+    if (letters.length !== TABLET) {
+      letters.push({ char: String.fromCharCode(glyph.unicode), parts: [p.toPathData(2)], box: b });
+      return;
+    }
+    // sized to the font's "o", nudged up a touch so the solid disc doesn't look heavier
+    const r = ((b.y2 - b.y1) / 2) * 0.99;
+    const cx = (b.x1 + b.x2) / 2;
+    const cy = (b.y1 + b.y2) / 2 - r * 0.02;
+    letters.push({
+      char: 'o',
+      ...tablet({ cx, cy, r }),
+      box: { x1: cx - r, y1: cy - r, x2: cx + r, y2: cy + r },
+    });
+  });
+  return letters;
+}
+
+/** Lays the word out so its ink (incl. shadow) starts at the origin. */
+function wordLayout() {
+  const look = jellyLook(WORD_SIZE);
+  const pad = look.edge;
+  const raw = wordLetters(0, 0);
+  const x0 = pad - Math.min(...raw.map((l) => l.box.x1));
+  const baseline = pad - Math.min(...raw.map((l) => l.box.y1));
+  const letters = wordLetters(x0, baseline);
+  const box = {
+    x1: Math.min(...letters.map((l) => l.box.x1)),
+    x2: Math.max(...letters.map((l) => l.box.x2)),
+    y2: Math.max(...letters.map((l) => l.box.y2)),
+  };
+  const below = look.shadow.dy + look.shadow.blur * 2.5;
+  return { look, letters, box, width: box.x2 + pad, height: box.y2 + below, below };
 }
 
 function wordmark() {
-  const { t, x0, baseline, box, width, height } = wordLayout();
-  const d = font.getPath(WORD, x0, baseline, WORD_SIZE).toPathData(2);
-  const defs =
-    `<linearGradient id="fill" gradientUnits="userSpaceOnUse" x1="${round(box.x1)}" y1="0" x2="${round(box.x2)}" y2="0">${stopsSvg(gradientStops)}</linearGradient>` +
-    filterDefs(t);
-  return svgDoc(width, height, defs, dressed(d, t, 'url(#fill)'));
+  const { look, letters, box, width, height } = wordLayout();
+  const parts = letters.flatMap((l) => l.parts);
+  const id = 'iatrome';
+  return svgDoc(width, height, jellyDefs(id, look, box), shadowOf(parts, id, look) + jellyOf(parts, id));
 }
 
-// ── App mark: the "i" on a palette squircle ──────────────────────────────────
+// ── App mark: the tablet on a palette squircle ───────────────────────────────
 
-/** `minimal` keeps just the fill and outline so 16–32px favicons stay crisp. */
+/** `minimal` keeps flat shapes and a simple glint so 16–32px favicons stay crisp. */
 function appMark({ size = 512, minimal = false, maskable = false } = {}) {
-  const glyphHeight = size * (maskable ? 0.52 : 0.66); // maskable art stays in the safe zone
-  const raw = font.getPath('i', 0, 0, 1000).getBoundingBox();
-  const glyphSize = (glyphHeight / (raw.y2 - raw.y1)) * 1000;
-  const t = treatment(glyphSize);
-  const letterW = ((raw.x2 - raw.x1) / 1000) * glyphSize;
-  const x = (size - letterW) / 2 - (raw.x1 / 1000) * glyphSize;
-  // centre optically: nudge up a touch so the shadow doesn't weigh it down
-  const nudge = minimal ? 0 : t.shadow.dy * 0.4;
-  const baseline = (size - glyphHeight) / 2 - (raw.y1 / 1000) * glyphSize - nudge;
-  const d = font.getPath('i', x, baseline, glyphSize).toPathData(2);
+  const r = size * (maskable ? 0.27 : minimal ? 0.4 : 0.35); // maskable art stays in the safe zone
+  const look = jellyLook(r * 2.9); // the tablet's equivalent font size
+  const cy = size / 2 - (minimal ? 0 : look.shadow.dy * 0.4); // optically centred over its shadow
+  const { parts } = tablet({ cx: size / 2, cy, r, gap: r * (minimal ? 0.16 : 0.09) });
+  const id = 'mark';
 
+  const radius = maskable ? 0 : size * 0.23;
   const defs =
     `<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${palette.skyBlue}"/><stop offset="1" stop-color="${palette.coolSky}"/></linearGradient>` +
-    `<linearGradient id="fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0.1" stop-color="${palette.royalGold}"/><stop offset="1" stop-color="${palette.roseKiss}"/></linearGradient>` +
-    (minimal ? '' : filterDefs(t));
-  const radius = maskable ? 0 : size * 0.23;
+    (minimal ? '' : jellyDefs(id, look, { x1: size / 2 - r, x2: size / 2 + r }));
   const bg = `<rect width="${size}" height="${size}" rx="${round(radius)}" fill="url(#bg)"/>`;
-  const letter = minimal
-    ? `<path d="${d}" fill="url(#fill)" stroke="${palette.ink}" stroke-width="${round(t.outline * 2)}" paint-order="stroke" stroke-linejoin="round"/>`
-    : dressed(d, t, 'url(#fill)');
-  return svgDoc(size, size, defs, bg + letter);
+  if (!minimal) return svgDoc(size, size, defs, bg + shadowOf(parts, id, look) + jellyOf(parts, id));
+
+  // a flat black tablet with one bright glint on its upper left
+  const glint = r * 0.62;
+  const g = (deg) => [round(size / 2 + glint * Math.cos((deg * Math.PI) / 180)), round(size / 2 + glint * Math.sin((deg * Math.PI) / 180))];
+  const [sx, sy] = g(-160);
+  const [ex, ey] = g(-122);
+  const shine = `<path d="M${sx} ${sy}A${round(glint)} ${round(glint)} 0 0 1 ${ex} ${ey}" fill="none" stroke="#fff" stroke-opacity="0.85" stroke-width="${round(r * 0.17)}" stroke-linecap="round"/>`;
+  return svgDoc(size, size, defs, bg + parts.map((d) => `<path d="${d}" fill="${jelly.body}"/>`).join('') + shine);
 }
 
 // ── Social card ──────────────────────────────────────────────────────────────
@@ -166,34 +239,38 @@ async function socialCard(wordmarkSvg) {
     .toBuffer();
 }
 
-// ── Interactive wordmark data (per-letter paths for the React component) ─────
+// ── Interactive wordmark data (per-letter shapes for the React component) ────
+
+/** Placeholder the component swaps for its own unique id prefix. */
+const ID = '__ID__';
 
 function wordmarkGlyphs() {
-  const { t, x0, baseline, box, width, height } = wordLayout();
-  const bleed = t.outline * 1.5;
-  const letters = [];
-  font.forEachGlyph(WORD, x0, baseline, WORD_SIZE, {}, (glyph, gx, gy, gs) => {
-    const p = glyph.getPath(gx, gy, gs);
-    const b = p.getBoundingBox();
-    letters.push({
-      char: String.fromCharCode(glyph.unicode),
-      d: p.toPathData(2),
-      // the letter's own box (incl. outline and shadow), in wordmark units
+  const { look, letters, box, width, height, below } = wordLayout();
+  const bleed = look.edge;
+  return {
+    width: round(width),
+    height: round(height),
+    paint: jellyDefs(ID, look, box),
+    shadow: look.shadow,
+    below: round(below), // how far each letter's box reaches below its ink (room for the shadow)
+    // which letter is the tablet, its size, the hinge its halves open around, and its tilt
+    tablet: {
+      index: TABLET,
+      radius: round((letters[TABLET].box.x2 - letters[TABLET].box.x1) / 2),
+      pivot: letters[TABLET].pivot,
+      tilt: TILT,
+    },
+    letters: letters.map(({ char, parts, box: b }) => ({
+      char,
+      parts,
+      // the letter's own box (incl. its shadow), in wordmark units
       box: {
         x: round(b.x1 - bleed),
         y: round(b.y1 - bleed),
         width: round(b.x2 - b.x1 + bleed * 2),
-        height: round(b.y2 - b.y1 + bleed + t.shadow.dy + t.shadow.blur * 2),
+        height: round(b.y2 - b.y1 + bleed + below),
       },
-    });
-  });
-  return {
-    width: round(width),
-    height: round(height),
-    ...t,
-    gradient: { x1: round(box.x1), x2: round(box.x2), stops: gradientStops },
-    letters,
-    ink: palette.ink,
+    })),
   };
 }
 

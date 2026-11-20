@@ -16,6 +16,15 @@ export const surface = {
   vignette: '#e9dccb',
 };
 
+/**
+ * The logo's black-jelly finish (not palette colours): a deep, slightly
+ * blue-violet black, and the shadow it casts on the page.
+ */
+export const jelly = {
+  body: '#0e101b',
+  shadow: '#14121c',
+};
+
 /** The five palette colours in gradient order (left → right). */
 export const rainbow = [
   palette.coolSky,
