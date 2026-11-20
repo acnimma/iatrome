@@ -2,7 +2,7 @@
 export const wordmarkGlyphs = {
   "width": 908.67,
   "height": 197.02,
-  "paint": "<linearGradient id=\"__ID__-fill\" gradientUnits=\"userSpaceOnUse\" x1=\"4.4\" y1=\"0\" x2=\"904.27\" y2=\"0\"><stop offset=\"0.04\" stop-color=\"#4988b8\"/><stop offset=\"0.3\" stop-color=\"#67a1c6\"/><stop offset=\"0.49\" stop-color=\"#c8c8c8\"/><stop offset=\"0.66\" stop-color=\"#ccb64a\"/><stop offset=\"0.96\" stop-color=\"#cc4e73\"/></linearGradient><filter id=\"__ID__-jelly\" x=\"0\" y=\"0\" width=\"100%\" height=\"100%\" color-interpolation-filters=\"sRGB\"><feFlood flood-color=\"#0e101b\" flood-opacity=\"1\"/><feComposite in2=\"SourceAlpha\" operator=\"in\" result=\"body\"/><feGaussianBlur in=\"SourceAlpha\" stdDeviation=\"8\" result=\"deep\"/><feOffset in=\"deep\" dy=\"-8.4\"/><feComposite in=\"SourceAlpha\" operator=\"out\"/><feGaussianBlur stdDeviation=\"2.2\"/><feComposite in2=\"SourceAlpha\" operator=\"in\" result=\"low\"/><feComposite in=\"SourceGraphic\" in2=\"low\" operator=\"in\"/><feComponentTransfer result=\"glow\"><feFuncA type=\"linear\" slope=\"0.8\"/></feComponentTransfer><feOffset in=\"SourceAlpha\" dy=\"4\"/><feComposite in=\"SourceAlpha\" operator=\"out\"/><feGaussianBlur stdDeviation=\"2.2\"/><feComposite in2=\"SourceAlpha\" operator=\"in\" result=\"top\"/><feFlood flood-color=\"#fff\" flood-opacity=\"0.32\"/><feComposite in2=\"top\" operator=\"in\" result=\"sheen\"/><feGaussianBlur in=\"SourceAlpha\" stdDeviation=\"10\"/><feComponentTransfer result=\"inset\"><feFuncA type=\"linear\" slope=\"12\" intercept=\"-6.6\"/></feComponentTransfer><feOffset in=\"inset\" dy=\"10\" result=\"inset-low\"/><feComposite in=\"inset\" in2=\"inset-low\" operator=\"out\"/><feGaussianBlur stdDeviation=\"1.6\" result=\"crescent\"/><feFlood flood-color=\"#fff\" flood-opacity=\"0.88\"/><feComposite in2=\"crescent\" operator=\"in\" result=\"shine\"/><feMerge><feMergeNode in=\"body\"/><feMergeNode in=\"glow\"/><feMergeNode in=\"sheen\"/><feMergeNode in=\"shine\"/></feMerge></filter><filter id=\"__ID__-shadow\" x=\"-20%\" y=\"-20%\" width=\"140%\" height=\"180%\"><feGaussianBlur stdDeviation=\"6.8\"/></filter>",
+  "paint": "<linearGradient id=\"__ID__-fill\" gradientUnits=\"userSpaceOnUse\" x1=\"4.4\" y1=\"0\" x2=\"904.27\" y2=\"0\"><stop offset=\"0.04\" stop-color=\"#4988b8\"/><stop offset=\"0.3\" stop-color=\"#67a1c6\"/><stop offset=\"0.49\" stop-color=\"#c8c8c8\"/><stop offset=\"0.66\" stop-color=\"#ccb64a\"/><stop offset=\"0.96\" stop-color=\"#cc4e73\"/></linearGradient><filter id=\"__ID__-jelly\" x=\"0\" y=\"0\" width=\"100%\" height=\"100%\" color-interpolation-filters=\"sRGB\"><feFlood flood-color=\"#0e101b\" flood-opacity=\"1\"/><feComposite in2=\"SourceAlpha\" operator=\"in\" result=\"body\"/><feGaussianBlur in=\"SourceAlpha\" stdDeviation=\"8\" result=\"deep\"/><feOffset in=\"deep\" dy=\"-8.4\"/><feComposite in=\"SourceAlpha\" operator=\"out\"/><feGaussianBlur stdDeviation=\"2.2\"/><feComposite in2=\"SourceAlpha\" operator=\"in\" result=\"low\"/><feComposite in=\"SourceGraphic\" in2=\"low\" operator=\"in\"/><feComponentTransfer result=\"glow\"><feFuncA type=\"linear\" slope=\"0.8\"/></feComponentTransfer><feOffset in=\"SourceAlpha\" dy=\"4\"/><feComposite in=\"SourceAlpha\" operator=\"out\"/><feGaussianBlur stdDeviation=\"2.2\"/><feComposite in2=\"SourceAlpha\" operator=\"in\" result=\"top\"/><feFlood flood-color=\"#fff\" flood-opacity=\"0.32\"/><feComposite in2=\"top\" operator=\"in\" result=\"sheen\"/><feGaussianBlur in=\"SourceAlpha\" stdDeviation=\"10\"/><feComponentTransfer result=\"inset\"><feFuncA type=\"linear\" slope=\"12\" intercept=\"-6.6\"/></feComponentTransfer><feOffset in=\"inset\" dy=\"10\" result=\"inset-low\"/><feComposite in=\"inset\" in2=\"inset-low\" operator=\"out\"/><feGaussianBlur stdDeviation=\"1.6\" result=\"crescent\"/><feFlood flood-color=\"#fff\" flood-opacity=\"0.88\"/><feComposite in2=\"crescent\" operator=\"in\" result=\"shine\"/><feMerge><feMergeNode in=\"body\"/><feMergeNode in=\"glow\"/><feMergeNode in=\"sheen\"/><feMergeNode in=\"shine\"/></feMerge></filter><filter id=\"__ID__-shadow\" x=\"-20%\" y=\"-20%\" width=\"140%\" height=\"180%\"><feGaussianBlur stdDeviation=\"6.8\"/></filter><filter id=\"__ID__-pill\" x=\"0\" y=\"0\" width=\"100%\" height=\"100%\" color-interpolation-filters=\"sRGB\"><feFlood flood-color=\"#fdfcf9\" flood-opacity=\"1\"/><feComposite in2=\"SourceAlpha\" operator=\"in\" result=\"body\"/><feGaussianBlur in=\"SourceAlpha\" stdDeviation=\"8\" result=\"pill-deep\"/><feOffset in=\"pill-deep\" dy=\"-8.4\"/><feComposite in=\"SourceAlpha\" operator=\"out\"/><feGaussianBlur stdDeviation=\"2.2\"/><feComposite in2=\"SourceAlpha\" operator=\"in\" result=\"pill-low\"/><feFlood flood-color=\"#b9b3aa\" flood-opacity=\"0.75\"/><feComposite in2=\"pill-low\" operator=\"in\" result=\"shade\"/><feMerge><feMergeNode in=\"body\"/><feMergeNode in=\"shade\"/></feMerge></filter>",
   "shadow": {
     "dy": 10,
     "blur": 6.8,
@@ -17,7 +17,13 @@ export const wordmarkGlyphs = {
       "x": 517.72,
       "y": 160.67
     },
-    "tilt": 10
+    "tilt": 10,
+    "outline": 6.93,
+    "colors": {
+      "body": "#fdfcf9",
+      "shade": "#b9b3aa",
+      "line": "#0e101b"
+    }
   },
   "letters": [
     {
@@ -71,8 +77,8 @@ export const wordmarkGlyphs = {
     {
       "char": "o",
       "parts": [
-        "M536.8 37.49Q539.2 23.85 525.38 23.34A69.26 69.26 0 0 0 502.01 155.92Q515.17 160.17 517.57 146.53Z",
-        "M541.91 38.39Q544.32 24.75 557.48 28.99A69.26 69.26 0 0 1 534.1 161.58Q520.28 161.07 522.69 147.43Z"
+        "M538.68 37.78Q541.09 24.13 527.29 23.24A69.26 69.26 0 0 0 503.76 156.66Q517.03 160.54 519.44 146.9Z",
+        "M540.05 38.02Q542.45 24.37 555.72 28.26A69.26 69.26 0 0 1 532.2 161.68Q518.4 160.78 520.8 147.14Z"
       ],
       "box": {
         "x": 456.08,
