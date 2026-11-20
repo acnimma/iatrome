@@ -246,6 +246,13 @@ export function Wordmark({ className }: { className?: string }) {
   const fill = `url(#${id}-fill)`;
   const finish = `url(#${id}-jelly)`;
   const jelly = (d: string) => <path key={d} d={d} fill={fill} filter={finish} />;
+  // the tablet: a black outline under a white pill; the halves' outlines meet as the score line
+  const pill = (d: string) => (
+    <g key={d}>
+      <path d={d} fill={W.tablet.colors.line} stroke={W.tablet.colors.line} strokeWidth={W.tablet.outline * 2} strokeLinejoin="round" />
+      <path d={d} fill={W.tablet.colors.body} filter={`url(#${id}-pill)`} />
+    </g>
+  );
 
   return (
     <span
@@ -287,7 +294,7 @@ export function Wordmark({ className }: { className?: string }) {
                 {parts.map((d, k) => (
                   <span key={d} ref={(el) => void (halves.current[k] = el)} className={styles.half} style={{ transformOrigin: hinge }}>
                     <svg viewBox={viewBox(box)} aria-hidden>
-                      {jelly(d)}
+                      {pill(d)}
                     </svg>
                   </span>
                 ))}

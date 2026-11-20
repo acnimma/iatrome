@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 import opentype from 'opentype.js';
 import sharp from 'sharp';
 import pngToIco from 'png-to-ico';
-import { jelly, palette, rainbow, surface } from './palette.mjs';
+import { jelly, palette, pill, rainbow, surface } from './palette.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, '../../..');
@@ -80,9 +80,30 @@ function jellyDefs(id, look, { x1, x2 }) {
     paint('#fff', shine.opacity, 'crescent', 'shine') +
     `<feMerge><feMergeNode in="body"/><feMergeNode in="glow"/><feMergeNode in="sheen"/><feMergeNode in="shine"/></feMerge>` +
     `</filter>` +
-    `<filter id="${id}-shadow" x="-20%" y="-20%" width="140%" height="180%"><feGaussianBlur stdDeviation="${look.shadow.blur}"/></filter>`
+    `<filter id="${id}-shadow" x="-20%" y="-20%" width="140%" height="180%"><feGaussianBlur stdDeviation="${look.shadow.blur}"/></filter>` +
+    // the tablet: white body, soft shading inside its lower edge
+    `<filter id="${id}-pill" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">` +
+    paint(pill.body, 1, 'SourceAlpha', 'body') +
+    `<feGaussianBlur in="SourceAlpha" stdDeviation="${glow.blur}" result="pill-deep"/>` +
+    band('pill-deep', -glow.rise, 'pill-low') +
+    paint(pill.shade, 0.75, 'pill-low', 'shade') +
+    `<feMerge><feMergeNode in="body"/><feMergeNode in="shade"/></feMerge>` +
+    `</filter>`
   );
 }
+
+/** Outline width of the tablet, as a share of its radius. Its two halves' outlines meet to form the score line. */
+const PILL_OUTLINE = 0.1;
+
+/** The tablet's halves: a black outline under a white pill body. */
+const tabletOf = (parts, id, r) =>
+  parts
+    .map(
+      (d) =>
+        `<path d="${d}" fill="${pill.line}" stroke="${pill.line}" stroke-width="${round(r * PILL_OUTLINE * 2)}" stroke-linejoin="round"/>` +
+        `<path d="${d}" fill="${pill.body}" filter="url(#${id}-pill)"/>`,
+    )
+    .join('');
 
 /** Shadow paths for a set of shapes; draw them all before any of the shapes. */
 const shadowOf = (parts, id, { shadow }) =>
@@ -105,7 +126,7 @@ const TILT = 10; // degrees the score line leans to the right, for a playful bou
  * corners are softly rounded; `pivot` is the bottom end of the score line,
  * the hinge the halves open around when the tablet cracks.
  */
-function tablet({ cx, cy, r, gap = r * 0.075 }) {
+function tablet({ cx, cy, r, gap = r * 0.02 }) {
   const a = (TILT * Math.PI) / 180;
   const at = (x, y) => [round(cx + x * Math.cos(a) - y * Math.sin(a)), round(cy + x * Math.sin(a) + y * Math.cos(a))];
   const h = gap / 2;
@@ -174,35 +195,38 @@ function wordLayout() {
 
 function wordmark() {
   const { look, letters, box, width, height } = wordLayout();
-  const parts = letters.flatMap((l) => l.parts);
   const id = 'iatrome';
-  return svgDoc(width, height, jellyDefs(id, look, box), shadowOf(parts, id, look) + jellyOf(parts, id));
+  const body = letters
+    .map((l, i) => (i === TABLET ? tabletOf(l.parts, id, (l.box.x2 - l.box.x1) / 2) : jellyOf(l.parts, id)))
+    .join('');
+  return svgDoc(width, height, jellyDefs(id, look, box), shadowOf(letters.flatMap((l) => l.parts), id, look) + body);
 }
 
 // ── App mark: the tablet on a palette squircle ───────────────────────────────
 
 /** `minimal` keeps flat shapes and a simple glint so 16–32px favicons stay crisp. */
 function appMark({ size = 512, minimal = false, maskable = false } = {}) {
-  const r = size * (maskable ? 0.27 : minimal ? 0.4 : 0.35); // maskable art stays in the safe zone
+  const r = size * (maskable ? 0.27 : minimal ? 0.38 : 0.34); // maskable art stays in the safe zone
   const look = jellyLook(r * 2.9); // the tablet's equivalent font size
   const cy = size / 2 - (minimal ? 0 : look.shadow.dy * 0.4); // optically centred over its shadow
-  const { parts } = tablet({ cx: size / 2, cy, r, gap: r * (minimal ? 0.16 : 0.09) });
+  const { parts } = tablet({ cx: size / 2, cy, r, gap: r * 0.02 });
   const id = 'mark';
 
   const radius = maskable ? 0 : size * 0.23;
   const defs =
     `<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${palette.skyBlue}"/><stop offset="1" stop-color="${palette.coolSky}"/></linearGradient>` +
-    (minimal ? '' : jellyDefs(id, look, { x1: size / 2 - r, x2: size / 2 + r }));
+    jellyDefs(id, look, { x1: size / 2 - r, x2: size / 2 + r });
   const bg = `<rect width="${size}" height="${size}" rx="${round(radius)}" fill="url(#bg)"/>`;
-  if (!minimal) return svgDoc(size, size, defs, bg + shadowOf(parts, id, look) + jellyOf(parts, id));
-
-  // a flat black tablet with one bright glint on its upper left
-  const glint = r * 0.62;
-  const g = (deg) => [round(size / 2 + glint * Math.cos((deg * Math.PI) / 180)), round(size / 2 + glint * Math.sin((deg * Math.PI) / 180))];
-  const [sx, sy] = g(-160);
-  const [ex, ey] = g(-122);
-  const shine = `<path d="M${sx} ${sy}A${round(glint)} ${round(glint)} 0 0 1 ${ex} ${ey}" fill="none" stroke="#fff" stroke-opacity="0.85" stroke-width="${round(r * 0.17)}" stroke-linecap="round"/>`;
-  return svgDoc(size, size, defs, bg + parts.map((d) => `<path d="${d}" fill="${jelly.body}"/>`).join('') + shine);
+  // Tiny favicons: a thicker outline and no shadow, so the tablet stays crisp at 16–32px.
+  const outline = minimal ? Math.max(1.3, r * 0.13) : r * PILL_OUTLINE;
+  const halves = parts
+    .map(
+      (d) =>
+        `<path d="${d}" fill="${pill.line}" stroke="${pill.line}" stroke-width="${round(outline * 2)}" stroke-linejoin="round"/>` +
+        `<path d="${d}" fill="${pill.body}"${minimal ? '' : ` filter="url(#${id}-pill)"`}/>`,
+    )
+    .join('');
+  return svgDoc(size, size, defs, bg + (minimal ? '' : shadowOf(parts, id, look)) + halves);
 }
 
 // ── Social card ──────────────────────────────────────────────────────────────
@@ -259,6 +283,8 @@ function wordmarkGlyphs() {
       radius: round((letters[TABLET].box.x2 - letters[TABLET].box.x1) / 2),
       pivot: letters[TABLET].pivot,
       tilt: TILT,
+      outline: round(((letters[TABLET].box.x2 - letters[TABLET].box.x1) / 2) * PILL_OUTLINE),
+      colors: pill,
     },
     letters: letters.map(({ char, parts, box: b }) => ({
       char,

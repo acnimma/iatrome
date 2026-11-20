@@ -25,6 +25,13 @@ export const jelly = {
   shadow: '#14121c',
 };
 
+/** The tablet "o": a white pill with a black outline and score line. */
+export const pill = {
+  body: '#fdfcf9',
+  shade: '#b9b3aa', // soft shading along its lower edge, so it reads as a 3D tablet
+  line: jelly.body,
+};
+
 /** The five palette colours in gradient order (left → right). */
 export const rainbow = [
   palette.coolSky,
