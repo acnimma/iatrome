@@ -10,14 +10,15 @@ import { Later } from '@/components/ui/Later';
 import { CountUp, nameOf, usePeople } from '@/components/room/RoomBits';
 import { teamTone } from '@/games/didactics/teams';
 import { StatHolders } from '@/components/room/Stat';
+import { jelly } from '@/components/ui/jelly';
 import styles from './Podium.module.css';
 import { Icon } from '@/components/icons/Icon';
 
 /** Left to right 2nd, 1st, 3rd, revealed 3rd, then 2nd, then 1st (when Beep calls the winner). */
 const PLACES = [
-  { place: 2, height: '62%', medal: 'medal', tone: 'var(--sky-blue)', at: 1.8 },
-  { place: 1, height: '86%', medal: 'trophy', tone: 'var(--royal-gold)', at: REVEAL.podium / 1000 - 0.2 },
-  { place: 3, height: '46%', medal: 'medal', tone: 'var(--rose-kiss)', at: 0.8 },
+  { place: 2, height: '62%', medal: 'medal', tone: 'blue' as const, at: 1.8 },
+  { place: 1, height: '86%', medal: 'trophy', tone: 'gold' as const, at: REVEAL.podium / 1000 - 0.2 },
+  { place: 3, height: '46%', medal: 'medal', tone: 'rose' as const, at: 0.8 },
 ];
 
 /** Final standings: podium, the rest, and the night's highlights. */
@@ -55,8 +56,7 @@ export function Podium({ view, result }: { view: RoomView; result: GameResult })
                 ))}
               </div>
               <motion.div
-                className={styles.step}
-                style={{ background: tone }}
+                className={`${styles.step} ${jelly(tone)}`}
                 initial={{ height: 0 }}
                 animate={{ height }}
                 transition={{ delay: 0.2 + i * 0.15, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
@@ -103,10 +103,10 @@ export function Podium({ view, result }: { view: RoomView; result: GameResult })
       </motion.div>
 
       <motion.div className={styles.actions} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 5 }}>
-        <Button tone="rose" size="lg" onClick={() => room.host({ type: 'again' })}>
+        <Button size="lg" onClick={() => room.host({ type: 'again' })}>
           Play again
         </Button>
-        <Button tone="card" size="lg" onClick={() => room.host({ type: 'lobby' })}>
+        <Button tone="pearl" size="lg" onClick={() => room.host({ type: 'lobby' })}>
           Pick another game
         </Button>
       </motion.div>
@@ -168,10 +168,10 @@ function TeamPodium({ view, result }: { view: RoomView; result: GameResult }) {
       </motion.div>
 
       <motion.div className={styles.actions} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2.4 }}>
-        <Button tone="rose" size="lg" onClick={() => room.host({ type: 'again' })}>
+        <Button size="lg" onClick={() => room.host({ type: 'again' })}>
           Play again
         </Button>
-        <Button tone="card" size="lg" onClick={() => room.host({ type: 'lobby' })}>
+        <Button tone="pearl" size="lg" onClick={() => room.host({ type: 'lobby' })}>
           Pick another game
         </Button>
       </motion.div>

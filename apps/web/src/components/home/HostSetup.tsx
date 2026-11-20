@@ -93,7 +93,7 @@ export function HostSetup() {
             {error}
           </p>
         )}
-        <Button tone="rose" size="xl" block onClick={create} disabled={busy}>
+        <Button size="xl" block onClick={create} disabled={busy}>
           {busy ? 'Opening the room…' : 'Create room'}
         </Button>
       </motion.div>

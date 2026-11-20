@@ -143,7 +143,7 @@ function Removed({ reason }: { reason: 'kicked' | 'banned' | 'closed' }) {
       <h1 className={styles.bigTitle}>{reason === 'banned' ? 'You’ve been banned from this room' : 'You were removed'}</h1>
       <p className={styles.soft}>{reason === 'banned' ? 'The host banned this device from the room.' : 'The host removed you from the room.'}</p>
       <Link href="/">
-        <Button tone="card" size="lg">
+        <Button tone="pearl" size="lg">
           Back home
         </Button>
       </Link>
@@ -157,7 +157,7 @@ function NoRoom({ code }: { code: string }) {
       <h1 className={styles.bigTitle}>No room called {code}</h1>
       <p className={styles.soft}>Double-check the code. Rooms close after 30 minutes with nobody in them.</p>
       <Link href="/">
-        <Button tone="rose" size="lg">
+        <Button size="lg">
           Try another code
         </Button>
       </Link>

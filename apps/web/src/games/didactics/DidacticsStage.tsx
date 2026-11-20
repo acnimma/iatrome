@@ -8,7 +8,9 @@ import { TimerRing } from '@/components/ui/TimerRing';
 import { CountUp, IntroCard, Pill, usePeople } from '@/components/room/RoomBits';
 import { play } from '@/lib/sound';
 import { speak } from '@/lib/speech';
-import { LETTERS, teamTone } from './teams';
+import { teamTone } from './teams';
+import { ANSWER_TONES, AnswerLetter, LETTERS } from '@/components/room/answers';
+import { jelly } from '@/components/ui/jelly';
 import styles from './Didactics.module.css';
 
 export function DidacticsStage({ view, game }: { view: RoomView; game: DidacticsView }) {
@@ -81,12 +83,12 @@ function Question({ view, game }: { view: RoomView; game: DidacticsView }) {
           return (
             <motion.div
               key={`${game.number}-${i}`}
-              className={`${styles.option} ${right ? styles.right : ''} ${revealed && !right ? styles.wrong : ''}`}
+              className={`${styles.option} ${jelly(ANSWER_TONES[i])} ${right ? styles.right : ''} ${revealed && !right ? styles.wrong : ''}`}
               initial={{ scale: 0.85, opacity: 0 }}
               animate={{ scale: right ? 1.04 : 1, opacity: 1 }}
               transition={{ delay: revealed ? 0 : 0.25 + i * 0.1, type: 'spring', stiffness: 380, damping: 22 }}
             >
-              <span className={styles.letter}>{LETTERS[i]}</span>
+              <AnswerLetter index={i} size="lg" />
               <span className={styles.optionText}>{option}</span>
               {revealed && <span className={styles.tally}>{game.tally[i]}</span>}
             </motion.div>

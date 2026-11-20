@@ -7,7 +7,8 @@ import { AnswerCard, Choice, PhoneMessage, PhonePrompt, PhoneStack } from '@/com
 import { ReactionBar, usePeople } from '@/components/room/RoomBits';
 import { StatButton } from '@/components/room/Stat';
 import { haptic } from '@/lib/haptics';
-import { LETTERS, teamTone } from './teams';
+import { teamTone } from './teams';
+import { ANSWER_TONES, AnswerLetter, LETTERS } from '@/components/room/answers';
 import styles from './Didactics.module.css';
 
 export function DidacticsController({ view, game }: { view: RoomView; game: DidacticsView }) {
@@ -52,7 +53,7 @@ export function DidacticsController({ view, game }: { view: RoomView; game: Dida
           {game.options.map((option, i) => (
             <Choice
               key={i}
-              tone={(['blue', 'rose', 'gold', 'sky'] as const)[i]}
+              tone={ANSWER_TONES[i]}
               picked={game.myAnswer === i}
               dimmed={game.mySwitched && game.myAnswer !== i}
               onClick={() => {
@@ -61,7 +62,7 @@ export function DidacticsController({ view, game }: { view: RoomView; game: Dida
                 room.command({ type: 'pick-option', option: i });
               }}
             >
-              <span className={styles.phoneLetter}>{LETTERS[i]}</span>
+              <AnswerLetter index={i} />
               <span className={styles.phoneOption}>{option}</span>
               {game.teamPicks && game.teamPicks[i] > 0 && (
                 <span className={styles.teamCount} aria-label={`${game.teamPicks[i]} on your team`}>

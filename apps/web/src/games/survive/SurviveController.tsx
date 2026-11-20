@@ -6,7 +6,7 @@ import { AnswerCard, Choice, PhoneMessage, PhonePrompt, PhoneStack } from '@/com
 import { ReactionBar } from '@/components/room/RoomBits';
 import { StatButton } from '@/components/room/Stat';
 import { haptic } from '@/lib/haptics';
-import { LETTERS, OPTION_TONES } from './SurviveStage';
+import { ANSWER_TONES, AnswerLetter, LETTERS } from '@/components/room/answers';
 import styles from './Survive.module.css';
 
 export function SurviveController({ view, game }: { view: RoomView; game: SurviveView }) {
@@ -29,8 +29,8 @@ export function SurviveController({ view, game }: { view: RoomView; game: Surviv
         <PhoneStack>
           <PhonePrompt label={`Question ${game.number}`} prompt={game.question ?? ''} phase={game.phase} pausedAt={view.pausedAt} />
           {game.options.map((option, i) => (
-            <Choice key={i} tone={OPTION_TONES[i]} disabled>
-              <span className={styles.phoneLetter}>{LETTERS[i]}</span>
+            <Choice key={i} tone={ANSWER_TONES[i]} disabled>
+              <AnswerLetter index={i} />
               <span>{option}</span>
             </Choice>
           ))}
@@ -48,7 +48,7 @@ export function SurviveController({ view, game }: { view: RoomView; game: Surviv
         {game.options.map((option, i) => (
           <Choice
             key={i}
-            tone={OPTION_TONES[i]}
+            tone={ANSWER_TONES[i]}
             picked={game.myAnswer === i}
             dimmed={game.myAnswer !== null && game.myAnswer !== i}
             onClick={() => {
@@ -57,7 +57,7 @@ export function SurviveController({ view, game }: { view: RoomView; game: Surviv
               room.command({ type: 'pick-option', option: i });
             }}
           >
-            <span className={styles.phoneLetter}>{LETTERS[i]}</span>
+            <AnswerLetter index={i} />
             <span>{option}</span>
           </Choice>
         ))}

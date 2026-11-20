@@ -28,6 +28,9 @@
 .logo {
   height: 36px;
   width: auto;
+  min-width: 0;
+  max-width: 55%;
+  object-fit: contain;
 }
 
 .title {
@@ -71,13 +74,28 @@
   color: var(--ink-soft);
 }
 
-@media (max-width: 400px) {
+/* Phones: the page is the card. No frame eating the edges. */
+@media (max-width: 560px) {
   .page {
-    padding: 10px 8px;
+    padding: max(12px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom));
   }
 
   .card {
-    padding: 18px 14px;
-    border-radius: 28px;
+    gap: 20px;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
+  }
+
+  .logo {
+    height: 30px;
+  }
+}
+
+@media (max-width: 360px) {
+  .page {
+    padding-inline: 12px;
   }
 }

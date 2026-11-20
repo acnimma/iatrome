@@ -57,10 +57,10 @@ body {
 }
 
 /*
- * Phones: no vignette. Warm white through the middle third, fading to plain white at the
- * top and bottom, so the page meets Safari's (white) bars without an edge.
+ * Phones, upright or on their side: no vignette. Warm white through the middle third, fading
+ * to plain white at the top and bottom, so the page meets Safari's (white) bars without an edge.
  */
-@media (max-width: 700px) {
+@media (max-width: 700px), (pointer: coarse) and (max-height: 500px) {
   html {
     background-color: #fff;
   }
@@ -96,7 +96,8 @@ span {
   text-wrap: pretty;
 }
 
-button {
+/* zero specificity, so any class (like the jelly finish) can set a button's colour */
+:where(button) {
   font: inherit;
   color: inherit;
 }

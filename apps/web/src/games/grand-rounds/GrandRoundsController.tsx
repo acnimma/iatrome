@@ -150,12 +150,12 @@ function QuipTask({ task, onSkip }: { task: TaskView; onSkip?: () => void }) {
         autoFocus
       />
       <div className={styles.taskActions}>
-        <Button tone="rose" size="lg" type="submit" disabled={!text.trim()}>
+        <Button size="lg" type="submit" disabled={!text.trim()}>
           Lock it in
         </Button>
         {onSkip && (
-          <Button tone="card" size="lg" onClick={onSkip} aria-label="Answer the other prompt first">
-            ↷
+          <Button tone="pearl" size="lg" onClick={onSkip} aria-label="Answer the other prompt first">
+            Later
           </Button>
         )}
       </div>
@@ -199,7 +199,6 @@ function DoodleTask({ task }: { task: TaskView }) {
         }}
       />
       <Button
-        tone="rose"
         size="lg"
         block
         disabled={!drawing.current.strokes.length}
@@ -245,7 +244,7 @@ function ListTask({ task }: { task: TaskView }) {
           />
         ))}
       </div>
-      <Button tone="rose" size="lg" block type="submit" disabled={!complete}>
+      <Button size="lg" block type="submit" disabled={!complete}>
         Lock in my differential
       </Button>
     </form>
@@ -280,7 +279,7 @@ function MatchupPhone({ view, game, matchup }: { view: RoomView; game: GrandRoun
         <PhoneStack>
           <PhonePrompt label={title} prompt={matchup.prompt} phase={game.phase} pausedAt={view.pausedAt} />
           {([0, 1] as const).map((side) => (
-            <Choice key={side} tone={side === 0 ? 'rose' : 'sky'} disabled>
+            <Choice key={side} tone={side === 0 ? 'rose' : 'blue'} disabled>
               <VoteContent matchup={matchup} side={side} />
             </Choice>
           ))}
@@ -293,7 +292,7 @@ function MatchupPhone({ view, game, matchup }: { view: RoomView; game: GrandRoun
         {([0, 1] as const).map((side) => (
           <Choice
             key={side}
-            tone={side === 0 ? 'rose' : 'sky'}
+            tone={side === 0 ? 'rose' : 'blue'}
             picked={matchup.myVote === side}
             dimmed={matchup.myVote !== null && matchup.myVote !== side}
             onClick={() => {

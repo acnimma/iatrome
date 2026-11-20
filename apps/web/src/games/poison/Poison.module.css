@@ -36,21 +36,15 @@
   gap: 14px;
   min-height: clamp(160px, 24vh, 240px);
   padding: clamp(20px, 2.6vw, 34px);
-  border: var(--outline);
   border-radius: 32px;
-  box-shadow: var(--gloss), var(--shadow-lg);
-}
-
-.a {
-  background: color-mix(in srgb, var(--rose-kiss) 18%, var(--card));
-}
-
-.b {
-  background: color-mix(in srgb, var(--sky-blue) 24%, var(--card));
+  cursor: default;
 }
 
 .majority {
-  box-shadow: 0 0 0 5px var(--royal-gold), var(--gloss), var(--shadow-lg);
+  box-shadow:
+    0 0 0 4px var(--warm-white),
+    0 0 0 10px var(--royal-gold),
+    0 26px 50px -18px rgb(14 16 27 / 0.55);
 }
 
 .option {
@@ -60,6 +54,15 @@
   letter-spacing: -0.02em;
 }
 
+.stampSpot {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
 .or {
   position: absolute;
   top: 50%;
@@ -67,12 +70,9 @@
   translate: -50% -50%;
   display: grid;
   place-items: center;
-  width: 60px;
-  height: 60px;
-  border: var(--outline);
+  width: 64px;
+  height: 64px;
   border-radius: 50%;
-  background: var(--royal-gold);
-  box-shadow: var(--gloss), var(--shadow-md);
   font-family: var(--font-display);
   font-size: 1.3rem;
 }
@@ -82,18 +82,21 @@
   height: 30px;
   margin-top: auto;
   overflow: hidden;
-  border: var(--outline);
   border-radius: var(--radius-pill);
-  background: var(--card);
+  background: rgb(14 16 27 / 0.22);
+  box-shadow: inset 0 2px 4px rgb(14 16 27 / 0.25);
 }
 
 .bar span {
   display: block;
   height: 100%;
-  background: linear-gradient(90deg, var(--royal-gold), var(--rose-kiss));
+  border-radius: inherit;
+  background: linear-gradient(to bottom, #fff, #efe9df);
 }
 
 .bar strong {
+  color: var(--ink);
+  text-shadow: none;
   position: absolute;
   top: 50%;
   right: 12px;

@@ -10,9 +10,9 @@ import { play } from '@/lib/sound';
 import { speak } from '@/lib/speech';
 import styles from './Survive.module.css';
 import { Icon } from '@/components/icons/Icon';
+import { ANSWER_TONES, AnswerLetter, LETTERS } from '@/components/room/answers';
+import { jelly } from '@/components/ui/jelly';
 
-export const LETTERS = ['A', 'B', 'C', 'D'];
-export const OPTION_TONES = ['blue', 'rose', 'gold', 'sky'] as const;
 
 export function SurviveStage({ view, game }: { view: RoomView; game: SurviveView }) {
   const revealed = game.phase.name === 'reveal';
@@ -42,17 +42,22 @@ export function SurviveStage({ view, game }: { view: RoomView; game: SurviveView
           return (
             <motion.div
               key={`${game.number}-${i}`}
-              className={`${styles.option} ${styles[OPTION_TONES[i]]} ${right ? styles.right : ''} ${wrong ? styles.wrong : ''}`}
+              className={`${styles.option} ${jelly(ANSWER_TONES[i])} ${right ? styles.right : ''} ${wrong ? styles.wrong : ''}`}
               initial={{ scale: 0.8, opacity: 0 }}
               animate={{ scale: right ? 1.05 : 1, opacity: 1 }}
               transition={{ delay: revealed ? 0 : 0.3 + i * 0.12, type: 'spring', stiffness: 400, damping: 22 }}
             >
-              <span className={styles.letter}>{LETTERS[i]}</span>
+              <AnswerLetter index={i} size="lg" />
               <span className={styles.optionText}>{option}</span>
               {revealed && <span className={styles.tally}>{game.tally[i]}</span>}
             </motion.div>
           );
         })}
+        {revealed && game.last?.mercy && (
+          <span className={styles.stampSpot}>
+            <Stamp tone="sky">Mercy rule: everyone keeps their coffee</Stamp>
+          </span>
+        )}
       </div>
       {revealed && game.fact && (
         <motion.div className={styles.fact} initial={{ y: 30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.6 }}>
@@ -60,7 +65,6 @@ export function SurviveStage({ view, game }: { view: RoomView; game: SurviveView
           {game.fact}
         </motion.div>
       )}
-      {revealed && game.last?.mercy && <Stamp tone="sky">Mercy rule: everyone keeps their coffee</Stamp>}
       <Roster view={view} game={game} />
     </div>
   );

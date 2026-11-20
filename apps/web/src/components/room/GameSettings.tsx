@@ -5,6 +5,7 @@ import { type ContentMode, type GameId, type RoomSettings, gameInfo } from '@iat
 import { Icon } from '@/components/icons/Icon';
 import type { IconName } from '@/components/icons/icons';
 import { Toggle } from '@/components/ui/Toggle';
+import { jelly } from '@/components/ui/jelly';
 import styles from './GameSettings.module.css';
 
 const GAME_ICONS: Record<GameId, IconName> = {
@@ -39,10 +40,12 @@ export function GamePicker({ value, onChange, compact }: { value: GameId; onChan
             type="button"
             role="radio"
             aria-checked={picked}
-            className={`${styles.game} ${picked ? styles.picked : ''}`}
+            className={`${styles.game} ${jelly(picked ? 'black' : 'pearl')}`}
             style={{ '--tone': GAME_TONES[id] } as React.CSSProperties}
             onClick={() => onChange(id)}
-            whileTap={{ scale: 0.97 }}
+            whileTap={{ scaleX: 1.02, scaleY: 0.94 }}
+            animate={{ scale: picked ? [1, 1.03, 1] : 1 }}
+            transition={{ default: { type: 'spring', stiffness: 600, damping: 15 }, scale: { duration: 0.32, ease: 'easeOut' } }}
           >
             <span className={styles.icon}>
               <Icon name={GAME_ICONS[id]} size={compact ? 30 : 38} />
@@ -86,7 +89,7 @@ export function ScreenPicker({ value, onChange }: { value: ScreenChoice; onChang
           type="button"
           role="radio"
           aria-checked={value === s.id}
-          className={`${styles.mode} ${value === s.id ? styles.modePicked : ''}`}
+          className={`${styles.mode} ${jelly(value === s.id ? 'black' : 'pearl')}`}
           onClick={() => onChange(s.id)}
         >
           <span className={styles.modeTitle}>{s.title}</span>
@@ -107,7 +110,7 @@ export function RoomOptions({ settings, onChange }: { settings: RoomSettings; on
             type="button"
             role="radio"
             aria-checked={settings.mode === m.id}
-            className={`${styles.mode} ${settings.mode === m.id ? styles.modePicked : ''}`}
+            className={`${styles.mode} ${jelly(settings.mode === m.id ? 'black' : 'pearl')}`}
             onClick={() => onChange({ mode: m.id })}
           >
             <span className={styles.modeTitle}>{m.title}</span>

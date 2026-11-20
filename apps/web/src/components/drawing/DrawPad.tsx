@@ -145,7 +145,7 @@ export function DrawPad({ onChange, onOp, disabled, noUndo }: Props) {
               aria-checked={color === i}
               aria-label={`Colour ${i + 1}`}
               className={`${styles.swatch} ${color === i ? styles.picked : ''}`}
-              style={{ background: c }}
+              style={{ backgroundColor: c }}
               onClick={() => setColor(i)}
             />
           ))}

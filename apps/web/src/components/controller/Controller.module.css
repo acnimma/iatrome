@@ -6,6 +6,8 @@
   max-width: 560px;
   margin: 0 auto;
   padding: max(12px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+  overflow-x: clip; /* screens slide in sideways; never let that scroll the page */
+  overflow-clip-margin: 16px; /* but keep the jelly shadows and picked rings */
 }
 
 .header {

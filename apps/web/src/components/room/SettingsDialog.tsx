@@ -49,7 +49,7 @@ export function SettingsDialog({ open, settings, onChange, onClose }: Props) {
               <h3 className={styles.label}>Who’s playing</h3>
               <RoomOptions settings={settings} onChange={onChange} />
             </section>
-            <Button autoFocus tone="rose" size="lg" block onClick={onClose}>
+            <Button autoFocus size="lg" block onClick={onClose}>
               Done
             </Button>
           </motion.div>

@@ -99,7 +99,7 @@ export function ControllerLobby({ view }: { view: RoomView }) {
 
       {isHost && !view.screen && (
         <>
-          <Button tone="card" onClick={() => setEditing(true)} aria-haspopup="dialog">
+          <Button tone="pearl" onClick={() => setEditing(true)} aria-haspopup="dialog">
             <Icon name="settings" size={22} /> {info.title} · {view.settings.mode === 'pro' ? 'Pro' : 'Normal'}
           </Button>
           <SettingsDialog open={editing} settings={view.settings} onChange={(settings) => room.host({ type: 'settings', settings })} onClose={() => setEditing(false)} />
@@ -120,7 +120,7 @@ export function ControllerLobby({ view }: { view: RoomView }) {
 
       {isVip && (
         <div className={styles.vip}>
-          <Button tone="rose" size="xl" block disabled={needed > 0} onClick={() => room.command({ type: 'start' })}>
+          <Button size="xl" block disabled={needed > 0} onClick={() => room.command({ type: 'start' })}>
             {needed > 0 ? `Need ${needed} more` : 'Everybody’s in. Start!'}
           </Button>
           <p className={styles.vipNote}>You’re the VIP, so you can start the game.</p>
@@ -140,7 +140,7 @@ function JoinCard({ code }: { code: string }) {
       <RoomCode code={code} size="md" />
       <div className={styles.joinActions}>
         <InviteButton code={code} />
-        <Button tone="card" onClick={() => setQr((q) => !q)} aria-expanded={qr}>
+        <Button tone="pearl" onClick={() => setQr((q) => !q)} aria-expanded={qr}>
           {qr ? 'Hide QR' : 'Show QR'}
         </Button>
       </div>
@@ -185,7 +185,7 @@ export function ControllerResults({ view, result }: { view: RoomView; result: Ga
         </>
       )}
       {isVip && (
-        <Button tone="rose" size="lg" block onClick={() => room.command({ type: 'start' })}>
+        <Button size="lg" block onClick={() => room.command({ type: 'start' })}>
           Play again
         </Button>
       )}

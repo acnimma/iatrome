@@ -40,7 +40,7 @@ export function PoisonController({ view, game }: { view: RoomView; game: PoisonV
     const mine = game.mine ?? { side: null, predict: null };
     const options = [
       { side: 'a' as const, text: game.a, tone: 'rose' as const },
-      { side: 'b' as const, text: game.b, tone: 'sky' as const },
+      { side: 'b' as const, text: game.b, tone: 'blue' as const },
     ];
     const step = mine.side ? 'predict' : 'pick';
     // A double tap on step one shouldn't land on step two.
@@ -58,7 +58,7 @@ export function PoisonController({ view, game }: { view: RoomView; game: PoisonV
         {options.map((o) => (
           <Choice
             key={`${step}-${o.side}`}
-            tone={step === 'pick' ? o.tone : o.side === 'a' ? 'gold' : 'blue'}
+            tone={o.tone}
             disabled={!ready}
             onClick={() => {
               haptic('success');
@@ -82,7 +82,7 @@ export function PoisonController({ view, game }: { view: RoomView; game: PoisonV
         <PhoneMessage icon="mic" title="You’re in the minority">
           Want to defend it? Nobody has to. You earn points for everyone you convince.
         </PhoneMessage>
-        <Button tone="rose" size="xl" block onClick={() => { haptic('success'); room.command({ type: 'volunteer' }); }}>
+        <Button size="xl" block onClick={() => { haptic('success'); room.command({ type: 'volunteer' }); }}>
           Defend it
         </Button>
       </PhoneStack>
@@ -118,7 +118,7 @@ export function PoisonController({ view, game }: { view: RoomView; game: PoisonV
           <PhoneMessage icon="mic" title={game.defender === me ? 'Your defence is up' : `${defender}’s defence is up`} />
         )}
         {canConvince && (
-          <Button tone={convinced ? 'card' : 'gold'} size="lg" block disabled={convinced} onClick={() => { haptic('success'); room.command({ type: 'convinced' }); }}>
+          <Button tone={convinced ? 'pearl' : 'gold'} size="lg" block disabled={convinced} onClick={() => { haptic('success'); room.command({ type: 'convinced' }); }}>
             {convinced ? 'Convinced. Noted.' : 'Convinced'}
           </Button>
         )}
@@ -156,7 +156,7 @@ function Defend({ view, game }: { view: RoomView; game: PoisonView }) {
     >
       <PhonePrompt label="You’re in the minority!" prompt={`Defend: you’d rather ${side === 'a' ? game.a : game.b}.`} phase={game.phase} pausedAt={view.pausedAt} />
       <AnswerBox value={text} maxLength={LIMITS.defence} onChange={(e) => setText(e.target.value)} placeholder="Make your case…" autoFocus />
-      <Button tone="rose" size="lg" block type="submit" disabled={!text.trim()}>
+      <Button size="lg" block type="submit" disabled={!text.trim()}>
         Rest my case
       </Button>
     </form>

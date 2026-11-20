@@ -69,54 +69,34 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 12px;
   width: 100%;
   min-height: 72px;
-  padding: 16px 18px;
-  border: var(--outline);
+  padding: 14px 18px;
   border-radius: var(--radius-lg);
-  box-shadow: var(--gloss), var(--shadow-md);
   font-size: 1.15rem;
   font-weight: 800;
   line-height: 1.25;
   text-align: center;
-  cursor: pointer;
-  touch-action: manipulation;
-  transition:
-    opacity 200ms ease,
-    transform 200ms ease;
 }
 
 .choice:disabled {
   cursor: default;
+  opacity: 1;
+  filter: none;
 }
 
-.card {
-  background: var(--card);
-}
-.rose {
-  background: color-mix(in srgb, var(--rose-kiss) 28%, var(--card));
-}
-.sky {
-  background: color-mix(in srgb, var(--sky-blue) 32%, var(--card));
-}
-.gold {
-  background: color-mix(in srgb, var(--royal-gold) 34%, var(--card));
-}
-.blue {
-  background: color-mix(in srgb, var(--cool-sky) 26%, var(--card));
-}
-
+/* Your pick: a white halo with an ink ring, so it reads at a glance on any colour. */
 .picked {
-  box-shadow: 0 0 0 4px var(--ink), var(--shadow-md);
+  box-shadow:
+    0 0 0 3px var(--warm-white),
+    0 0 0 6px var(--ink),
+    0 14px 26px -10px rgb(14 16 27 / 0.6);
 }
 
 .dimmed {
-  opacity: 0.4;
-}
-
-.correct {
-  background: color-mix(in srgb, #3f9d6e 30%, var(--card));
+  opacity: 0.35;
+  filter: saturate(0.5);
 }
 
 .beep {

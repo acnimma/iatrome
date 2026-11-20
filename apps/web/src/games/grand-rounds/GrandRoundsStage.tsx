@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import { type EntryView, GRAND_ROUNDS, type GrandRoundsView, type MatchupView, type RoomView } from '@iatrome/game/client';
 import { useDrawing, useRoom } from '@/realtime/use-room';
 import { DrawingView } from '@/components/drawing/DrawingView';
+import { jelly } from '@/components/ui/jelly';
 import { Avatar } from '@/components/ui/Avatar';
 import { TimerRing } from '@/components/ui/TimerRing';
 import { AvatarRow, CountUp, IntroCard, Pill, Scoreboard, Stamp, nameOf, usePeople } from '@/components/room/RoomBits';
@@ -89,7 +90,7 @@ function Matchup({ view, game, matchup }: { view: RoomView; game: GrandRoundsVie
           <AnswerCard key={side} view={view} matchup={matchup} side={side} phase={phase} delay={at(ENTRY[matchup.kind][side])} lineGap={0.85 * scale} replayMs={4200 * scale} />
         ))}
         <motion.span
-          className={styles.vs}
+          className={`${styles.vs} ${jelly()}`}
           initial={{ scale: 0 }}
           animate={{ scale: 1, rotate: [0, -10, 10, 0] }}
           transition={{ delay: at(ENTRY[matchup.kind][1] + 0.2), scale: { type: 'spring', stiffness: 400, damping: 12 }, rotate: { duration: 0.6 } }}
@@ -148,7 +149,7 @@ function AnswerCard({ view, matchup, side, phase, delay, lineGap, replayMs }: { 
 
   return (
     <motion.div
-      className={`${styles.answer} ${side === 0 ? styles.left : styles.right} ${won ? styles.won : ''} ${lost ? styles.lost : ''}`}
+      className={`${styles.answer} ${jelly(side === 0 ? 'rose' : 'blue')} ${won ? styles.won : ''} ${lost ? styles.lost : ''}`}
       initial={{ y: 40, opacity: 0, rotate: side === 0 ? -3 : 3 }}
       animate={{ y: 0, opacity: 1, rotate: won ? (side === 0 ? -1.5 : 1.5) : 0, scale: won ? 1.04 : lost ? 0.96 : 1 }}
       transition={{ delay, type: 'spring', stiffness: 260, damping: 20 }}

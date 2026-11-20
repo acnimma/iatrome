@@ -7,6 +7,8 @@ import { BeepFace, useHostLine } from '@/components/room/Beep';
 import { Icon } from '@/components/icons/Icon';
 import type { IconName } from '@/components/icons/icons';
 import { TimerRing } from '@/components/ui/TimerRing';
+import { type JellyTone, jelly } from '@/components/ui/jelly';
+import { play } from '@/lib/sound';
 import styles from './Phone.module.css';
 
 /** Shared building blocks for every game's phone screens. */
@@ -48,7 +50,7 @@ export function Choice({
   onClick,
   picked,
   dimmed,
-  tone = 'card',
+  tone = 'pearl',
   disabled,
   correct,
 }: {
@@ -56,17 +58,24 @@ export function Choice({
   onClick?: () => void;
   picked?: boolean;
   dimmed?: boolean;
-  tone?: 'card' | 'rose' | 'sky' | 'gold' | 'blue';
+  tone?: JellyTone;
   disabled?: boolean;
   correct?: boolean;
 }) {
   return (
     <motion.button
       type="button"
-      className={`${styles.choice} ${styles[tone]} ${picked ? styles.picked : ''} ${dimmed ? styles.dimmed : ''} ${correct ? styles.correct : ''}`}
-      onClick={onClick}
+      className={`${styles.choice} ${jelly(correct ? 'green' : tone)} ${picked ? styles.picked : ''} ${dimmed ? styles.dimmed : ''}`}
+      onClick={() => {
+        if (disabled) return;
+        play('pop');
+        onClick?.();
+      }}
       disabled={disabled}
-      whileTap={disabled ? undefined : { scale: 0.96 }}
+      aria-pressed={picked || undefined}
+      whileTap={disabled ? undefined : { scaleX: 1.04, scaleY: 0.9 }}
+      animate={picked ? { scale: [1, 1.05, 1] } : { scale: 1 }}
+      transition={{ default: { type: 'spring', stiffness: 600, damping: 15 }, scale: { duration: 0.32, ease: 'easeOut' } }}
       layout
       data-choice
     >

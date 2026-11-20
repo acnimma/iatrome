@@ -142,7 +142,7 @@ function Guesser({ view, game }: { view: RoomView; game: SketchView }) {
             }}
           >
             <TextInput ref={input} value={guess} onChange={(e) => setGuess(e.target.value)} maxLength={LIMITS.guess} placeholder="Your guess…" enterKeyHint="send" autoCapitalize="none" />
-            <Button tone="rose" size="lg" type="submit">
+            <Button size="lg" type="submit">
               Guess
             </Button>
           </form>

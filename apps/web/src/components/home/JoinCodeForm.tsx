@@ -52,7 +52,7 @@ export function JoinCodeForm() {
           aria-label="Room code"
         />
       </div>
-      <Button tone="rose" size="xl" type="submit" disabled={!complete} block>
+      <Button size="xl" type="submit" disabled={!complete} block>
         Join game
       </Button>
     </motion.form>

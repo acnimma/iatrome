@@ -1,27 +1,19 @@
 .back {
+  composes: jelly black from './Jelly.module.css';
   display: inline-flex;
   align-items: center;
   gap: 8px;
   align-self: flex-start;
   min-height: 44px;
-  padding: 4px 14px 4px 4px;
-  border: 2px solid var(--line);
+  padding: 4px 16px 4px 4px;
   border-radius: var(--radius-pill);
-  background: color-mix(in srgb, var(--card) 80%, transparent);
-  color: var(--ink);
   font-size: 0.95rem;
   font-weight: 800;
   text-decoration: none;
-  cursor: pointer;
-  transition:
-    border-color 150ms ease,
-    transform 150ms var(--ease-spring);
-}
-
-.back:hover {
-  border-color: var(--ink);
+  transition: transform 260ms var(--ease-spring);
 }
 
 .back:active {
-  transform: scale(0.96);
+  transform: scale(1.05, 0.9);
+  transition-duration: 80ms;
 }

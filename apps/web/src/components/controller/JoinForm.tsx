@@ -82,7 +82,7 @@ export function JoinForm({ code, snap }: { code: string; snap: Snapshot }) {
           {ERRORS[snap.error]}
         </p>
       )}
-      <Button tone="rose" size="xl" block type="submit" disabled={joining}>
+      <Button size="xl" block type="submit" disabled={joining}>
         {joining ? 'Joining…' : 'Join game'}
       </Button>
       <p className={styles.fine}>No real patients or identifiers, please.</p>

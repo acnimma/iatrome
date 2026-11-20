@@ -15,6 +15,7 @@
 }
 
 .call {
+  composes: jelly black from '../ui/Jelly.module.css';
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -22,12 +23,8 @@
   align-self: center;
   min-height: 48px;
   padding: 8px 18px 8px 10px;
-  border: var(--outline);
   border-radius: var(--radius-pill);
-  background: var(--card);
-  box-shadow: var(--gloss), var(--shadow-md);
   font-weight: 800;
-  cursor: pointer;
 }
 
 .onThis {

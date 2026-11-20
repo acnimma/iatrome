@@ -152,13 +152,13 @@ function StageProblem({ code, error }: { code: string; error: string | null }) {
       <div className={styles.problemActions}>
         {!gone && (
           <Link href={`/play/${code}`}>
-            <Button tone="sky" size="lg">
+            <Button tone="pearl" size="lg">
               Join as a player
             </Button>
           </Link>
         )}
         <Link href="/host">
-          <Button tone="rose" size="lg">
+          <Button size="lg">
             Host a new game
           </Button>
         </Link>

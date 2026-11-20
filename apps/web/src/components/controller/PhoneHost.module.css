@@ -1,14 +1,11 @@
 .trigger {
+  composes: jelly black from '../ui/Jelly.module.css';
   display: grid;
   place-items: center;
-  width: 40px;
-  height: 40px;
+  width: 42px;
+  height: 42px;
   padding: 0;
-  border: var(--outline);
   border-radius: 50%;
-  background: var(--card);
-  box-shadow: var(--gloss), var(--shadow-md);
-  cursor: pointer;
 }
 
 .scrim {
@@ -57,23 +54,19 @@
 }
 
 .action {
+  composes: jelly black from '../ui/Jelly.module.css';
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  min-height: 52px;
+  min-height: 54px;
   padding: 10px 14px;
-  border: var(--outline);
-  border-radius: var(--radius-lg);
-  background: var(--card);
+  border-radius: var(--radius-pill);
   font-weight: 800;
-  cursor: pointer;
-  box-shadow: var(--gloss), var(--shadow-md);
 }
 
 .danger {
-  background: color-mix(in srgb, var(--rose-kiss) 16%, var(--card));
-  color: var(--rose-kiss);
+  composes: rose from '../ui/Jelly.module.css';
 }
 
 .label {

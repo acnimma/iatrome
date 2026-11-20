@@ -96,50 +96,22 @@
   align-items: center;
   gap: 18px;
   min-height: 92px;
-  padding: 18px 24px;
-  border: var(--outline);
-  border-radius: 28px;
-  background: var(--card);
-  box-shadow: var(--gloss), var(--shadow-md);
-  transition:
-    opacity 300ms ease,
-    filter 300ms ease;
+  padding: 16px 24px 16px 16px;
+  border-radius: 30px;
+  cursor: default;
 }
 
-.option:nth-child(1) {
-  background: color-mix(in srgb, var(--cool-sky) 26%, var(--card));
-}
-.option:nth-child(2) {
-  background: color-mix(in srgb, var(--rose-kiss) 24%, var(--card));
-}
-.option:nth-child(3) {
-  background: color-mix(in srgb, var(--royal-gold) 32%, var(--card));
-}
-.option:nth-child(4) {
-  background: color-mix(in srgb, var(--sky-blue) 30%, var(--card));
-}
-
+/* The right answer keeps its colour and gets a green halo; the rest step back. */
 .option.right {
-  background: color-mix(in srgb, #3f9d6e 34%, var(--card));
-  box-shadow: 0 0 0 5px #3f9d6e, var(--shadow-lg);
+  box-shadow:
+    0 0 0 4px var(--warm-white),
+    0 0 0 10px #3f9d6e,
+    0 26px 50px -18px rgb(14 16 27 / 0.55);
 }
 
 .option.wrong {
-  opacity: 0.4;
-  filter: grayscale(0.4);
-}
-
-.letter {
-  display: grid;
-  place-items: center;
-  flex: none;
-  width: 54px;
-  height: 54px;
-  border: var(--outline);
-  border-radius: 16px;
-  background: var(--card);
-  font-family: var(--font-display);
-  font-size: 1.7rem;
+  opacity: 0.32;
+  filter: saturate(0.35);
 }
 
 .optionText {
@@ -155,9 +127,11 @@
   min-width: 46px;
   height: 46px;
   padding: 0 12px;
-  border: var(--outline);
   border-radius: var(--radius-pill);
-  background: var(--card);
+  background: rgb(255 255 255 / 0.9);
+  box-shadow: inset 0 -2px 3px rgb(120 104 84 / 0.3);
+  color: var(--ink);
+  text-shadow: none;
   font-size: 1.2rem;
   font-weight: 900;
 }
@@ -307,19 +281,6 @@
   gap: 12px;
 }
 
-.phoneLetter {
-  display: grid;
-  place-items: center;
-  flex: none;
-  width: 40px;
-  height: 40px;
-  border: var(--outline);
-  border-radius: 12px;
-  background: var(--card);
-  font-family: var(--font-display);
-  font-size: 1.2rem;
-}
-
 .phoneOption {
   font-size: 1.2rem;
 }
@@ -365,10 +326,11 @@
 .teamCount {
   margin-left: auto;
   padding: 1px 10px;
-  border: 2px solid var(--ink);
   border-radius: var(--radius-pill);
-  background: var(--card);
-  box-shadow: var(--gloss);
+  background: rgb(255 255 255 / 0.9);
+  box-shadow: inset 0 -2px 3px rgb(120 104 84 / 0.3);
+  color: var(--ink);
+  text-shadow: none;
   font-size: 0.85rem;
   font-weight: 900;
 }

@@ -8,6 +8,7 @@ import { TimerRing } from '@/components/ui/TimerRing';
 import { AvatarRow, IntroCard, Pill, Stamp, nameOf, usePeople } from '@/components/room/RoomBits';
 import { play } from '@/lib/sound';
 import { speak } from '@/lib/speech';
+import { jelly } from '@/components/ui/jelly';
 import styles from './Poison.module.css';
 
 export function PoisonStage({ view, game }: { view: RoomView; game: PoisonView }) {
@@ -72,7 +73,7 @@ export function PoisonStage({ view, game }: { view: RoomView; game: PoisonView }
           return (
             <motion.div
               key={`${game.number}-${side}`}
-              className={`${styles.side} ${side === 'a' ? styles.a : styles.b} ${majority ? styles.majority : ''}`}
+              className={`${styles.side} ${jelly(side === 'a' ? 'rose' : 'blue')} ${majority ? styles.majority : ''}`}
               initial={{ x: i ? 60 : -60, opacity: 0 }}
               animate={{ x: 0, opacity: 1, scale: majority ? 1.03 : 1 }}
               transition={{ delay: 0.2 + i * 0.2, type: 'spring', stiffness: 260, damping: 20 }}
@@ -95,10 +96,14 @@ export function PoisonStage({ view, game }: { view: RoomView; game: PoisonView }
             </motion.div>
           );
         })}
-        <span className={styles.or}>or</span>
+        <span className={`${styles.or} ${jelly()}`}>or</span>
+        {revealed && game.majority === 'tie' && (
+          <span className={styles.stampSpot}>
+            <Stamp tone="sky">Dead even</Stamp>
+          </span>
+        )}
       </div>
       {phase === 'choose' && <AvatarRow ids={players} view={view} size={48} done={new Set(game.done)} />}
-      {revealed && game.majority === 'tie' && <Stamp tone="sky">Dead even</Stamp>}
       {phase === 'volunteer' && (
         <motion.div className={styles.volunteer} initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
           <span>The minority may defend itself. Tap “Defend it” on your phone.</span>

@@ -27,6 +27,8 @@ async function joinPhone(browser: Browser, code: string, name: string, i: number
   return phone;
 }
 
+const quick = { timeout: 1000 };
+
 /** Do whatever the phone is asking for, like a player would. */
 async function act(phone: Page, i: number) {
   const tryClick = async (locator: ReturnType<Page['locator']>) => {
@@ -34,21 +36,21 @@ async function act(phone: Page, i: number) {
   };
   const box = phone.locator('textarea');
   if (await box.count()) {
-    await box.fill(`answer ${i} ${Math.random().toString(36).slice(2, 6)}`);
+    await box.fill(`answer ${i} ${Math.random().toString(36).slice(2, 6)}`, quick).catch(() => {});
     await tryClick(phone.getByRole('button', { name: /Lock it in|Rest my case/ }));
     return;
   }
   const list = phone.getByPlaceholder('First…');
   if (await list.count()) {
     const inputs = phone.locator('form input');
-    for (let k = 0; k < 3; k++) await inputs.nth(k).fill(`item ${i}-${k}`);
+    for (let k = 0; k < 3; k++) await inputs.nth(k).fill(`item ${i}-${k}`, quick).catch(() => {});
     await tryClick(phone.getByRole('button', { name: /differential/ }));
     return;
   }
   const canvas = phone.getByLabel('Drawing canvas');
   if (await canvas.count()) {
     // Real touch events, like a finger on a phone.
-    const b = await canvas.boundingBox();
+    const b = await canvas.boundingBox(quick).catch(() => null);
     if (!b) return; // the drawing phase just ended
     const cdp = await phone.context().newCDPSession(phone);
     const at = (s: number) => [{ x: b.x + 30 + s * 18, y: b.y + 40 + Math.sin(s / 2) * 40 + s * 10, id: 1 }];
@@ -61,8 +63,9 @@ async function act(phone: Page, i: number) {
   }
   const guess = phone.getByPlaceholder('Your guess…');
   if (await guess.count()) {
-    await guess.fill('stethoscope');
-    await guess.press('Enter');
+    // The round can end between the check and the typing: never wait on a box that's gone.
+    await guess.fill('stethoscope', quick).catch(() => {});
+    await guess.press('Enter', quick).catch(() => {});
     return;
   }
   const choices = phone.locator('[data-choice]:not([disabled])');

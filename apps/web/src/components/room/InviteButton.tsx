@@ -11,7 +11,7 @@ import { play } from '@/lib/sound';
  * Share the room's join link: the native share sheet on phones, otherwise copy to
  * the clipboard (handy for pasting into a video call's chat).
  */
-export function InviteButton({ code, tone = 'card' }: { code: string; tone?: 'card' | 'gold' }) {
+export function InviteButton({ code, tone = 'pearl' }: { code: string; tone?: 'pearl' | 'gold' }) {
   const [copied, setCopied] = useState(false);
   const url = typeof window === 'undefined' ? '' : `${window.location.origin}/${code}`;
 

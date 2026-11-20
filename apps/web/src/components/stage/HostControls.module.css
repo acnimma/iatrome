@@ -10,15 +10,13 @@
 }
 
 .pill {
+  composes: jelly black from '../ui/Jelly.module.css';
   display: flex;
   gap: 4px;
   padding: 5px;
-  border: var(--outline);
   border-radius: var(--radius-pill);
-  background: color-mix(in srgb, var(--card) 88%, transparent);
-  backdrop-filter: blur(8px);
-  box-shadow: var(--shadow-md);
-  opacity: 0.7;
+  cursor: default;
+  opacity: 0.75;
   transition: opacity 200ms ease;
 }
 
@@ -37,11 +35,18 @@
   background: transparent;
   font-size: 1rem;
   cursor: pointer;
+  transition:
+    background 150ms ease,
+    transform 200ms var(--ease-spring);
 }
 
 .icon:hover,
 .active {
-  background: color-mix(in srgb, var(--sky-blue) 30%, transparent);
+  background: rgb(255 255 255 / 0.16);
+}
+
+.icon:active {
+  transform: scale(0.88);
 }
 
 .drawer {
@@ -84,17 +89,15 @@
 }
 
 .action {
+  composes: jelly black from '../ui/Jelly.module.css';
   flex: 1;
+  min-height: 44px;
   padding: 10px 14px;
-  border: var(--outline);
   border-radius: var(--radius-pill);
-  background: var(--card);
   font-weight: 800;
-  cursor: pointer;
 }
 
 .danger {
+  composes: rose from '../ui/Jelly.module.css';
   margin-top: 8px;
-  background: var(--rose-kiss);
-  color: #fff;
 }

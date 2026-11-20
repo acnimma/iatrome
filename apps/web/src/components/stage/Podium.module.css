@@ -65,10 +65,8 @@
   justify-content: center;
   padding-top: 14px;
   max-height: 55%;
-  border: var(--outline);
-  border-bottom: 0;
-  border-radius: 24px 24px 0 0;
-  box-shadow: var(--gloss);
+  border-radius: 28px 28px 6px 6px;
+  cursor: default;
 }
 
 .medal {

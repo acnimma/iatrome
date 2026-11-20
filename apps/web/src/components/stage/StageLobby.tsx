@@ -77,7 +77,7 @@ export function StageLobby({ view, hideCode }: { view: RoomView; hideCode: boole
               {view.settings.extendedTimers && <Pill>More time</Pill>}
             </div>
           </div>
-          <Button tone="card" onClick={() => setEditing(true)} aria-haspopup="dialog">
+          <Button tone="pearl" onClick={() => setEditing(true)} aria-haspopup="dialog">
             <Icon name="settings" size={22} /> Change game
           </Button>
         </div>
@@ -133,7 +133,6 @@ export function StageLobby({ view, hideCode }: { view: RoomView; hideCode: boole
 
         <div className={styles.actions}>
           <Button
-            tone="rose"
             size="xl"
             block
             disabled={needed > 0}
@@ -145,11 +144,11 @@ export function StageLobby({ view, hideCode }: { view: RoomView; hideCode: boole
             {needed > 0 ? `Waiting for ${needed} more player${needed === 1 ? '' : 's'}` : 'Everybody’s in. Start!'}
           </Button>
           <div className={styles.secondary}>
-            <Button tone="ghost" onClick={() => room.host({ type: view.locked ? 'unlock' : 'lock' })}>
+            <Button tone="pearl" size="sm" onClick={() => room.host({ type: view.locked ? 'unlock' : 'lock' })}>
               <Icon name="lock" size={22} /> {view.locked ? 'Unlock room' : 'Lock room'}
             </Button>
             {view.devMode && (
-              <Button tone="ghost" onClick={() => room.host({ type: 'add-bot' })}>
+              <Button tone="pearl" size="sm" onClick={() => room.host({ type: 'add-bot' })}>
                 <Icon name="robot" size={22} /> Add a bot
               </Button>
             )}

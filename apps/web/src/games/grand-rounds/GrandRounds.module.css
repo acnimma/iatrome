@@ -80,10 +80,7 @@
   place-items: center;
   width: 64px;
   height: 64px;
-  border: var(--outline);
   border-radius: 50%;
-  background: var(--royal-gold);
-  box-shadow: var(--gloss), var(--shadow-md);
   font-family: var(--font-display);
   font-size: 1.5rem;
   z-index: 2;
@@ -95,26 +92,23 @@
   gap: 16px;
   min-height: clamp(160px, 24vh, 260px);
   padding: clamp(20px, 2.5vw, 32px);
-  border: var(--outline);
   border-radius: 32px;
-  box-shadow: var(--gloss), var(--shadow-lg);
-  transition: filter 300ms ease;
-}
-
-.left {
-  background: color-mix(in srgb, var(--rose-kiss) 16%, var(--card));
-}
-
-.right {
-  background: color-mix(in srgb, var(--sky-blue) 22%, var(--card));
+  cursor: default;
+  transition:
+    filter 300ms ease,
+    opacity 300ms ease;
 }
 
 .won {
-  box-shadow: 0 0 0 5px var(--royal-gold), var(--gloss), var(--shadow-lg);
+  box-shadow:
+    0 0 0 4px var(--warm-white),
+    0 0 0 10px var(--royal-gold),
+    0 26px 50px -18px rgb(14 16 27 / 0.55);
 }
 
 .lost {
-  filter: saturate(0.6);
+  opacity: 0.8;
+  filter: saturate(0.55);
 }
 
 .quip {
@@ -133,11 +127,11 @@
   gap: 8px;
   font-size: 1.4rem;
   font-weight: 800;
-  color: var(--ink-soft);
+  opacity: 0.75;
 }
 
 .doodle {
-  width: min(100%, 38vh);
+  width: min(100%, 32vh);
   margin: 0 auto;
 }
 
@@ -154,7 +148,7 @@
 
 .list li::marker {
   font-family: var(--font-display);
-  color: var(--rose-kiss);
+  color: color-mix(in srgb, currentColor 70%, transparent);
 }
 
 .reveal {
@@ -367,6 +361,8 @@
   border-radius: var(--radius-md);
   background: var(--card);
   box-shadow: var(--shadow-sm);
+  color: var(--ink);
+  text-shadow: none;
 }
 
 .revealWon {
