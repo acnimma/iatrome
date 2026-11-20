@@ -1,0 +1,35 @@
+/*
+ * iatrome design tokens.
+ * Palette mirrors packages/brand/src/palette.mjs — keep in sync.
+ */
+:root {
+  /* ── Palette ─────────────────────────────────────────── */
+  --cool-sky: #5aa9e6;
+  --sky-blue: #7fc8f8;
+  --bright-snow: #f9f9f9;
+  --royal-gold: #ffe45e;
+  --rose-kiss: #ff6392;
+  /* Text & outlines only — the palette is all light tones, so text needs a dark ink. */
+  --ink: #1f2a4d;
+  --ink-soft: color-mix(in srgb, var(--ink) 72%, var(--bright-snow));
+
+  --rainbow: linear-gradient(90deg, var(--cool-sky), var(--sky-blue), var(--bright-snow), var(--royal-gold), var(--rose-kiss));
+
+  /* ── Type ────────────────────────────────────────────── */
+  --font-body: var(--font-inter), system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  /* ── Shape: everything is round and squishy ─────────── */
+  --radius-sm: 14px;
+  --radius-md: 22px;
+  --radius-lg: 32px;
+  --radius-pill: 999px;
+  --outline: 3px solid var(--ink);
+  /* the "sticker" press-down shadow used by buttons and cards */
+  --lift: 0 6px 0 var(--ink);
+  --lift-pressed: 0 2px 0 var(--ink);
+
+  /* ── Motion ──────────────────────────────────────────── */
+  --ease-squish: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --duration-fast: 140ms;
+  --duration-medium: 320ms;
+}

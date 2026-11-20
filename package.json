@@ -1,0 +1,17 @@
+{
+  "name": "iatrome",
+  "private": true,
+  "description": "A free-to-play, phone-friendly multiplayer party game for people in healthcare.",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "npm run dev -w @iatrome/web",
+    "build": "npm run build -w @iatrome/web",
+    "brand": "npm run build -w @iatrome/brand"
+  }
+}

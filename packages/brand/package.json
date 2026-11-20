@@ -1,0 +1,14 @@
+{
+  "name": "@iatrome/brand",
+  "private": true,
+  "type": "module",
+  "description": "Brand source of truth: palette, font, and the logo/favicon generator.",
+  "scripts": {
+    "build": "node src/generate.mjs"
+  },
+  "devDependencies": {
+    "opentype.js": "^2.0.0",
+    "png-to-ico": "^3.0.2",
+    "sharp": "^0.35.5"
+  }
+}
