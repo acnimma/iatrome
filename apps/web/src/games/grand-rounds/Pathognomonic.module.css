@@ -13,20 +13,20 @@
   flex-direction: column;
   align-items: center;
   gap: 14px;
-  padding: 26px 48px 30px;
+  padding: 26px clamp(16px, 4vw, 48px) 30px;
 }
 
 .word {
   composes: blackText from '../../components/ui/Jelly.module.css';
   font-family: var(--font-display);
-  font-size: 118px;
+  font-size: min(118px, 12.5vw);
   line-height: 1;
   letter-spacing: 0.01em;
 }
 
 .note {
   max-width: 34ch;
-  font-size: 1.5rem;
+  font-size: clamp(1rem, 3.6vw, 1.5rem);
   font-weight: 800;
   text-align: center;
 }

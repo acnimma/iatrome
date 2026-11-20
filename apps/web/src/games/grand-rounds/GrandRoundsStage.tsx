@@ -10,6 +10,7 @@ import { Avatar } from '@/components/ui/Avatar';
 import { TimerRing } from '@/components/ui/TimerRing';
 import { AvatarRow, CountUp, IntroCard, Pill, Scoreboard, Stamp, nameOf, usePeople } from '@/components/room/RoomBits';
 import { play } from '@/lib/sound';
+import { haptic } from '@/lib/haptics';
 import { Icon } from '@/components/icons/Icon';
 import { ROUND_NAMES, ROUND_BLURBS } from './rounds';
 import { Pathognomonic } from './Pathognomonic';
@@ -86,7 +87,12 @@ function usePhaseClock(game: GrandRoundsView) {
   return live ? elapsed : Infinity;
 }
 
-function Matchup({ view, game, matchup }: { view: RoomView; game: GrandRoundsView; matchup: MatchupView }) {
+/** The duel or finale as a show. Used by the big screen, and by every phone when there isn't one. */
+export function MatchupShow(props: { view: RoomView; game: GrandRoundsView; matchup: MatchupView; onPhone?: boolean }) {
+  return <Matchup {...props} />;
+}
+
+function Matchup({ view, game, matchup, onPhone = false }: { view: RoomView; game: GrandRoundsView; matchup: MatchupView; onPhone?: boolean }) {
   const phase = game.phase.name;
   const elapsed = usePhaseClock(game);
   const people = usePeople(view);
@@ -94,14 +100,14 @@ function Matchup({ view, game, matchup }: { view: RoomView; game: GrandRoundsVie
   const [a, b] = matchup.entries;
   const read = duelReadTiming(matchup.prompt, a.text, b?.text ?? null, matchup.kind === 'doodle' ? 'doodle' : 'quip');
   const reveal = duelRevealTiming(result?.playerVotes.length ?? 0, Boolean(result?.consensus));
-  useMatchupShow(matchup, phase, elapsed, read);
+  useMatchupShow(matchup, phase, elapsed, read, onPhone);
 
   // When each answer appears: in the present phase it follows the read-aloud; afterwards, always shown.
   const shownAt = (side: number) =>
     phase !== 'present' ? 0 : matchup.finale ? 600 + side * GRAND_ROUNDS.presentPerList : side === 0 ? read.aAt : read.bAt;
 
   return (
-    <div className={styles.matchup}>
+    <div className={`${styles.matchup} ${onPhone ? styles.onPhone : ''}`}>
       <div className={styles.matchupTop}>
         <Pill>
           <Icon name={matchup.kind === 'doodle' ? 'pencil' : matchup.kind === 'differential' ? 'list' : 'speech'} size={20} />
@@ -369,7 +375,9 @@ function ResultBanner({ result }: { result: NonNullable<MatchupView['result']> }
  * each answer as it appears, the drumroll races, each vote lands with a blip, the winner gets a
  * sting (or the full PATHOGNOMONIC alarm).
  */
-function useMatchupShow(matchup: MatchupView, phase: string, elapsed: number, read: ReturnType<typeof duelReadTiming>) {
+function useMatchupShow(matchup: MatchupView, phase: string, elapsed: number, read: ReturnType<typeof duelReadTiming>, onPhone: boolean) {
+  // On phones the big beats are felt too: a heartbeat under the drumroll, a buzz for the winner.
+  const buzz = (kind: 'tap' | 'success') => onPhone && haptic(kind);
   const fired = useRef(new Set<string>());
   const key = `${matchup.id}-${phase}`;
   const cue = (id: string, at: number, run: () => void) => {
@@ -402,13 +410,25 @@ function useMatchupShow(matchup: MatchupView, phase: string, elapsed: number, re
           cue(`rank-${rank}`, timing.listAt(rank), () => {
             const last = rank === matchup.entries.length - 1;
             play(last ? (r.consensus ? 'pathognomonic' : 'win') : 'reveal');
+            buzz(last ? 'success' : 'tap');
           }),
         );
       } else {
         const reveal = duelRevealTiming(r.playerVotes.length, r.consensus);
-        cue('drum', 0, () => play('drumroll'));
-        r.playerVotes.forEach((_, i) => cue(`voter-${i}`, reveal.voterAt(i), () => play('vote')));
-        cue('winner', reveal.winnerAt, () => play(r.outcome === 'duplicate' ? 'buzz' : r.consensus ? 'pathognomonic' : r.winner === null ? 'tick' : 'reveal'));
+        cue('drum', 0, () => {
+          play('drumroll');
+          buzz('tap');
+        });
+        r.playerVotes.forEach((_, i) =>
+          cue(`voter-${i}`, reveal.voterAt(i), () => {
+            play('vote');
+            buzz('tap');
+          }),
+        );
+        cue('winner', reveal.winnerAt, () => {
+          play(r.outcome === 'duplicate' ? 'buzz' : r.consensus ? 'pathognomonic' : r.winner === null ? 'tick' : 'reveal');
+          buzz('success');
+        });
       }
     }
   }, [phase, matchup.id, Math.floor(elapsed / 80)]); // eslint-disable-line react-hooks/exhaustive-deps

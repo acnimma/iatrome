@@ -15,7 +15,8 @@ export const metadata: Metadata = {
     process.env.NEXT_PUBLIC_SITE_URL ??
       (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : 'http://localhost:3000'),
   ),
-  title: 'iatrome | medical party game',
+  // Every tab reads "iatrome | ...": pages only supply their own part.
+  title: { default: 'iatrome | medical party game', template: 'iatrome | %s' },
   description:
     'A party game for people who speak fluent medicine. Free, played on your phones, with or without a big screen.',
   applicationName: 'iatrome',

@@ -531,3 +531,89 @@
     animation: none;
   }
 }
+
+/* ── The show on a phone (no big screen) ─────────────── */
+.onPhone {
+  gap: 12px;
+  width: 100%;
+}
+
+.onPhone .matchupTop {
+  min-height: 0;
+}
+
+.onPhone .prompt {
+  max-width: none;
+  font-size: 1.45rem;
+}
+
+.onPhone .versus {
+  grid-template-columns: 1fr;
+  gap: 28px;
+}
+
+.onPhone .vs {
+  width: 46px;
+  height: 46px;
+  font-size: 1rem;
+}
+
+.onPhone .answer,
+.onPhone .answerSlot {
+  min-height: 92px;
+  padding: 16px;
+  border-radius: 24px;
+}
+
+.onPhone .quip {
+  font-size: 1.35rem;
+}
+
+.onPhone .doodle {
+  width: min(100%, 250px);
+}
+
+.onPhone .board {
+  grid-template-columns: 1fr;
+}
+
+.onPhone .footer {
+  min-height: 0;
+}
+
+.onPhone .votePrompt {
+  font-size: 1rem;
+}
+
+/* Phones: the results panel is one short row (voters + count), then the author line. */
+.onPhone .reveal {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+  margin-top: 8px;
+  padding: 8px 12px;
+}
+
+.onPhone .voters {
+  flex: 1;
+  min-height: 0;
+  gap: 4px;
+}
+
+.onPhone .shareBar {
+  flex-basis: 100%;
+  height: 22px;
+}
+
+.onPhone .author {
+  flex-basis: 100%;
+}
+
+.onPhone .authorName {
+  font-size: 1rem;
+}
+
+.onPhone .points {
+  font-size: 1.4rem;
+}

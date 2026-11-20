@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { BackButton } from '@/components/ui/BackButton';
 import styles from './privacy.module.css';
 
-export const metadata: Metadata = { title: 'Privacy | iatrome' };
+export const metadata: Metadata = { title: 'Privacy' };
 
 export default function PrivacyPage() {
   return (

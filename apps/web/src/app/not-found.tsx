@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { EdgePage } from '@/components/home/EdgePage';
 
-export const metadata: Metadata = { title: 'Not found | iatrome' };
+export const metadata: Metadata = { title: 'Not found' };
 
 /** Unknown pages and short links that aren't room codes (like /hello1). */
 export default function NotFound() {

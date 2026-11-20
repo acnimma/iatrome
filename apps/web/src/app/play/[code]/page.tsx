@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import { isValidCode } from '@/realtime/codes';
 import { Controller } from '@/components/controller/Controller';
 
-export const metadata: Metadata = { title: 'Play | iatrome' };
+export const metadata: Metadata = { title: 'Play' };
 
 export default async function PlayPage({ params }: { params: Promise<{ code: string }> }) {
   const code = (await params).code.toUpperCase();

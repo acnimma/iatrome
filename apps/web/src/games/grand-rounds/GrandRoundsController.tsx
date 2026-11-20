@@ -16,6 +16,7 @@ import { StatButton, StatChip } from '@/components/room/Stat';
 import { haptic } from '@/lib/haptics';
 import { play } from '@/lib/sound';
 import { ROUND_NAMES } from './rounds';
+import { MatchupShow } from './GrandRoundsStage';
 import styles from './GrandRounds.module.css';
 import { Icon } from '@/components/icons/Icon';
 
@@ -268,6 +269,15 @@ function MatchupPhone({ view, game, matchup }: { view: RoomView; game: GrandRoun
 
   const sides = matchup.entries.map((_, i) => i);
 
+  // No big screen: every phone becomes the stage for the read and the reveal.
+  if (!view.screen && (phase === 'present' || (phase === 'results' && matchup.result)))
+    return (
+      <PhoneStack>
+        <MatchupShow view={view} game={game} matchup={matchup} onPhone />
+        {phase === 'results' && <ReactionBar />}
+      </PhoneStack>
+    );
+
   if (phase === 'present') {
     if (matchup.finale)
       return (
@@ -336,7 +346,6 @@ function MatchupPhone({ view, game, matchup }: { view: RoomView; game: GrandRoun
 
   // Results
   const r = matchup.result;
-  if (!view.screen && r) return <MatchupReveal view={view} matchup={matchup} />;
   if (!heldBack) return <PhoneMessage icon="drum" title="Look up." />;
   if (matchup.yours !== null && r) {
     const mine = r.points[matchup.yours];
@@ -355,47 +364,6 @@ function MatchupPhone({ view, game, matchup }: { view: RoomView; game: GrandRoun
   return (
     <PhoneStack>
       <PhoneMessage icon="drum" title="The results are in" />
-      <ReactionBar />
-    </PhoneStack>
-  );
-}
-
-/** Results on the phone when there's no big screen: both answers, authors, the split and the points. */
-function MatchupReveal({ view, matchup }: { view: RoomView; matchup: MatchupView }) {
-  const people = usePeople(view);
-  // Best first in the finale; a duel keeps its two sides in order.
-  const sides = matchup.entries.map((_, i) => i).sort((a, b) => (matchup.finale ? matchup.result!.points[b] - matchup.result!.points[a] : 0));
-  const r = matchup.result!;
-  const mine = matchup.yours;
-  const headline =
-    r.outcome === 'duplicate' ? 'Duplicate order' : r.consensus ? 'Unanimous' : r.winner === null ? 'Dead even' : mine === null ? 'The results are in' : r.winner === mine ? 'You won the room' : 'Not this time';
-  return (
-    <PhoneStack>
-      <PhonePrompt label={headline} prompt={matchup.prompt} />
-      {sides.map((side, i) => {
-        const entry = matchup.entries[side];
-        const won = r.winner === side;
-        return (
-          <motion.div
-            key={side}
-            className={`${styles.reveal} ${won ? styles.revealWon : ''}`}
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: i * 0.25, type: 'spring', stiffness: 320, damping: 26 }}
-          >
-            <div className={styles.revealBody}>{entry.hidden ? <em>Hidden by the host</em> : <VoteContent matchup={matchup} side={side} />}</div>
-            <div className={styles.revealMeta}>
-              <span>
-                {nameOf(people, entry.author)}
-                {mine === side ? ' (you)' : ''}
-                {entry.curbside ? ' · curbside' : ''}
-              </span>
-              <span>{matchup.finale ? `${r.playerVotes.filter((v) => v.side === side).length} votes` : `${Math.round(r.shares[side] * 100)}%`}</span>
-              <strong>+{r.points[side].toLocaleString()}</strong>
-            </div>
-          </motion.div>
-        );
-      })}
       <ReactionBar />
     </PhoneStack>
   );
