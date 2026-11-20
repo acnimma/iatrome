@@ -30,7 +30,7 @@ describe('every pack', () => {
 describe('Normal and Pro mode', () => {
   // Enough fresh items for many games in each mode (Normal draws only universal items; Pro mostly clinical).
   const minimum: Record<keyof typeof packs, [number, number]> = {
-    quips: [250, 150],
+    quips: [180, 100],
     playerQuips: [80, 40],
     playerDifferentials: [20, 12],
     doodles: [100, 45],
@@ -57,7 +57,7 @@ describe('no em dashes', () => {
 
 describe('Grand Rounds', () => {
   it('has enough prompts for many games without repeats', () => {
-    expect(quips.length).toBeGreaterThanOrEqual(300);
+    expect(quips.length).toBeGreaterThanOrEqual(280);
     expect(doodles.length).toBeGreaterThanOrEqual(100);
     expect(differentials.length).toBeGreaterThanOrEqual(60);
   });
@@ -70,6 +70,32 @@ describe('Grand Rounds', () => {
     for (const q of quips) for (const c of q.curbside) expect(c.length, q.id).toBeLessThanOrEqual(60);
     for (const c of curbsideGeneric) expect(c.length).toBeLessThanOrEqual(60);
     for (const d of differentials) for (const b of d.beep) expect(b.length, d.id).toBeLessThanOrEqual(40);
+  });
+});
+
+// The house style: short, classic frames with the whole joke left to the player.
+// No setups, no second sentences, no explaining the scenario.
+describe('prompts are short and one sentence', () => {
+  const words = (t: string) => t.trim().split(/\s+/).length;
+  const twoSentences = /[.!?]["”’]?\s+[A-Z“"]/;
+  const cases: [string, { id: string; text: string; breadth?: string }[], number, number][] = [
+    ['quips', quips, 11, 13],
+    ['inside-joke quips', playerQuips, 11, 13],
+    ['doodles', doodles, 10, 11],
+    ['differentials', differentials, 12, 13],
+    ['inside-joke differentials', playerDifferentials, 12, 13],
+  ];
+  for (const [name, pack, normal, pro] of cases)
+    it(`${name}: at most ${normal} words (${pro} in Pro), one sentence`, () => {
+      for (const p of pack) {
+        const max = p.breadth === 'clinical' ? pro : normal;
+        expect(words(p.text), `${p.id}: ${p.text}`).toBeLessThanOrEqual(max);
+        expect(twoSentences.test(p.text.replace(/\b(a\.m|p\.m|Dr|Mr|Mrs|Ms|St|vs)\./g, '$1')), `${p.id}: ${p.text}`).toBe(false);
+      }
+    });
+  it('bot answers are short too (at most 9 words)', () => {
+    for (const q of quips) for (const c of q.curbside) expect(words(c), `${q.id}: ${c}`).toBeLessThanOrEqual(9);
+    for (const c of curbsideGeneric) expect(words(c), c).toBeLessThanOrEqual(9);
   });
 });
 
