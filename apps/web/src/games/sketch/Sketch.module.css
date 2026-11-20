@@ -33,7 +33,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  width: min(62vh, 100%);
+  width: min(54vh, 100%);
 }
 
 .drawer {
@@ -45,7 +45,7 @@
 }
 
 .canvas {
-  width: min(62vh, 100%);
+  width: min(54vh, 100%);
 }
 
 .mask {

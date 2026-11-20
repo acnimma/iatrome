@@ -47,11 +47,14 @@ async function act(phone: Page, i: number) {
   }
   const canvas = phone.getByLabel('Drawing canvas');
   if (await canvas.count()) {
+    // Real touch events, like a finger on a phone.
     const b = (await canvas.boundingBox())!;
-    await phone.mouse.move(b.x + 30, b.y + 30);
-    await phone.mouse.down();
-    for (let s = 1; s < 10; s++) await phone.mouse.move(b.x + 30 + s * 20, b.y + 30 + s * 12);
-    await phone.mouse.up();
+    const cdp = await phone.context().newCDPSession(phone);
+    const at = (s: number) => [{ x: b.x + 30 + s * 18, y: b.y + 40 + Math.sin(s / 2) * 40 + s * 10, id: 1 }];
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: at(0) });
+    for (let s = 1; s < 12; s++) await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: at(s) });
+    await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    await cdp.detach();
     await tryClick(phone.getByRole('button', { name: /masterpiece/ }));
     return;
   }
@@ -118,9 +121,11 @@ test('moderation: password, kick and ban', async ({ browser }) => {
   await stage.getByRole('button', { name: 'Ban Troll' }).click();
   await expect(phone.getByText('You’ve been discharged')).toBeVisible();
 
+  // Coming back with a new name, even with the right password, doesn't work: the device is banned.
   await phone.goto(`/play/${code}`);
   await phone.getByLabel('Your name').fill('Troll Again');
-  await phone.getByLabel('Room password').fill('scrubs').catch(() => {});
   await phone.getByRole('button', { name: 'Join game' }).click();
-  await expect(phone.getByText(/banned|password/)).toBeVisible();
+  await phone.getByLabel('Room password').fill('scrubs');
+  await phone.getByRole('button', { name: 'Join game' }).click();
+  await expect(phone.getByText('This device was banned from the room.')).toBeVisible();
 });
