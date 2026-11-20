@@ -9,14 +9,20 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@iatrome/content": "*",
+    "@iatrome/game": "*",
     "motion": "^14.14.0",
     "next": "^16.4.6",
+    "partysocket": "^1.3.0",
+    "perfect-freehand": "^1.2.3",
+    "qrcode": "^1.5.4",
     "react": "^19.3.1",
     "react-dom": "^19.3.1"
   },
   "devDependencies": {
     "@playwright/test": "^1.65.1",
     "@types/node": "^24",
+    "@types/qrcode": "^1.5.6",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "typescript": "^5.9.3"

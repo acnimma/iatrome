@@ -1,0 +1,15 @@
+{
+  "name": "@iatrome/content",
+  "private": true,
+  "type": "module",
+  "description": "All prompts, terms, trivia and host lines. Pure data + selection helpers.",
+  "exports": { ".": "./src/index.ts" },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "vitest": "^5.1.1"
+  }
+}

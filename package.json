@@ -13,5 +13,8 @@
     "dev": "npm run dev -w @iatrome/web",
     "build": "npm run build -w @iatrome/web",
     "brand": "npm run build -w @iatrome/brand"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.7"
   }
 }

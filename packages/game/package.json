@@ -1,0 +1,20 @@
+{
+  "name": "@iatrome/game",
+  "private": true,
+  "type": "module",
+  "description": "The game engine: protocol, room lifecycle, game modes, scoring. Pure TypeScript, no I/O.",
+  "exports": { ".": "./src/index.ts" },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@iatrome/content": "*",
+    "obscenity": "^0.4.6",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "vitest": "^5.1.1"
+  }
+}
