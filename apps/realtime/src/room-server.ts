@@ -26,7 +26,7 @@ import type { Env } from './env';
 
 /** What we remember about each socket (survives hibernation; max 2 KB). */
 /** `host` on a person: the phone that created a phones-only room, allowed to run host commands. */
-type ConnState = { kind: 'pending'; ip: string } | { kind: 'host' } | { kind: 'person'; id: string; host?: boolean };
+type ConnState = { kind: 'pending'; ip: string; at: number } | { kind: 'host' } | { kind: 'person'; id: string; host?: boolean };
 
 interface Auth {
   hostToken: string;
@@ -41,6 +41,25 @@ export interface InitRequest {
 }
 
 const REACTION_COOLDOWN = 350;
+
+/**
+ * Abuse limits per room. Real play never comes close: a phone sends a few messages a second
+ * (a live drawing streams more, in small ops). Scripts that flood get throttled, then dropped.
+ */
+const LIMITS_PER_SOCKET = {
+  /** Token bucket: burst size and refill per second. */
+  burst: 80,
+  perSecond: 40,
+  /** Bytes per 10 seconds (a finished doodle is the biggest message, ~200 KB). */
+  bytesPer10s: 1_500_000,
+  /** Dropped messages before the socket is closed. */
+  strikes: 200,
+};
+/** Every socket in one room: people (44 max), the stage and a few spare tabs. */
+const MAX_SOCKETS = 70;
+/** Sockets that connected but haven't joined yet, per address and overall. */
+const MAX_PENDING_PER_IP = 6;
+const MAX_PENDING = 20;
 const MAX_PASSWORD_FAILURES = 6;
 const DRAWING_FLUSH_MS = 2_000;
 
@@ -61,6 +80,7 @@ export class Room extends Server<Env> {
   private sentDrawings = new Map<string, Set<string>>();
   private lastReaction = new Map<string, number>();
   private passwordFailures = new Map<string, number>();
+  private budgets = new Map<string, { tokens: number; at: number; bytes: number; bytesAt: number; strikes: number }>();
 
   override async onStart() {
     const [room, auth] = await Promise.all([
@@ -112,11 +132,44 @@ export class Room extends Server<Env> {
       conn.close(4404, 'No such room');
       return;
     }
-    conn.setState({ kind: 'pending', ip: ctx.request.headers.get('CF-Connecting-IP') ?? 'local' });
+    const ip = ctx.request.headers.get('CF-Connecting-IP') ?? 'local';
+    const sockets = [...this.getConnections<ConnState>()].filter((c) => c.id !== conn.id);
+    const pending = sockets.filter((c) => c.state?.kind === 'pending');
+    const pendingAt = (c: Connection<ConnState>) => (c.state?.kind === 'pending' ? c.state.at : 0);
+    if (sockets.length >= MAX_SOCKETS || pending.filter((c) => c.state?.kind === 'pending' && c.state.ip === ip).length >= MAX_PENDING_PER_IP) {
+      conn.close(4429, 'Room is busy');
+      return;
+    }
+    // Too many sockets that never joined: drop the oldest rather than lock real players out.
+    // A real phone that gets dropped reconnects on its own.
+    if (pending.length >= MAX_PENDING) pending.sort((a, b) => pendingAt(a) - pendingAt(b))[0].close(4408, 'Idle');
+    conn.setState({ kind: 'pending', ip, at: Date.now() });
+  }
+
+  /** False when this socket is over its budget; repeat offenders are disconnected. */
+  private withinBudget(conn: Connection<ConnState>, size: number, now: number): boolean {
+    const b = this.budgets.get(conn.id) ?? { tokens: LIMITS_PER_SOCKET.burst, at: now, bytes: 0, bytesAt: now, strikes: 0 };
+    b.tokens = Math.min(LIMITS_PER_SOCKET.burst, b.tokens + ((now - b.at) / 1000) * LIMITS_PER_SOCKET.perSecond);
+    b.at = now;
+    if (now - b.bytesAt > 10_000) {
+      b.bytes = 0;
+      b.bytesAt = now;
+    }
+    b.bytes += size;
+    const ok = b.tokens >= 1 && b.bytes <= LIMITS_PER_SOCKET.bytesPer10s;
+    if (ok) b.tokens -= 1;
+    else b.strikes += 1;
+    this.budgets.set(conn.id, b);
+    if (b.strikes > LIMITS_PER_SOCKET.strikes) {
+      this.budgets.delete(conn.id);
+      conn.close(4429, 'Too many messages');
+    }
+    return ok;
   }
 
   override async onMessage(conn: Connection<ConnState>, raw: string | ArrayBuffer) {
     if (!this.room || typeof raw !== 'string') return;
+    if (!this.withinBudget(conn, raw.length, Date.now())) return;
     const msg = parseClientMessage(raw);
     if (!msg) return;
     const now = Date.now();
@@ -172,6 +225,7 @@ export class Room extends Server<Env> {
 
   override async onClose(conn: Connection<ConnState>) {
     this.sentDrawings.delete(conn.id);
+    this.budgets.delete(conn.id);
     const state = conn.state;
     // The big screen left: phones take over showing everything.
     if (this.room && state?.kind === 'host') return this.commit(Date.now(), conn.id);
@@ -337,7 +391,7 @@ export class Room extends Server<Env> {
     for (const conn of this.getConnections<ConnState>()) {
       if (conn.state?.kind === 'person' && conn.state.id === personId) {
         this.send(conn, { t: 'removed', reason });
-        conn.setState({ kind: 'pending', ip: 'removed' });
+        conn.setState({ kind: 'pending', ip: 'removed', at: Date.now() });
         conn.close(4403, reason);
       }
     }
