@@ -1,7 +1,7 @@
 import { type TriviaQuestion, trivia } from '@iatrome/content';
-import { DIDACTICS as FP } from '../constants';
+import { DIDACTICS as DC } from '../constants';
 import type { GameResult, Phase } from '../types';
-import { type ActionOutcome, type BaseGameState, type GameContext, type GameModule, setPhase, tidy } from './context';
+import { type ActionOutcome, type BaseGameState, type GameContext, type GameModule, sawtooth, setPhase, tidy } from './context';
 
 /**
  * Didactics Mode: team trivia for big groups (up to 40). Random teams; everyone
@@ -57,8 +57,8 @@ const TEAM_NAMES = ['The Band-Aids', 'The Lollipops', 'The Stethoscopes', 'The T
 
 export const didactics: GameModule<DidacticsState, DidacticsAction, DidacticsView> = {
   id: 'didactics',
-  minPlayers: FP.minPlayers,
-  maxPlayers: FP.maxPlayers,
+  minPlayers: DC.minPlayers,
+  maxPlayers: DC.maxPlayers,
 
   start(ctx, playerIds) {
     const count = playerIds.length <= 7 ? 2 : playerIds.length <= 15 ? 3 : 4;
@@ -71,14 +71,14 @@ export const didactics: GameModule<DidacticsState, DidacticsAction, DidacticsVie
       phase: { name: 'intro', startedAt: ctx.now, endsAt: null },
       teams,
       teamScores: Object.fromEntries(teams.map((t) => [t.id, 0])),
-      questions: ctx.draw(trivia, FP.questions).sort((a, b) => a.difficulty - b.difficulty),
+      questions: sawtooth(ctx.draw(trivia, DC.questions)),
       index: 0,
       answers: {},
       correct: {},
       last: null,
     };
     ctx.say('didacticsIntro');
-    setPhase(state, ctx, 'intro', FP.intro);
+    setPhase(state, ctx, 'intro', DC.intro);
     return state;
   },
 
@@ -105,7 +105,7 @@ export const didactics: GameModule<DidacticsState, DidacticsAction, DidacticsVie
   timeout(state, ctx) {
     switch (state.phase.name) {
       case 'intro':
-        setPhase(state, ctx, 'teams', FP.teams);
+        setPhase(state, ctx, 'teams', DC.teams);
         return;
       case 'teams':
         ask(state, ctx);
@@ -116,9 +116,9 @@ export const didactics: GameModule<DidacticsState, DidacticsAction, DidacticsVie
       case 'reveal': {
         const next = state.index + 1;
         if (next >= state.questions.length) setPhase(state, ctx, 'done', null);
-        else if (next % FP.standingsEvery === 0) {
-          ctx.say(next === state.questions.length - FP.lightning ? 'didacticsLightning' : 'scoreboard');
-          setPhase(state, ctx, 'standings', FP.standings);
+        else if (next % DC.standingsEvery === 0) {
+          ctx.say(next === state.questions.length - DC.lightning ? 'didacticsLightning' : 'scoreboard');
+          setPhase(state, ctx, 'standings', DC.standings);
         } else {
           state.index = next;
           ask(state, ctx);
@@ -188,12 +188,12 @@ export const didactics: GameModule<DidacticsState, DidacticsAction, DidacticsVie
   },
 };
 
-const isLightning = (state: DidacticsState) => state.index >= state.questions.length - FP.lightning;
+const isLightning = (state: DidacticsState) => state.index >= state.questions.length - DC.lightning;
 
 function ask(state: DidacticsState, ctx: GameContext) {
   state.answers = {};
   state.last = null;
-  setPhase(state, ctx, 'question', FP.question, 'input');
+  setPhase(state, ctx, 'question', DC.question, 'input');
 }
 
 function reveal(state: DidacticsState, ctx: GameContext) {
@@ -207,14 +207,14 @@ function reveal(state: DidacticsState, ctx: GameContext) {
     if (a?.option !== q.answer) continue;
     state.correct[id] = (state.correct[id] ?? 0) + 1;
     const speed = 1 - Math.min(1, (a.at - state.phase.startedAt) / duration);
-    state.scores[id] += tidy((FP.base + FP.speedBonus * speed) * multiplier);
+    state.scores[id] += tidy((DC.base + DC.speedBonus * speed) * multiplier);
   }
 
   for (const team of state.teams) {
     // Count everyone still here; a teammate who never answers counts as a miss.
     const present = ctx.connectedPlayers(team.members);
     const right = present.filter((id) => state.answers[id]?.option === q.answer).length;
-    const points = present.length ? tidy((FP.pool * right * multiplier) / present.length) : 0;
+    const points = present.length ? tidy((DC.pool * right * multiplier) / present.length) : 0;
     state.teamScores[team.id] += points;
     perTeam[team.id] = { right, of: present.length, points };
   }
@@ -222,5 +222,5 @@ function reveal(state: DidacticsState, ctx: GameContext) {
   state.last = { perTeam };
   const best = Math.max(...Object.values(perTeam).map((t) => (t.of ? t.right / t.of : 0)));
   if (best === 0) ctx.say('didacticsStumped');
-  setPhase(state, ctx, 'reveal', FP.reveal);
+  setPhase(state, ctx, 'reveal', DC.reveal);
 }

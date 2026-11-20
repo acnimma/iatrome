@@ -1,7 +1,7 @@
 import { type TriviaQuestion, trivia } from '@iatrome/content';
 import { SURVIVE as SV } from '../constants';
 import type { GameResult, Phase } from '../types';
-import { type ActionOutcome, type BaseGameState, type GameContext, type GameModule, setPhase, standings, tidy } from './context';
+import { type ActionOutcome, type BaseGameState, type GameContext, type GameModule, sawtooth, setPhase, standings, tidy } from './context';
 
 /**
  * Survive the Shift: elimination trivia. Everyone starts with two coffees; a wrong or
@@ -51,8 +51,7 @@ export const survive: GameModule<SurviveState, SurviveAction, SurviveView> = {
   maxPlayers: SV.maxPlayers,
 
   start(ctx, playerIds) {
-    // Easier questions first, then ramp up.
-    const picked = ctx.draw(trivia, SV.maxQuestions).sort((a, b) => a.difficulty - b.difficulty);
+    const picked = sawtooth(ctx.draw(trivia, SV.maxQuestions));
     const state: SurviveState = {
       game: 'survive',
       playerIds,

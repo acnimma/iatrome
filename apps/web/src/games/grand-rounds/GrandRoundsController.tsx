@@ -165,6 +165,7 @@ function DoodleTask({ task }: { task: TaskView }) {
   return (
     <div className={styles.task}>
       <DrawPad
+        noUndo
         onChange={(d) => {
           drawing.current = d;
           setCount((c) => c + 1);

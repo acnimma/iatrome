@@ -68,7 +68,7 @@ function StageScreen({ view, prefs }: { view: RoomView; prefs: StagePrefs }) {
         <header className={styles.header}>
           <img src="/brand/wordmark.svg" alt="iatrome" className={styles.logo} />
           <span className={styles.joinHint}>
-            <span>Join to watch &amp; vote</span>
+            <span>Room code</span>
             <RoomCode code={view.code} hidden={prefs.hideCode} size="md" />
           </span>
         </header>

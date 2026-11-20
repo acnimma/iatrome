@@ -211,6 +211,16 @@ describe('Grand Rounds rules', () => {
 
 });
 
+describe('trivia pacing', () => {
+  it('mixes easy wins between harder questions instead of a steady climb', async () => {
+    const { sawtooth } = await import('./games/context');
+    const qs = [3, 3, 2, 1, 1, 2, 1, 3, 2, 1].map((difficulty, i) => ({ id: String(i), difficulty }));
+    const order = sawtooth(qs).map((q) => q.difficulty);
+    expect(order.slice(0, 4)).toEqual([1, 2, 1, 3]);
+    expect(order).toHaveLength(qs.length);
+  });
+});
+
 describe('Didactics Mode', () => {
   it('splits players into balanced random teams', () => {
     for (const [n, teams] of [[4, 2], [7, 2], [8, 3], [15, 3], [16, 4], [40, 4]] as const) {

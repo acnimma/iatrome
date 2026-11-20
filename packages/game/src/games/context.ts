@@ -86,5 +86,22 @@ export function standings(ctx: GameContext, scores: Record<string, number>, orde
   });
 }
 
+/**
+ * Trivia order that feels like a game, not a test: a sawtooth of easy wins and
+ * harder surprises (easy, medium, easy, hard, …) instead of a steady climb.
+ */
+export function sawtooth<T extends { difficulty: number }>(items: T[]): T[] {
+  const by = (d: number) => items.filter((q) => q.difficulty === d);
+  const queues = [by(1), by(2), by(3)];
+  const pattern = [0, 1, 0, 2, 1, 0, 2, 1];
+  const out: T[] = [];
+  for (let i = 0; out.length < items.length; i++) {
+    const want = pattern[i % pattern.length];
+    const q = queues[want].shift() ?? queues.find((x) => x.length)?.shift();
+    if (q) out.push(q);
+  }
+  return out;
+}
+
 /** Round to the nearest 10 so scores look tidy. */
 export const tidy = (n: number) => Math.round(n / 10) * 10;

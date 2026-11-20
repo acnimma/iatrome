@@ -12,6 +12,8 @@ interface Props {
   /** Live operations, streamed while drawing (Sketch). */
   onOp?: (op: DrawOp) => void;
   disabled?: boolean;
+  /** No undo: committed strokes stay, so the art stays gloriously bad (doodle duels). */
+  noUndo?: boolean;
 }
 
 const MIN_STEP = 3; // canvas units between recorded points
@@ -21,7 +23,7 @@ const FLUSH_MS = 45; // batch live points this often
  * A finger-friendly drawing surface. Pointer capture + coalesced events for smooth
  * curves, touch-action: none so drawing never scrolls or zooms the page.
  */
-export function DrawPad({ onChange, onOp, disabled }: Props) {
+export function DrawPad({ onChange, onOp, disabled, noUndo }: Props) {
   const surface = useRef<SVGSVGElement>(null);
   const [strokes, setStrokes] = useState<Stroke[]>([]);
   const [current, setCurrent] = useState<Stroke | null>(null);
@@ -165,11 +167,13 @@ export function DrawPad({ onChange, onOp, disabled }: Props) {
             ))}
           </div>
           <div className={styles.actions}>
-            <button type="button" className={styles.tool} onClick={undo} disabled={!strokes.length}>
-              Undo
-            </button>
+            {!noUndo && (
+              <button type="button" className={styles.tool} onClick={undo} disabled={!strokes.length}>
+                Undo
+              </button>
+            )}
             <button type="button" className={styles.tool} onClick={clear} disabled={!strokes.length}>
-              Clear
+              {noUndo ? 'Start over' : 'Clear'}
             </button>
           </div>
         </div>
