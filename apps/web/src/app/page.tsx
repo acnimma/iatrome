@@ -10,7 +10,7 @@ export default function ComingSoonPage() {
         <Wordmark />
       </h1>
       <p className={styles.say} aria-label="Pronounced EYE-uh-trohm">
-        /ˈaɪ.ə.troʊm/
+        eye-uh-trohm
       </p>
       <p className={styles.soon}>coming soon</p>
     </main>

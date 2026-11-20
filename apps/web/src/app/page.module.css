@@ -20,7 +20,6 @@
   margin-top: calc(clamp(20px, 3.5vw, 36px) * -0.55);
   font-size: clamp(0.8rem, 2.6vw, 0.92rem);
   font-weight: 500;
-  letter-spacing: 0.04em;
   color: var(--ink-soft);
   opacity: 0.75;
   animation: settle 1s cubic-bezier(0.22, 1, 0.36, 1) 0.85s both;
@@ -29,9 +28,7 @@
 .soon {
   font-size: clamp(0.85rem, 3vw, 1rem);
   font-weight: 500;
-  letter-spacing: 0.34em;
   color: var(--ink-soft);
-  padding-left: 0.34em; /* optically re-centre the letter-spaced text */
   animation: settle 1s cubic-bezier(0.22, 1, 0.36, 1) 0.95s both;
 }
 
