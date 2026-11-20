@@ -48,7 +48,8 @@ async function act(phone: Page, i: number) {
   const canvas = phone.getByLabel('Drawing canvas');
   if (await canvas.count()) {
     // Real touch events, like a finger on a phone.
-    const b = (await canvas.boundingBox())!;
+    const b = await canvas.boundingBox();
+    if (!b) return; // the drawing phase just ended
     const cdp = await phone.context().newCDPSession(phone);
     const at = (s: number) => [{ x: b.x + 30 + s * 18, y: b.y + 40 + Math.sin(s / 2) * 40 + s * 10, id: 1 }];
     await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: at(0) });
@@ -69,7 +70,7 @@ async function act(phone: Page, i: number) {
   if (n) await choices.nth(i % n).click({ timeout: 1000 }).catch(() => {});
 }
 
-for (const game of ['grand-rounds', 'sketch', 'survive', 'poison']) {
+for (const game of ['grand-rounds', 'sketch', 'survive', 'poison', 'didactics']) {
   test(`${game}: a full game from lobby to podium`, async ({ browser }) => {
     const errors: string[] = [];
     const { code, stage } = await openRoom(browser, game);
@@ -77,7 +78,7 @@ for (const game of ['grand-rounds', 'sketch', 'survive', 'poison']) {
     await expect(stage.getByText('Grab your phone and go to')).toBeVisible();
 
     const phones = [];
-    for (const [i, name] of ['Ana', 'Ben', 'Cy'].entries()) {
+    for (const [i, name] of (game === 'didactics' ? ['Ana', 'Ben', 'Cy', 'Dee'] : ['Ana', 'Ben', 'Cy']).entries()) {
       const phone = await joinPhone(browser, code, name, i);
       phone.on('pageerror', (e) => errors.push(`${name}: ${e.message}`));
       phones.push(phone);
