@@ -1,25 +1,29 @@
 'use client';
 
-import Link from 'next/link';
 import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 import type { RoomView } from '@iatrome/game/client';
-import { RoomContext, useRoomConnection, useSnapshot } from '@/realtime/use-room';
+import { RoomContext, useRoom, useRoomConnection, useSnapshot } from '@/realtime/use-room';
 import type { Snapshot } from '@/realtime/room-client';
 import { Avatar } from '@/components/ui/Avatar';
 import { Button } from '@/components/ui/Button';
 import { haptic } from '@/lib/haptics';
+import { Icon } from '@/components/icons/Icon';
 import { GrandRoundsController } from '@/games/grand-rounds/GrandRoundsController';
 import { SketchController } from '@/games/sketch/SketchController';
 import { SurviveController } from '@/games/survive/SurviveController';
 import { PoisonController } from '@/games/poison/PoisonController';
 import { DidacticsController } from '@/games/didactics/DidacticsController';
+import { EdgePage } from '@/components/home/EdgePage';
 import { JoinForm } from './JoinForm';
 import { BeepBanner, PhoneMessage } from './Phone';
 import { HostMenu, useIsHost } from './PhoneHost';
 import { StatCalls, StatOnThis } from '@/components/room/Stat';
 import { ControllerLobby, ControllerResults } from './ControllerLobby';
 import styles from './Controller.module.css';
+
+/** Timed phases where the phone is for answering, so Beep's banner waits its turn. */
+const QUIET_PHASES = new Set(['question', 'draw']);
 
 /** A player's phone. */
 export function Controller({ code }: { code: string }) {
@@ -42,8 +46,34 @@ function PhoneScreen({ code, snap }: { code: string; snap: Snapshot }) {
   if (snap.removed) return <Removed reason={snap.removed} />;
   if (snap.error === 'no-room') return <NoRoom code={code} />;
   if (snap.status === 'needs-join' || snap.status === 'joining') return <JoinForm code={code} snap={snap} />;
-  if (!snap.view) return <p className={styles.connecting}>Connecting…</p>;
+  if (!snap.view) return snap.stalled ? <Stalled /> : <Connecting />;
   return <InRoom view={snap.view} reconnecting={snap.status === 'reconnecting'} />;
+}
+
+function Connecting() {
+  return (
+    <motion.p className={styles.connecting} animate={{ opacity: [0.5, 1, 0.5] }} transition={{ repeat: Infinity, duration: 1.4 }}>
+      Connecting…
+    </motion.p>
+  );
+}
+
+/** The first connection never landed: say so, and offer the one thing that might help. */
+function Stalled() {
+  const room = useRoom();
+  return (
+    <EdgePage
+      eyebrow="No answer"
+      title="Can’t reach the room"
+      line="Eight seconds of knocking and nobody answered. Check your Wi-Fi or signal, then try again."
+      bpm={118}
+      action={
+        <Button size="lg" block onClick={() => room.retry()}>
+          Try again
+        </Button>
+      }
+    />
+  );
 }
 
 function InRoom({ view, reconnecting }: { view: RoomView; reconnecting: boolean }) {
@@ -52,6 +82,9 @@ function InRoom({ view, reconnecting }: { view: RoomView; reconnecting: boolean 
   // Grand Rounds lets everyone vote, seated or not; other games park watchers until the next one.
   const parked = watching && view.game?.game !== 'grand-rounds';
   const isHost = useIsHost(view.code);
+  // Beep keeps quiet on the phone while a timed question or drawing is open: the screen is for answering.
+  const phase = view.game?.phase;
+  const heads = view.stage === 'playing' && phase && phase.endsAt !== null && QUIET_PHASES.has(phase.name) && !watching;
   return (
     <>
       <header className={styles.header}>
@@ -62,7 +95,12 @@ function InRoom({ view, reconnecting }: { view: RoomView; reconnecting: boolean 
         {isHost && !view.screen && <HostMenu view={view} />}
       </header>
       {reconnecting && <div className={styles.reconnecting}>Reconnecting…</div>}
-      {!view.screen && view.stage !== 'lobby' && <BeepBanner line={view.hostLine} />}
+      {watching && !parked && (
+        <p className={styles.audience}>
+          <Icon name="popcorn" size={22} /> You’re in the audience. Vote along; you’ll play next game.
+        </p>
+      )}
+      {!view.screen && view.stage !== 'lobby' && !heads && <BeepBanner line={view.hostLine} />}
       {view.stage === 'playing' && (
         <div className={styles.statRow}>
           <StatOnThis view={view} />
@@ -137,31 +175,24 @@ function FeedbackToast({ feedback }: { feedback: Snapshot['feedback'] }) {
   );
 }
 
+const REMOVED = {
+  banned: { title: 'You’ve been banned from this room', text: 'The host banned this device. That decision is final, and not appealable to Beep.' },
+  kicked: { title: 'You were removed', text: 'The host removed you from the room. You can rejoin if they let you.' },
+  closed: { title: 'The room has closed', text: 'The host ended it. Discharged, effective immediately.' },
+};
+
 function Removed({ reason }: { reason: 'kicked' | 'banned' | 'closed' }) {
-  return (
-    <div className={styles.center}>
-      <h1 className={styles.bigTitle}>{reason === 'banned' ? 'You’ve been banned from this room' : 'You were removed'}</h1>
-      <p className={styles.soft}>{reason === 'banned' ? 'The host banned this device from the room.' : 'The host removed you from the room.'}</p>
-      <Link href="/">
-        <Button tone="pearl" size="lg">
-          Back home
-        </Button>
-      </Link>
-    </div>
-  );
+  return <EdgePage eyebrow="Room update" title={REMOVED[reason].title} line={REMOVED[reason].text} joinForm={reason !== 'banned'} />;
 }
 
 function NoRoom({ code }: { code: string }) {
   return (
-    <div className={styles.center}>
-      <h1 className={styles.bigTitle}>No room called {code}</h1>
-      <p className={styles.soft}>Double-check the code. Rooms close after 30 minutes with nobody in them.</p>
-      <Link href="/">
-        <Button size="lg">
-          Try another code
-        </Button>
-      </Link>
-    </div>
+    <EdgePage
+      eyebrow={`Room ${code}`}
+      title="No room by that code"
+      line="Either there’s a typo, or everyone left and the room was discharged after 30 minutes. Try the code again."
+      joinForm
+    />
   );
 }
 

@@ -123,3 +123,18 @@
 .statRow:not(:empty) {
   margin-bottom: 12px;
 }
+
+/* Late arrivals watching a game: one line saying what they are and what to do. */
+.audience {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 8px 14px 8px 10px;
+  border: var(--outline);
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--royal-gold) 26%, var(--card));
+  font-size: 0.9rem;
+  font-weight: 800;
+  line-height: 1.25;
+}

@@ -198,6 +198,7 @@ export class Room extends Server<Env> {
       }
       case 'host-cmd': {
         if (state?.kind !== 'host' && !(state?.kind === 'person' && state.host)) return;
+        if (msg.cmd.type === 'close') return this.closeRoom();
         const before = new Set(this.room.people.map((p) => p.id));
         const error = hostCommand(this.room, msg.cmd, now);
         if (error) this.send(conn, { t: 'feedback', error });
@@ -284,7 +285,8 @@ export class Room extends Server<Env> {
     if (this.auth?.password) {
       const attempt = await hashPassword(msg.password ?? '', this.auth.password.salt);
       if (!safeEqual(attempt.hash, this.auth.password.hash)) {
-        this.passwordFailures.set(failKey, (this.passwordFailures.get(failKey) ?? 0) + 1);
+        // Only real attempts count: a phone checking the door with no password isn't guessing.
+        if (msg.password) this.passwordFailures.set(failKey, (this.passwordFailures.get(failKey) ?? 0) + 1);
         return this.reject(conn, 'bad-password');
       }
     }
@@ -385,6 +387,17 @@ export class Room extends Server<Env> {
     if (stale.length) await this.ctx.storage.delete(stale);
     for (const key of Object.keys(puts)) this.persistedDrawings.add(key.slice(2));
     for (const key of stale) this.persistedDrawings.delete(key.slice(2));
+  }
+
+  /** The host ended the room: tell everyone, disconnect everyone, forget everything. */
+  private async closeRoom() {
+    for (const conn of this.getConnections<ConnState>()) {
+      this.send(conn, { t: 'removed', reason: 'closed' });
+      conn.close(4410, 'Room closed');
+    }
+    this.room = null;
+    this.auth = null;
+    await this.ctx.storage.deleteAll();
   }
 
   private removeConnections(personId: string, reason: 'kicked' | 'banned') {

@@ -29,7 +29,7 @@ export interface DoodlePrompt {
   breadth: Breadth;
 }
 
-/** Grand Rounds finale: players list three answers. Beep's three answers are used when Beep plays. */
+/** Grand Rounds finale: players list three answers. `beep` is a ready-made list for a player who gets stuck. */
 export interface DifferentialPrompt {
   id: string;
   text: string;
@@ -81,7 +81,6 @@ export const hostEvents = [
   'tie', // votes split evenly
   'forfeit', // someone didn't answer in time
   'curbsideWin', // a ready-made curbside consult answer won
-  'beepWins', // Beep (the host) won its finale duel
   'scoreboard', // between rounds, looking at the scores
   'winner', // announcing the overall winner
   'sketchIntro', // Sketch begins
@@ -104,6 +103,22 @@ export const hostEvents = [
   'noVotes', // nobody voted on a matchup
   'ghostRevive', // Survive the Shift: a ghost earned their way back on shift
   'noDefender', // Pick Your Poison: nobody in the minority volunteered to defend it
+  // ── The show: Beep reacting to what actually happened. Vars listed in hostEventVars. ──
+  'matchupWinner', // a duel or finale list just won; {name} wrote it, {answer} is the winning answer
+  'pathognomonic', // unanimous duel win (the signature moment); {name} wrote it
+  'lastPlace', // scoreboard: a gentle roast of whoever is last; {name}
+  'comeback', // someone climbed the board fast; {name}
+  'writingBanter', // chatter while everyone writes
+  'votingBanter', // chatter while the room votes
+  'finaleReveal', // right before the finale results land
+  'surviveOut', // Survive the Shift: {name} just clocked out
+  'surviveChase', // Survive the Shift: the final chase begins (ghosts can still win)
+  'poisonAma', // Pick Your Poison: the lone dissenter takes the floor (Against Medical Advice); {name}
+  'poisonFlip', // Pick Your Poison: the defence flipped someone; {name} is the defender
+  'sketchHint', // Sketch: a hint letter drops because nobody has it yet; {name} is the drawer
+  'sketchFirst', // Sketch: first correct guess; {name} guessed it
+  'didacticsHuddle', // Didactics: teams get a few seconds to argue before answers lock
+  'didacticsWager', // Didactics: the final wager is open
 ] as const;
 
 export type HostEvent = (typeof hostEvents)[number];
@@ -114,8 +129,42 @@ export type DidacticsHostEvent = 'didacticsIntro' | 'didacticsLightning' | 'dida
 /** Smaller moments across games (Stats, nags, lead changes, odd votes) have their own pack too. */
 export type MomentHostEvent = 'statCalled' | 'writeNag' | 'leadChange' | 'oneVote' | 'noVotes' | 'ghostRevive' | 'noDefender';
 
+/** The {vars} each event's lines may use (events not listed take none). */
+export const hostEventVars: Partial<Record<HostEvent, readonly string[]>> = {
+  winner: ['name'],
+  statCalled: ['name'],
+  leadChange: ['name'],
+  matchupWinner: ['name', 'answer'],
+  pathognomonic: ['name'],
+  lastPlace: ['name'],
+  comeback: ['name'],
+  surviveOut: ['name'],
+  poisonAma: ['name'],
+  poisonFlip: ['name'],
+  sketchHint: ['name'],
+  sketchFirst: ['name'],
+};
+
 /** Events whose lines take the player's {name}. */
-export const namedHostEvents: readonly HostEvent[] = ['winner', 'statCalled', 'leadChange'];
+export const namedHostEvents: readonly HostEvent[] = Object.keys(hostEventVars) as HostEvent[];
+
+/** The show's reaction lines live in their own pack. */
+export type ShowHostEvent =
+  | 'matchupWinner'
+  | 'pathognomonic'
+  | 'lastPlace'
+  | 'comeback'
+  | 'writingBanter'
+  | 'votingBanter'
+  | 'finaleReveal'
+  | 'surviveOut'
+  | 'surviveChase'
+  | 'poisonAma'
+  | 'poisonFlip'
+  | 'sketchHint'
+  | 'sketchFirst'
+  | 'didacticsHuddle'
+  | 'didacticsWager';
 
 /** The main host-lines pack covers every event except Didactics Mode's and the smaller moments. */
-export type HostLines = Record<Exclude<HostEvent, DidacticsHostEvent | MomentHostEvent>, string[]>;
+export type HostLines = Record<Exclude<HostEvent, DidacticsHostEvent | MomentHostEvent | ShowHostEvent>, string[]>;

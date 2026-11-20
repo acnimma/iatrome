@@ -56,7 +56,7 @@ const settings = z
   .partial();
 
 const hostCommand = z.discriminatedUnion('type', [
-  ...(['start', 'again', 'lobby', 'end', 'pause', 'resume', 'skip', 'lock', 'unlock'] as const).map((type) =>
+  ...(['start', 'again', 'lobby', 'end', 'pause', 'resume', 'skip', 'lock', 'unlock', 'close'] as const).map((type) =>
     z.object({ type: z.literal(type) }),
   ),
   z.object({ type: z.literal('kick'), id }),

@@ -3,7 +3,7 @@
  * Browsers only allow audio after a user gesture; call `unlockAudio()` from a click.
  */
 
-export type Sfx = 'pop' | 'tick' | 'whoosh' | 'reveal' | 'vote' | 'win' | 'consensus' | 'buzz' | 'drumroll' | 'lose' | 'correct';
+export type Sfx = 'pop' | 'tick' | 'whoosh' | 'reveal' | 'vote' | 'win' | 'consensus' | 'buzz' | 'drumroll' | 'lose' | 'correct' | 'beat' | 'pathognomonic' | 'lockin';
 
 const MUTE_KEY = 'iatrome:muted';
 let audio: AudioContext | null = null;
@@ -39,6 +39,11 @@ export function setMuted(muted: boolean) {
     localStorage.setItem(MUTE_KEY, muted ? '1' : '0');
   } catch {}
   if (master) master.gain.value = muted ? 0 : 0.55;
+}
+
+/** True until the browser lets us play sound (it needs one tap or click on the page first). */
+export function audioLocked(): boolean {
+  return !audio || audio.state !== 'running';
 }
 
 function tone(freq: number, start: number, duration: number, opts: { type?: OscillatorType; gain?: number; slide?: number } = {}) {
@@ -122,8 +127,137 @@ export function play(sfx: Sfx) {
       tone(G5, 0, 0.18, { type: 'triangle', gain: 0.18 });
       tone(E5 * 0.75, 0.15, 0.35, { type: 'triangle', gain: 0.18, slide: 0.9 });
       return;
-    case 'drumroll':
-      for (let i = 0; i < 14; i++) noise(i * 0.06, 0.05, { from: 150, to: 400, gain: 0.08 + i * 0.008 });
+    case 'beat':
+      // One monitor beep.
+      tone(988, 0, 0.09, { gain: 0.14 });
+      return;
+    case 'drumroll': {
+      // Beep's heart racing: monitor beeps speeding up and climbing, then the reveal lands.
+      let t = 0;
+      for (let i = 0; i < 12; i++) {
+        tone(880 + i * 22, t, 0.07, { gain: 0.08 + i * 0.008 });
+        t += Math.max(0.07, 0.24 - i * 0.016);
+      }
+      return;
+    }
+    case 'pathognomonic':
+      // The monitor alarm, then a fanfare: the room agreed, which never happens.
+      for (let i = 0; i < 3; i++) {
+        tone(1319, i * 0.18, 0.12, { type: 'square', gain: 0.07 });
+        tone(1046, i * 0.18 + 0.09, 0.12, { type: 'square', gain: 0.07 });
+      }
+      [C5, E5, G5, C6, E5 * 2, C6 * 1.5].forEach((f, i) => tone(f, 0.6 + i * 0.08, 0.5, { type: 'triangle', gain: 0.2 }));
+      noise(0.6, 0.9, { from: 3000, to: 9000, gain: 0.06 });
+      return;
+    case 'lockin':
+      tone(660, 0, 0.07, { type: 'triangle', gain: 0.16 });
+      tone(990, 0.06, 0.12, { type: 'triangle', gain: 0.16 });
       return;
   }
+}
+
+// ── Beep's voice ─────────────────────────────────────────────────────────────
+
+/** A pentatonic scale, so random chirps always sound musical rather than like a fax machine. */
+const CHIRP_NOTES = [880, 988, 1109, 1319, 1480, 1760];
+
+/**
+ * Beep talking: a monitor blip, then cute chirps, roughly one per few words of the line, ending
+ * on an upward swing for a question or a little dip otherwise. No words, all personality.
+ */
+export function beepTalk(text: string) {
+  if (isMuted() || !context()) return;
+  const words = text.trim().split(/\s+/).length;
+  const syllables = Math.max(3, Math.min(9, Math.round(words / 2.5)));
+  // The monitor blip first: Beep clearing its throat.
+  tone(1975, 0, 0.05, { gain: 0.07 });
+  let t = 0.11;
+  for (let i = 0; i < syllables; i++) {
+    const f = CHIRP_NOTES[Math.floor(Math.random() * CHIRP_NOTES.length)];
+    const length = 0.045 + Math.random() * 0.05;
+    tone(f, t, length, { type: i % 3 === 2 ? 'triangle' : 'sine', gain: 0.09, slide: 0.92 + Math.random() * 0.2 });
+    t += length + 0.025 + Math.random() * 0.03;
+  }
+  // The sign-off: up for a question, a little "boop" otherwise.
+  const question = /\?["”’]?$/.test(text.trim());
+  tone(question ? 1319 : 784, t + 0.02, 0.13, { type: 'sine', gain: 0.1, slide: question ? 1.35 : 0.8 });
+}
+
+// ── Music bed ────────────────────────────────────────────────────────────────
+
+/**
+ * A quiet, synthesized game-show bed under writing and voting: a walking bass, soft chords and a
+ * monitor blip on the beat. Scheduled a little ahead with WebAudio, so it never drifts.
+ */
+export type Mood = 'lobby' | 'think' | 'vote';
+const MOODS: Record<Mood, { bpm: number; gain: number }> = {
+  lobby: { bpm: 96, gain: 0.5 },
+  think: { bpm: 108, gain: 0.55 },
+  vote: { bpm: 120, gain: 0.6 },
+};
+// Am, F, C, G: two bars each, as semitone offsets from A2.
+const ROOTS = [0, -4, 3, -2];
+const CHORDS = [
+  [12, 15, 19],
+  [8, 12, 15],
+  [15, 19, 22],
+  [10, 14, 17],
+];
+const A2 = 110;
+const freq = (semis: number) => A2 * 2 ** (semis / 12);
+
+let music: { mood: Mood; timer: ReturnType<typeof setInterval>; next: number; step: number; bus: GainNode } | null = null;
+
+export function startMusic(mood: Mood) {
+  const ctx = context();
+  if (!ctx || !master) return;
+  if (music?.mood === mood) return;
+  stopMusic();
+  const bus = ctx.createGain();
+  bus.gain.value = 0.0001;
+  bus.gain.exponentialRampToValueAtTime(0.16 * MOODS[mood].gain, ctx.currentTime + 1.2);
+  bus.connect(master);
+  const state = { mood, next: ctx.currentTime + 0.1, step: 0, bus, timer: 0 as unknown as ReturnType<typeof setInterval> };
+  const beat = 60 / MOODS[mood].bpm;
+  const note = (f: number, t: number, d: number, type: OscillatorType, g: number) => {
+    const osc = ctx.createOscillator();
+    const env = ctx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(f, t);
+    env.gain.setValueAtTime(0.0001, t);
+    env.gain.exponentialRampToValueAtTime(g, t + 0.015);
+    env.gain.exponentialRampToValueAtTime(0.0001, t + d);
+    osc.connect(env).connect(bus);
+    osc.start(t);
+    osc.stop(t + d + 0.02);
+  };
+  state.timer = setInterval(() => {
+    // Schedule everything due in the next 300 ms.
+    while (state.next < ctx.currentTime + 0.3) {
+      const t = state.next;
+      const bar = Math.floor(state.step / 4) % 8;
+      const chord = Math.floor(bar / 2);
+      const beatInBar = state.step % 4;
+      // Walking bass on every beat: root, fifth, octave, fifth.
+      note(freq(ROOTS[chord] + [0, 7, 12, 7][beatInBar]), t, beat * 0.9, 'triangle', 0.5);
+      // Soft chord stabs on 2 and 4.
+      if (beatInBar === 1 || beatInBar === 3) for (const s of CHORDS[chord]) note(freq(ROOTS[chord] + s), t, beat * 0.5, 'sine', 0.12);
+      // The monitor blip on 1, Beep keeping time.
+      if (beatInBar === 0) note(1975, t, 0.05, 'sine', 0.06);
+      state.next += beat;
+      state.step += 1;
+    }
+  }, 100);
+  music = state;
+}
+
+export function stopMusic() {
+  if (!music || !audio) return;
+  const { bus, timer } = music;
+  clearInterval(timer);
+  bus.gain.cancelScheduledValues(audio.currentTime);
+  bus.gain.setValueAtTime(Math.max(0.0001, bus.gain.value), audio.currentTime);
+  bus.gain.exponentialRampToValueAtTime(0.0001, audio.currentTime + 0.6);
+  setTimeout(() => bus.disconnect(), 800);
+  music = null;
 }

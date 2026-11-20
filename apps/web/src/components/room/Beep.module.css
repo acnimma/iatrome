@@ -19,13 +19,39 @@
 }
 
 .eyes {
-  transform-origin: 60px 49px;
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
   animation: blink 4.6s infinite;
 }
 
-.talk {
-  animation: talk 0.22s ease-in-out infinite alternate;
-  transform-origin: 60px 62px;
+/* The ECG sweeps left one beat-tile (57 units) per heartbeat, forever. */
+.trace {
+  animation: sweep 1s linear infinite;
+}
+
+/* Talking: a taller trace, like a voice on the monitor. */
+.traceTalking {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: talk 0.24s ease-in-out infinite alternate;
+}
+
+.rate {
+  fill: #7fe0a8;
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.heart {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  animation: pulse 1s ease-out infinite;
+}
+
+.alarm {
+  animation: alarm 0.6s steps(2, jump-none) infinite;
 }
 
 .bubble {
@@ -73,6 +99,38 @@
 
 @keyframes talk {
   to {
-    transform: scaleY(1.9);
+    transform: scaleY(1.45);
+  }
+}
+
+@keyframes sweep {
+  to {
+    transform: translateX(-57px);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1.35);
+  }
+  40%,
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes alarm {
+  50% {
+    fill: #cc4e73;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .trace,
+  .traceTalking,
+  .heart,
+  .alarm,
+  .body {
+    animation: none;
   }
 }

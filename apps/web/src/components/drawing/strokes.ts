@@ -1,4 +1,12 @@
-import { DRAW_COLORS, DRAW_SIZES, type Stroke } from '@iatrome/game/client';
+import { DRAW_SIZES, type Stroke } from '@iatrome/game/client';
+
+/**
+ * The paint box: eight colours you can tell apart at a glance on a small phone, indexed like
+ * the engine's DRAW_COLORS (strokes store the index). Ink, red, orange, yellow, green, blue,
+ * purple, brown: enough for any organ, rash or bodily fluid the prompt demands.
+ */
+export const PALETTE = ['#1f2a4d', '#d93a4c', '#f08a24', '#f2c53d', '#3a9e4f', '#2f78d4', '#8d55cf', '#8a5a3c'] as const;
+export const PALETTE_NAMES = ['Ink', 'Red', 'Orange', 'Yellow', 'Green', 'Blue', 'Purple', 'Brown'] as const;
 import { getStroke } from 'perfect-freehand';
 
 /** perfect-freehand outline → SVG path. Simulated pressure makes finger strokes feel inked. */
@@ -17,7 +25,7 @@ export function strokePath(points: number[], sizeIndex: number, complete = true)
   return svgPath(outline);
 }
 
-export const strokeColor = (s: Pick<Stroke, 'c'>) => DRAW_COLORS[s.c] ?? DRAW_COLORS[0];
+export const strokeColor = (s: Pick<Stroke, 'c'>) => PALETTE[s.c] ?? PALETTE[0];
 
 function svgPath(points: number[][]): string {
   if (points.length < 4) return '';

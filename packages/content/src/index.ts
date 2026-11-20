@@ -1,4 +1,5 @@
 import { hostLines as coreHostLines } from './packs/host-lines';
+import { showHostLines } from './packs/host-lines-show';
 import { didacticsHostLines } from './packs/host-lines-didactics';
 import { momentHostLines } from './packs/host-lines-moments';
 import { quips as quipsNormal } from './packs/quips';
@@ -30,4 +31,4 @@ export const dilemmas = [...dilemmasNormal, ...dilemmasPro];
 export const sketchTerms = [...sketchTermsNormal, ...sketchTermsPro];
 export const trivia = [...triviaNormal, ...triviaPro];
 
-export const hostLines: Record<HostEvent, string[]> = { ...coreHostLines, ...didacticsHostLines, ...momentHostLines };
+export const hostLines: Record<HostEvent, string[]> = { ...coreHostLines, ...didacticsHostLines, ...momentHostLines, ...showHostLines };

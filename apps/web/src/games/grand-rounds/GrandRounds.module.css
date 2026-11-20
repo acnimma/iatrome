@@ -140,7 +140,7 @@
 }
 
 .doodle {
-  width: min(100%, 32vh);
+  width: min(100%, 38vh);
   margin: 0 auto;
 }
 
@@ -262,6 +262,18 @@
   background: var(--rose-kiss);
 }
 
+/* Holds an answer's place until the read-aloud reaches it, so nothing jumps around. */
+.answerSlot {
+  min-height: clamp(150px, 22vh, 250px);
+  border-radius: clamp(24px, 2.6vw, 34px);
+  border: 3px dashed var(--line);
+}
+
+/* Finale results: lists not yet revealed sit back until their turn. */
+.waiting {
+  opacity: 0.55;
+}
+
 /* ── The finale: everyone's list at once ─────────────── */
 .board {
   display: grid;
@@ -270,7 +282,8 @@
   width: 100%;
 }
 
-.board .answer {
+.board .answer,
+.board .answerSlot {
   min-height: 0;
   padding: clamp(14px, 1.6vw, 22px);
   gap: 10px;
@@ -479,4 +492,42 @@
 .revealMeta strong {
   color: var(--ink);
   font-size: 1rem;
+}
+
+/* How many of your finale votes sit on this list. */
+.stack {
+  position: absolute;
+  top: 8px;
+  left: 10px;
+  padding: 2px 10px;
+  border-radius: var(--radius-pill);
+  background: #fff;
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  font-weight: 900;
+  text-shadow: none;
+}
+
+/* Visual narration: each word lands at reading pace. */
+.wordOff {
+  opacity: 0;
+}
+
+.wordOn {
+  display: inline-block;
+  animation: landWord 260ms var(--ease-out) both;
+}
+
+@keyframes landWord {
+  from {
+    opacity: 0;
+    transform: translateY(0.25em) scale(0.92);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wordOn {
+    animation: none;
+  }
 }

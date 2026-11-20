@@ -10,9 +10,11 @@
 }
 
 .heading {
-  font-size: clamp(2rem, 4vw, 3.2rem);
-  font-weight: 900;
-  letter-spacing: -0.03em;
+  composes: blackText from '../../components/ui/Jelly.module.css';
+  font-family: var(--font-play);
+  font-size: clamp(2.2rem, 4.2vw, 3.4rem);
+  font-weight: 400;
+  text-align: center;
 }
 
 .teams {
@@ -350,4 +352,280 @@
   line-height: 1.3;
   letter-spacing: -0.01em;
   text-align: left;
+}
+
+/* ── Big rooms: up to eight teams ───────────────────── */
+.teams[data-many] .team {
+  padding: 14px;
+  gap: 8px;
+}
+
+.teams[data-many] .members {
+  max-height: 30vh;
+}
+
+.teams[data-many] .members li {
+  font-size: 0.95rem;
+}
+
+.teamStrip[data-many] {
+  gap: 8px;
+}
+
+.teamStrip[data-many] .teamChip {
+  min-width: 0;
+  padding: 6px 10px;
+  border-radius: 16px;
+  font-size: 0.8rem;
+}
+
+.standings[data-many] {
+  gap: 8px;
+}
+
+.standings[data-many] .standing {
+  padding: 5px 22px;
+}
+
+.standings[data-many] .rank {
+  font-size: 1.4rem;
+}
+
+.standings[data-many] .score {
+  font-size: 1.2rem;
+}
+
+.standings[data-many] .standingName {
+  font-size: 1.15rem;
+}
+
+/* ── Lightning: the stage gets a gold edge so it feels faster ─ */
+.stage[data-lightning] .question {
+  color: var(--ink);
+}
+
+.stage[data-lightning] .options {
+  padding: 10px;
+  border: 3px dashed var(--royal-gold);
+  border-radius: 38px;
+}
+
+/* ── Huddle ──────────────────────────────────────────── */
+.huddle {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 24px;
+  border: var(--outline);
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--royal-gold) 35%, var(--card));
+  box-shadow: var(--gloss), var(--shadow-md);
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.huddle strong {
+  font-family: var(--font-play);
+  font-size: 2rem;
+  font-weight: 400;
+}
+
+/* ── After the answer: the callout and the fact ─────── */
+.afterword {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.callout {
+  font-family: var(--font-play);
+  font-size: clamp(1.3rem, 2.2vw, 1.8rem);
+  text-align: center;
+  text-shadow: var(--play-raised);
+}
+
+.chipSwing {
+  padding: 2px 12px;
+  border-radius: var(--radius-pill);
+  background: #3f9d6e;
+  color: var(--card);
+  font-weight: 900;
+}
+
+.chipSwing.swingDown {
+  background: var(--rose-kiss);
+}
+
+/* ── Final wager ─────────────────────────────────────── */
+.wagerRules {
+  max-width: 60ch;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+  text-align: center;
+}
+
+.wagerGrid {
+  display: grid;
+  grid-template-columns: repeat(var(--cols, 2), minmax(0, 280px));
+  justify-content: center;
+  gap: 16px;
+  width: 100%;
+}
+
+.wagerCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 16px;
+  border: var(--outline);
+  border-radius: 28px;
+  background: color-mix(in srgb, var(--tone) 18%, var(--card));
+  box-shadow: var(--shadow-md);
+}
+
+.wagerScore {
+  font-size: 1.8rem;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+
+.captain {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 800;
+}
+
+.captain > span {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+}
+
+.captain small {
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.wagerState {
+  padding: 4px 14px;
+  border: var(--outline);
+  border-radius: var(--radius-pill);
+  background: var(--card);
+  font-weight: 800;
+  color: var(--ink-soft);
+}
+
+.wagerLocked {
+  background: var(--ink);
+  color: var(--card);
+}
+
+/* ── Phone: wager, swings, callout ──────────────────── */
+.wagerHead {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
+  font-weight: 600;
+}
+
+.wagerLabel {
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--rose-kiss);
+}
+
+.wagerTitle {
+  font-family: var(--font-play);
+  font-size: 1.9rem;
+  font-weight: 400;
+}
+
+.wagerOption {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.wagerOption strong {
+  font-family: var(--font-play);
+  font-size: 1.4rem;
+  font-weight: 400;
+}
+
+.wagerOption span {
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.swingLine {
+  align-self: center;
+  padding: 6px 16px;
+  border: var(--outline);
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, #3f9d6e 35%, var(--card));
+  font-weight: 900;
+}
+
+.swingLine.swingDown {
+  background: color-mix(in srgb, var(--rose-kiss) 35%, var(--card));
+}
+
+.phoneCallout {
+  font-weight: 800;
+  text-align: center;
+}
+
+/* Huddle and reveal add a row (the huddle bar, the callout and fact): tighten so nothing reaches Beep. */
+.stage[data-compact] {
+  gap: 14px;
+}
+
+.stage[data-compact] .top {
+  min-height: 52px;
+}
+
+.stage[data-compact] .question:not([data-long]) {
+  font-size: clamp(1.4rem, 2.5vw, 2.2rem);
+}
+
+.stage[data-compact] .question[data-long] {
+  font-size: clamp(1.05rem, 1.7vw, 1.35rem);
+}
+
+.stage[data-compact] .option {
+  min-height: 72px;
+  padding-block: 10px;
+}
+
+.stage[data-compact] .fact {
+  padding: 10px 18px;
+  font-size: clamp(1rem, 1.4vw, 1.15rem);
+}
+
+.wagerGrid[data-many] {
+  gap: 12px;
+}
+
+.wagerGrid[data-many] .wagerCard {
+  gap: 6px;
+  padding: 10px 12px;
+}
+
+.wagerGrid[data-many] .wagerScore {
+  font-size: 1.35rem;
+}
+
+.wagerGrid[data-many] .teamName {
+  padding: 4px 12px;
+  font-size: 1.05rem;
 }

@@ -9,7 +9,7 @@ import { Toggle } from '@/components/ui/Toggle';
 import { jelly } from '@/components/ui/jelly';
 import styles from './GameSettings.module.css';
 
-const GAME_ICONS: Record<GameId, IconName> = {
+export const GAME_ICONS: Record<GameId, IconName> = {
   didactics: 'game-didactics',
   'grand-rounds': 'game-rounds',
   sketch: 'game-sketch',
@@ -41,12 +41,17 @@ export function GamePicker({ value, onChange, compact, tiles }: { value: GameId;
             type="button"
             role="radio"
             aria-checked={picked}
-            className={`${styles.game} ${jelly(picked ? 'black' : 'pearl')}`}
+            className={`${styles.game} ${jelly('pearl')} ${picked ? styles.picked : ''}`}
             style={{ '--tone': GAME_TONES[id] } as React.CSSProperties}
             onClick={() => onChange(id)}
             whileTap={{ scale: 0.97 }}
             transition={{ type: 'spring', stiffness: 600, damping: 18 }}
           >
+            {picked && (
+              <span className={styles.check} aria-hidden>
+                <Icon name="check" size={16} />
+              </span>
+            )}
             <span className={styles.icon}>
               <Icon name={GAME_ICONS[id]} size={compact ? 30 : 38} />
             </span>
@@ -87,11 +92,14 @@ export function ScreenPicker({ value, onChange }: { value: ScreenChoice; onChang
   );
 }
 
+/** One name for the Normal/Pro choice, wherever it shows up. */
+export const CROWD_LABEL = 'Crowd';
+
 /** Who it's for. */
 export function ModePicker({ value, onChange }: { value: ContentMode; onChange: (v: ContentMode) => void }) {
   return (
     <div className={styles.choice}>
-      <Segmented label="Who’s playing" options={MODES} value={value} onChange={onChange} />
+      <Segmented label={CROWD_LABEL} options={MODES} value={value} onChange={onChange} />
       <p className={styles.blurb}>{MODES.find((m) => m.id === value)?.blurb}</p>
     </div>
   );
@@ -101,12 +109,4 @@ export function TimeToggle({ settings, onChange }: { settings: RoomSettings; onC
   return <Toggle label="More time" hint="Slower timers. Good for video calls." checked={settings.extendedTimers} onChange={(extendedTimers) => onChange({ extendedTimers })} />;
 }
 
-/** Who it's for and how much time: the lobby's settings dialog. */
-export function RoomOptions({ settings, onChange }: { settings: RoomSettings; onChange: (patch: Partial<RoomSettings>) => void }) {
-  return (
-    <div className={styles.options}>
-      <ModePicker value={settings.mode} onChange={(mode) => onChange({ mode })} />
-      <TimeToggle settings={settings} onChange={onChange} />
-    </div>
-  );
-}
+

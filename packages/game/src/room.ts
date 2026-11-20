@@ -136,7 +136,9 @@ export type HostCommand =
   | { type: 'kick'; id: string }
   | { type: 'ban'; id: string }
   | { type: 'hide'; target: string }
-  | { type: 'settings'; settings: Partial<RoomSettings> };
+  | { type: 'settings'; settings: Partial<RoomSettings> }
+  /** End the room for everyone (handled by the server: it disconnects everyone and deletes the room). */
+  | { type: 'close' };
 
 /** Returns an error message for the host, if any. */
 export function hostCommand(room: RoomState, cmd: HostCommand, now: number): string | void {
@@ -186,6 +188,8 @@ export function hostCommand(room: RoomState, cmd: HostCommand, now: number): str
     }
     case 'hide':
       if (room.game) games[room.game.game].hide?.(room.game, ctx, cmd.target);
+      return;
+    case 'close':
       return;
     case 'settings':
       room.settings = sanitizeSettings({ ...room.settings, ...cmd.settings }, room.devMode);
@@ -508,6 +512,6 @@ export function referencedDrawings(view: RoomView): string[] {
   const g = view.game;
   if (!g) return [];
   if (g.game === 'grand-rounds') return (g.matchup?.entries ?? []).map((e) => e.drawingId).filter((x): x is string => Boolean(x));
-  if (g.game === 'sketch') return g.drawingId ? [g.drawingId] : [];
+  if (g.game === 'sketch') return [...(g.drawingId ? [g.drawingId] : []), ...(g.gallery ?? []).map((x) => x.drawingId)];
   return [];
 }

@@ -28,7 +28,7 @@
   font-weight: 500;
   color: var(--ink-soft);
   opacity: 0.75;
-  animation: settle 0.9s var(--ease-out) 0.6s both;
+  animation: settle 0.6s var(--ease-out) 0.1s both;
 }
 
 .tagline {
@@ -37,7 +37,7 @@
   letter-spacing: -0.01em;
   color: var(--ink-soft);
   text-align: center;
-  animation: settle 0.9s var(--ease-out) 0.7s both;
+  animation: settle 0.6s var(--ease-out) 0.15s both;
 }
 
 /* Same size and width as "Join game", in white jelly so joining stays the main action. */
@@ -45,7 +45,6 @@
   width: min(420px, 100%);
   margin-bottom: auto; /* with the logo's auto margin: the whole stack stays centred */
   text-decoration: none;
-  animation: settle 0.9s var(--ease-out) 1s both;
 }
 
 

@@ -55,3 +55,78 @@
   opacity: 0.45;
   cursor: not-allowed;
 }
+
+/*
+ * Disabled is almost always "waiting on the room" (more players, everyone's answer), so it
+ * turns to quiet pearl jelly with soft ink: clearly not pressable, never greyed-out black.
+ */
+.button:disabled {
+  --j-body: #f6f1ea;
+  --j-hi: #fffdf9;
+  --j-low: #e9e2d7;
+  --j-ink: var(--ink-soft);
+  --j-glow-opacity: 0;
+  --j-shine: 0.9;
+  --j-edge: rgb(255 255 255 / 0.9);
+  --j-text-shadow: none;
+  opacity: 1;
+  cursor: default;
+  box-shadow:
+    inset 0 0 0 1.5px rgb(31 42 77 / 0.1),
+    inset 0 -6px 10px -6px rgb(120 104 84 / 0.22),
+    0 8px 18px -12px rgb(14 16 27 / 0.22);
+}
+
+.ghost:disabled {
+  background: transparent;
+  box-shadow: none;
+  opacity: 0.5;
+}
+
+/* Waiting: a slow breath and three dots, so it reads as "in progress". */
+.waiting {
+  animation: breathe 2.4s ease-in-out infinite;
+}
+
+.dots {
+  display: inline-flex;
+  gap: 4px;
+  margin-left: -2px;
+}
+
+.dots i {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.25;
+  animation: dot 1.2s ease-in-out infinite;
+}
+
+.dots i:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.dots i:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes dot {
+  40% {
+    opacity: 0.9;
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes breathe {
+  50% {
+    filter: brightness(0.96);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .waiting,
+  .dots i {
+    animation: none;
+  }
+}

@@ -1,11 +1,14 @@
 .trigger {
   composes: jelly black from '../ui/Jelly.module.css';
-  display: grid;
-  place-items: center;
-  width: 42px;
-  height: 42px;
-  padding: 0;
-  border-radius: 50%;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  height: 40px;
+  padding: 0 14px 0 9px;
+  border-radius: var(--radius-pill);
+  font-size: 0.85rem;
+  font-weight: 800;
 }
 
 .scrim {
@@ -54,7 +57,7 @@
 }
 
 .action {
-  composes: jelly black from '../ui/Jelly.module.css';
+  composes: jelly pearl from '../ui/Jelly.module.css';
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -65,8 +68,23 @@
   font-weight: 800;
 }
 
-.danger {
-  composes: rose from '../ui/Jelly.module.css';
+/* Pause/skip are routine: pearl. The one-way doors are quieter still, and ask twice. */
+.quiet {
+  min-height: 48px;
+  padding: 10px 14px;
+  border: 2px solid var(--line);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--ink-soft);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+/* Armed: one more tap does it. Rose text and ring, still not a big red slab. */
+.armed {
+  border-color: var(--rose-kiss);
+  color: var(--rose-kiss);
+  box-shadow: inset 0 0 0 2px var(--rose-kiss);
 }
 
 .label {

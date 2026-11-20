@@ -15,95 +15,104 @@ import { AdSlot } from '@/components/ads/AdSlot';
 import styles from './Podium.module.css';
 import { Icon } from '@/components/icons/Icon';
 
-/** Left to right 2nd, 1st, 3rd, revealed 3rd, then 2nd, then 1st (when Beep calls the winner). */
+/** When each place is called (seconds): 3rd, then 2nd, then a drumroll, then the winner. */
+const WINNER_AT = REVEAL.podium / 1000;
+/** Left to right 2nd, 1st, 3rd, like every podium since 1896. Heights in design pixels (stage is 1440x900). */
 const PLACES = [
-  { place: 2, height: '62%', medal: 'medal', tone: 'blue' as const, at: 1.8 },
-  { place: 1, height: '86%', medal: 'trophy', tone: 'gold' as const, at: REVEAL.podium / 1000 - 0.2 },
-  { place: 3, height: '46%', medal: 'medal', tone: 'rose' as const, at: 0.8 },
+  { place: 2, step: 185, avatar: 92, tone: 'blue' as const, at: 1.9 },
+  { place: 1, step: 255, avatar: 116, tone: 'gold' as const, at: WINNER_AT },
+  { place: 3, step: 140, avatar: 84, tone: 'rose' as const, at: 1.0 },
 ];
 
-/** Final standings: podium, the rest, and the night's highlights. */
+/** Final standings: a proper podium (winner called last), then everyone else and the night's highlights. */
 export function Podium({ view, result }: { view: RoomView; result: GameResult }) {
   const room = useRoom();
   const people = usePeople(view);
   if (result.teams) return <TeamPodium view={view} result={result} />;
   const byRank = (rank: number) => result.standings.filter((s) => s.rank === rank);
   const rest = result.standings.filter((s) => s.rank > 3);
+  const after = WINNER_AT + 0.9;
 
   return (
     <div className={styles.podium}>
       <Later ms={REVEAL.podium}>
-        <Confetti />
+        <Confetti pieces={220} />
       </Later>
       <span className={styles.eyebrow}>{gameInfo[result.game].title} · final results</span>
-      <div className={styles.steps}>
-        {PLACES.map(({ place, height, medal, tone, at }, i) => {
-          const winners = byRank(place);
-          return (
-            <div key={place} className={styles.column}>
-              <div className={styles.winners}>
-                {winners.map((w, j) => (
-                  <motion.div
-                    key={w.playerId}
-                    className={styles.winner}
-                    initial={{ y: -80, opacity: 0, scale: 0.5 }}
-                    animate={{ y: 0, opacity: 1, scale: 1 }}
-                    transition={{ delay: at + j * 0.15, type: 'spring', stiffness: 300, damping: 14 }}
-                  >
-                    <Avatar avatar={w.avatar} size={place === 1 ? 96 : 72} />
-                    <span className={styles.name}>{w.name}</span>
-                    {w.note ? <span className={styles.score}>{w.note}</span> : <CountUp className={styles.score} value={w.score} duration={1400} />}
-                  </motion.div>
-                ))}
+      <div className={styles.stage}>
+        <aside className={styles.side}>
+          {result.highlights.filter((_, i) => i % 2 === 0).map((h, i) => (
+            <Highlight key={h.title} h={h} people={people} delay={after + i * 0.5} tilt={-1} />
+          ))}
+        </aside>
+        {/* The winner's spotlight: off until their name is called. */}
+        <motion.div
+          className={styles.spotlight}
+          aria-hidden
+          initial={{ opacity: 0, scale: 0.6 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: WINNER_AT - 0.1, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+        />
+        <div className={styles.steps}>
+          {PLACES.map(({ place, step, avatar, tone, at }, i) => {
+            const winners = byRank(place);
+            return (
+              <div key={place} className={`${styles.column} ${place === 1 ? styles.first : ''} ${winners.length > 1 ? styles.tied : ''}`}>
+                <div className={styles.winners}>
+                  {place === 1 && winners.length > 0 && <Drumroll until={at} />}
+                  {winners.map((w, j) => (
+                    <motion.div
+                      key={w.playerId}
+                      className={styles.winner}
+                      initial={{ y: -120, opacity: 0, scale: 0.4 }}
+                      animate={{ y: 0, opacity: 1, scale: 1 }}
+                      transition={{ delay: at + j * 0.15, type: 'spring', stiffness: place === 1 ? 260 : 320, damping: place === 1 ? 11 : 15 }}
+                    >
+                      <Avatar avatar={w.avatar} size={Math.round(avatar * (winners.length > 2 ? 0.56 : winners.length > 1 ? 0.72 : 1))} />
+                      <span className={styles.name}>{w.name}</span>
+                      {w.note ? <span className={styles.score}>{w.note}</span> : <CountUp className={styles.score} value={w.score} duration={1400} />}
+                    </motion.div>
+                  ))}
+                </div>
+                <motion.div
+                  className={`${styles.step} ${jelly(tone)}`}
+                  initial={{ height: 0 }}
+                  animate={{ height: step }}
+                  transition={{ delay: 0.15 + i * 0.12, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+                >
+                  <span className={styles.rank}>{place}</span>
+                  <span className={styles.medal}>
+                    <Icon name={place === 1 ? 'trophy' : 'medal'} size={place === 1 ? 52 : 40} />
+                  </span>
+                </motion.div>
               </div>
-              <motion.div
-                className={`${styles.step} ${jelly(tone)}`}
-                initial={{ height: 0 }}
-                animate={{ height }}
-                transition={{ delay: 0.2 + i * 0.15, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-              >
-                <span className={styles.medal}>
-                  <Icon name={medal as 'medal' | 'trophy'} size={56} />
-                </span>
-              </motion.div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
+        <aside className={styles.side}>
+          {result.highlights.filter((_, i) => i % 2 === 1).map((h, i) => (
+            <Highlight key={h.title} h={h} people={people} delay={after + 0.25 + i * 0.5} tilt={1} />
+          ))}
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: after + 0.8 }}>
+            <StatHolders view={view} />
+          </motion.div>
+        </aside>
       </div>
 
       {rest.length > 0 && (
-        <ol className={styles.rest}>
+        <motion.ol className={styles.rest} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }}>
           {rest.map((s) => (
             <li key={s.playerId}>
-              <span>{s.rank}.</span> {s.name} <strong>{s.note ?? s.score.toLocaleString()}</strong>
+              <span className={styles.restRank}>{s.rank}</span>
+              <Avatar avatar={s.avatar} size={28} />
+              <span className={styles.restName}>{s.name}</span>
+              <strong>{s.note ?? s.score.toLocaleString()}</strong>
             </li>
           ))}
-        </ol>
+        </motion.ol>
       )}
 
-      {result.highlights.length > 0 && (
-        <div className={styles.highlights}>
-          {result.highlights.map((h, i) => (
-            <motion.div
-              key={h.title}
-              className={styles.highlight}
-              initial={{ y: 30, opacity: 0, rotate: i % 2 ? 2 : -2 }}
-              animate={{ y: 0, opacity: 1, rotate: i % 2 ? 1 : -1 }}
-              transition={{ delay: 4.2 + i * 0.25, type: 'spring', stiffness: 260, damping: 18 }}
-            >
-              <span className={styles.highlightTitle}>{h.title}</span>
-              <span className={styles.highlightWho}>{h.playerId ? nameOf(people, h.playerId) : 'Beep'}</span>
-              <span className={styles.highlightDetail}>{h.detail}</span>
-            </motion.div>
-          ))}
-        </div>
-      )}
-
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 4.8 }}>
-        <StatHolders view={view} />
-      </motion.div>
-
-      <motion.div className={styles.actions} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 5 }}>
+      <motion.div className={styles.actions} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: after + 0.8 }}>
         <Button size="lg" onClick={() => room.host({ type: 'again' })}>
           Play again
         </Button>
@@ -116,7 +125,47 @@ export function Podium({ view, result }: { view: RoomView; result: GameResult })
   );
 }
 
+/** One of the night's awards, pinned beside the podium like a card on a corkboard. */
+function Highlight({ h, people, delay, tilt }: { h: GameResult['highlights'][number]; people: ReturnType<typeof usePeople>; delay: number; tilt: number }) {
+  return (
+    <motion.div
+      className={styles.highlight}
+      initial={{ y: 30, opacity: 0, rotate: tilt * 3 }}
+      animate={{ y: 0, opacity: 1, rotate: tilt }}
+      transition={{ delay, type: 'spring', stiffness: 260, damping: 18 }}
+    >
+      <span className={styles.highlightTitle}>{h.title}</span>
+      <span className={styles.highlightWho}>{h.playerId ? nameOf(people, h.playerId) : 'Beep'}</span>
+      <span className={styles.highlightDetail}>{h.detail}</span>
+    </motion.div>
+  );
+}
+
+/** The empty top spot before the winner is called: a pulsing question mark, not a hole. */
+function Drumroll({ until }: { until: number }) {
+  return (
+    <motion.div
+      className={styles.mystery}
+      aria-hidden
+      initial={{ opacity: 0, scale: 0.6 }}
+      animate={{ opacity: [0, 1, 1, 0], scale: [0.6, 1, 1.08, 0.4] }}
+      transition={{ duration: until, times: [0, 0.12, 0.92, 1], ease: 'easeInOut' }}
+    >
+      <motion.span animate={{ rotate: [-6, 6, -6] }} transition={{ repeat: Infinity, duration: 0.5, ease: 'easeInOut' }}>
+        ?
+      </motion.span>
+    </motion.div>
+  );
+}
+
 /** Team games: the teams take the podium, with everyone on them. */
+/** 1st, 2nd, 3rd, 4th... 11th, 12th, 13th... 21st. */
+const ordinal = (n: number) => {
+  const tens = n % 100;
+  const suffix = tens >= 11 && tens <= 13 ? 'th' : (['th', 'st', 'nd', 'rd'][n % 10] ?? 'th');
+  return `${n}${suffix}`;
+};
+
 function TeamPodium({ view, result }: { view: RoomView; result: GameResult }) {
   const room = useRoom();
   const people = usePeople(view);
@@ -131,7 +180,7 @@ function TeamPodium({ view, result }: { view: RoomView; result: GameResult }) {
       <motion.h2 className={styles.teamWinner} initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring', stiffness: 260, damping: 14, delay: REVEAL.podium / 1000 }}>
         {teams.filter((t) => t.rank === 1).map((t) => t.name).join(' & ')} win!
       </motion.h2>
-      <ol className={styles.teamList}>
+      <ol className={`${styles.teamList} ${teams.length > 5 ? styles.teamListMany : ''}`}>
         {teams.map((team, i) => (
           <motion.li
             key={team.name}
@@ -141,7 +190,7 @@ function TeamPodium({ view, result }: { view: RoomView; result: GameResult }) {
             animate={{ x: 0, opacity: 1 }}
             transition={{ delay: 0.7 + i * 0.2, type: 'spring', stiffness: 280, damping: 22 }}
           >
-            <span className={styles.teamMedal}>{['1st', '2nd', '3rd', '4th'][team.rank - 1]}</span>
+            <span className={styles.teamMedal}>{ordinal(team.rank)}</span>
             <span className={styles.teamInfo}>
               <span className={styles.teamTitle}>{team.name}</span>
               <span className={styles.teamMembers}>

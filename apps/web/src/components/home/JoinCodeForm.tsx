@@ -22,7 +22,7 @@ export function JoinCodeForm() {
   };
 
   return (
-    <motion.form className={styles.form} onSubmit={go} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.85, duration: 0.6, ease: [0.22, 1, 0.36, 1] }}>
+    <form className={styles.form} onSubmit={go}>
       <label className={styles.label} htmlFor="room-code">
         Enter a room code
       </label>
@@ -55,6 +55,6 @@ export function JoinCodeForm() {
       <Button size="xl" type="submit" disabled={!complete} block>
         Join game
       </Button>
-    </motion.form>
+    </form>
   );
 }

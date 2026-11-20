@@ -27,13 +27,19 @@ export function PhoneMessage({ icon, title, children }: { icon?: IconName; title
   );
 }
 
-/** The prompt at the top of a phone screen, with the timer. */
+/** How long a prompt is, for type that fits it: bubbly when short, smaller, then the body font. */
+export const promptLength = (text: string) => (text.length > 140 ? 'long' : text.length > 90 ? 'medium' : undefined);
+
+/** The prompt at the top of a phone screen, with the timer. Long prompts switch to the body font by themselves. */
 export function PhonePrompt({ label, prompt, phase, pausedAt }: { label?: string; prompt: string; phase?: Phase; pausedAt?: number | null }) {
+  const length = promptLength(prompt);
   return (
     <div className={styles.prompt}>
       <div className={styles.promptText}>
         {label && <span className={styles.label}>{label}</span>}
-        <p data-long={prompt.length > 140 || undefined}>{prompt}</p>
+        <p data-long={length === 'long' || undefined} data-medium={length === 'medium' || undefined}>
+          {prompt}
+        </p>
       </div>
       {phase && <TimerRing phase={phase} pausedAt={pausedAt ?? null} size={52} />}
     </div>
@@ -42,6 +48,19 @@ export function PhonePrompt({ label, prompt, phase, pausedAt }: { label?: string
 
 export function PhoneStack({ children }: { children: React.ReactNode }) {
   return <div className={styles.stack}>{children}</div>;
+}
+
+/**
+ * A list of Choices. `stack` (default): full-width rows. `grid`: two columns of shorter tiles,
+ * so four trivia answers fit under a long question without scrolling. Text in the tiles
+ * shrinks to fit; answers over ~40 characters read better stacked.
+ */
+export function Choices({ layout = 'stack', children, label }: { layout?: 'stack' | 'grid'; children: React.ReactNode; label?: string }) {
+  return (
+    <div className={layout === 'grid' ? styles.choiceGrid : styles.choiceStack} role="group" aria-label={label}>
+      {children}
+    </div>
+  );
 }
 
 /** A big tappable choice (votes, trivia options, would-you-rathers). */
@@ -53,6 +72,7 @@ export function Choice({
   tone = 'pearl',
   disabled,
   correct,
+  compact,
 }: {
   children: React.ReactNode;
   onClick?: () => void;
@@ -61,11 +81,15 @@ export function Choice({
   tone?: JellyTone;
   disabled?: boolean;
   correct?: boolean;
+  /** Shorter and smaller type (inside a grid of Choices this is automatic). */
+  compact?: boolean;
 }) {
+  const long = typeof children === 'string' && children.length > 48;
   return (
     <motion.button
       type="button"
-      className={`${styles.choice} ${jelly(correct ? 'green' : tone)} ${picked ? styles.picked : ''} ${dimmed ? styles.dimmed : ''}`}
+      className={`${styles.choice} ${jelly(correct ? 'green' : tone)} ${picked ? styles.picked : ''} ${dimmed ? styles.dimmed : ''} ${compact ? styles.compact : ''}`}
+      data-long={long || undefined}
       onClick={() => {
         if (disabled) return;
         play('pop');

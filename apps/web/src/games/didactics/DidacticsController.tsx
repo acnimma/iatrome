@@ -1,14 +1,15 @@
 'use client';
 
-import type { DidacticsView, RoomView } from '@iatrome/game/client';
+import { DIDACTICS, type DidacticsView, type RoomView } from '@iatrome/game/client';
 import { useRoom } from '@/realtime/use-room';
 import { Avatar } from '@/components/ui/Avatar';
 import { AnswerCard, Choice, PhoneMessage, PhonePrompt, PhoneStack } from '@/components/controller/Phone';
-import { ReactionBar, usePeople } from '@/components/room/RoomBits';
+import { ReactionBar, nameOf, usePeople } from '@/components/room/RoomBits';
 import { StatButton } from '@/components/room/Stat';
 import { haptic } from '@/lib/haptics';
 import { teamTone } from './teams';
 import { ANSWER_TONES, AnswerLetter, LETTERS } from '@/components/room/answers';
+import { calloutText, nextUp, pctLabel, swingText } from './copy';
 import styles from './Didactics.module.css';
 
 export function DidacticsController({ view, game }: { view: RoomView; game: DidacticsView }) {
@@ -26,7 +27,7 @@ export function DidacticsController({ view, game }: { view: RoomView; game: Dida
     case 'intro':
       return (
         <PhoneMessage icon="game-didactics" title="Didactics Mode">
-          You’ll be put on a team. Answer on your phone, your team scores together.
+          You’ll be put on a team. Answer on your phone, then huddle: you see your team’s split and can switch once.
         </PhoneMessage>
       );
     case 'teams':
@@ -44,20 +45,31 @@ export function DidacticsController({ view, game }: { view: RoomView; game: Dida
           </div>
         </PhoneStack>
       ) : null;
+    case 'lightning':
+      return (
+        <PhoneMessage icon="hourglass" title="Lightning round">
+          {DIDACTICS.lightningQuestion / 1000} seconds a question. Double points. No huddle, so no committee.
+        </PhoneMessage>
+      );
+    case 'wager':
+      return <Wager view={view} game={game} badge={badge} />;
     case 'question':
+    case 'huddle': {
+      const huddle = game.phase.name === 'huddle';
+      const label = huddle ? 'Huddle · switch once' : game.final ? 'Final question · wagered' : game.lightning ? 'Lightning · double points' : `Question ${game.number} of ${game.total}`;
       return (
         <PhoneStack>
           {badge}
-          <PhonePrompt label={game.lightning ? 'Double points' : `Question ${game.number} of ${game.total}`} prompt={game.question ?? ''} phase={game.phase} pausedAt={view.pausedAt} />
-          <StatButton view={view} label="Call your Stat: your answer counts twice" />
+          <PhonePrompt label={label} prompt={game.question ?? ''} phase={game.phase} pausedAt={view.pausedAt} />
+          {!huddle && <StatButton view={view} label="Call your Stat: your answer counts twice" />}
           {game.options.map((option, i) => (
             <Choice
               key={i}
               tone={ANSWER_TONES[i]}
               picked={game.myAnswer === i}
-              dimmed={game.mySwitched && game.myAnswer !== i}
+              dimmed={!game.canPick && game.myAnswer !== i}
               onClick={() => {
-                if (game.myAnswer !== null && (game.mySwitched || game.myAnswer === i)) return;
+                if (!game.canPick || game.myAnswer === i) return;
                 haptic('success');
                 room.command({ type: 'pick-option', option: i });
               }}
@@ -71,13 +83,22 @@ export function DidacticsController({ view, game }: { view: RoomView; game: Dida
               )}
             </Choice>
           ))}
-          {game.myAnswer !== null && (
-            <p className={styles.locked}>
-              {game.mySwitched ? 'Switched. Final answer.' : 'Locked in. That’s your team so far. You can switch once.'}
-            </p>
-          )}
+          <p className={styles.locked}>
+            {huddle
+              ? game.myAnswer === null
+                ? 'You missed the clock. Answer now, no speed bonus.'
+                : game.mySwitched
+                  ? 'Switched. Final answer.'
+                  : 'That’s your team’s split. Argue, then switch once if they talk you into it.'
+              : game.myAnswer !== null
+                ? game.lightning
+                  ? 'Locked in. No huddle in the lightning round.'
+                  : 'Locked in. Huddle once everyone’s answered.'
+                : ''}
+          </p>
         </PhoneStack>
       );
+    }
     case 'reveal': {
       const right = game.myAnswer !== null && game.myAnswer === game.answer;
       const result = team && game.last?.perTeam[team.id];
@@ -88,6 +109,12 @@ export function DidacticsController({ view, game }: { view: RoomView; game: Dida
             The answer was {LETTERS[game.answer ?? 0]}: {game.options[game.answer ?? 0]}
             {result ? `. Your team: ${result.right} of ${result.of} right, +${result.points}.` : '.'}
           </PhoneMessage>
+          {result?.wager && (
+            <p className={`${styles.swingLine} ${result.wager.swing < 0 ? styles.swingDown : ''}`}>
+              {pctLabel(result.wager.pct)} wagered: {swingText(result.wager.swing)}
+            </p>
+          )}
+          {!view.screen && game.callout && <p className={styles.phoneCallout}>{calloutText(game.callout, game.options)}</p>}
           {!view.screen && game.fact && <AnswerCard fact={game.fact} />}
           <ReactionBar />
         </PhoneStack>
@@ -96,11 +123,13 @@ export function DidacticsController({ view, game }: { view: RoomView; game: Dida
     case 'standings': {
       const ranked = game.teams.slice().sort((a, b) => b.score - a.score);
       const place = team ? ranked.findIndex((t) => t.id === team.id) + 1 : 0;
+      const next = nextUp(game);
       return (
         <PhoneStack>
           {badge}
           <PhoneMessage icon={place === 1 ? 'trophy' : 'list'} title={place === 1 ? 'Your team is winning' : place ? `Your team is #${place}` : 'Scores are up'}>
             {team ? `${team.score.toLocaleString()} points so far.` : view.screen ? 'Check the big screen.' : ''}
+            {next ? ` Next: ${next}.` : ''}
           </PhoneMessage>
           {!view.screen && (
             <ol className={styles.phoneStandings}>
@@ -120,4 +149,44 @@ export function DidacticsController({ view, game }: { view: RoomView; game: Dida
     default:
       return null;
   }
+}
+
+/** The final wager: the captain bets a share of the team's score; everyone else watches them sweat. */
+function Wager({ view, game, badge }: { view: RoomView; game: DidacticsView; badge: React.ReactNode }) {
+  const room = useRoom();
+  const people = usePeople(view);
+  const mine = game.myTeam ? game.wager?.teams[game.myTeam] : undefined;
+  if (!mine) return <PhoneMessage icon="scales" title="Final wager">The captains are betting. Stand back.</PhoneMessage>;
+  const captain = nameOf(people, mine.captain);
+  const hard = ['', 'an easy one', 'a medium one', 'a hard one'][game.wager?.difficulty ?? 2];
+  if (!game.youCaptain)
+    return (
+      <PhoneStack>
+        {badge}
+        <PhoneMessage icon="scales" title={`${captain} is betting`}>
+          {mine.pct === null ? `Your captain is deciding how much of your ${mine.stake.toLocaleString()} to bet on the final question. It’s ${hard}.` : `${captain} bet ${pctLabel(mine.pct)}. Your team’s majority answer decides it.`}
+        </PhoneMessage>
+        <ReactionBar />
+      </PhoneStack>
+    );
+  return (
+    <PhoneStack>
+      {badge}
+      <div className={styles.wagerHead}>
+        <span className={styles.wagerLabel}>You’re the captain</span>
+        <h2 className={styles.wagerTitle}>Bet on the final</h2>
+        <p>
+          It’s {hard}. Your team’s majority answer decides it. Right adds the bet, wrong takes it away.
+        </p>
+      </div>
+      {(game.wager?.options ?? []).map((pct, i) => (
+        <Choice key={pct} tone={(['pearl', 'sky', 'gold', 'rose'] as const)[i]} picked={mine.pct === pct} onClick={() => room.command({ type: 'pick-option', option: i })}>
+          <span className={styles.wagerOption}>
+            <strong>{pctLabel(pct)}</strong>
+            <span>{pct === 0 ? 'Play it safe' : `${Math.round((pct * mine.stake) / 10) * 10} points`}</span>
+          </span>
+        </Choice>
+      ))}
+    </PhoneStack>
+  );
 }

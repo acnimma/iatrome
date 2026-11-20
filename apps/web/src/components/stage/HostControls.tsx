@@ -45,11 +45,10 @@ export function HostControls({ view, prefs, onPrefs }: { view: RoomView; prefs: 
             )}
             {view.game?.game === 'poison' && view.game.phase.name === 'defence' && (
               <button type="button" className={styles.action} onClick={() => room.host({ type: 'hide', target: 'defence' })}>
-                Hide this defence
+                Cut the mic
               </button>
             )}
             <Toggle label="Sound" checked={!prefs.muted} onChange={(on) => onPrefs({ muted: !on })} />
-            <Toggle label="Read prompts aloud" hint="Great when the stage is shared on Zoom." checked={prefs.readAloud} onChange={(readAloud) => onPrefs({ readAloud })} />
             <Toggle label="Hide room code" hint="Streaming? Keep the code off screen." checked={prefs.hideCode} onChange={(hideCode) => onPrefs({ hideCode })} />
             <Toggle
               label="Lock room"

@@ -1,7 +1,8 @@
-export const ROUND_NAMES = ['Quips', 'Quips & Doodles', 'The Differential'] as const;
+/** The show's three acts, named like a day in a teaching hospital. */
+export const ROUND_NAMES = ['Morning Rounds', 'Consults', 'The Differential'] as const;
 
 export const ROUND_BLURBS = [
-  'Two prompts each. Two answers face off. The room decides.',
-  'Now with drawings. Double points, so anyone can come back.',
-  'Three answers each, revealed one at a time. Four times the points.',
+  'Two prompts each. Two answers face off. The room decides who presented better.',
+  'Words and drawings. Double points, so the bottom of the board can still recover.',
+  'One prompt for everyone. Three votes each, stack them if you like. Four times the points.',
 ] as const;

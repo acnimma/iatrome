@@ -1,4 +1,4 @@
-// Original content written for iatrome. Beep's lines for smaller moments across games.
+// Original content written for iatrome. Beep (the bedside monitor hosting the show) for smaller moments across games.
 import type { MomentHostEvent } from '../types';
 
 export const momentHostLines: Record<MomentHostEvent, string[]> = {
@@ -20,31 +20,31 @@ export const momentHostLines: Record<MomentHostEvent, string[]> = {
   // twenty seconds of writing left and someone hasn't finished
   writeNag: [
     'Twenty seconds. Type like it’s 6:59 and handover is at 7.',
-    'Some of you are still writing. I can see you. I’m a pager. I see everything.',
+    'Some of you are still writing. I can tell. Your heart rate is typing too.',
     'Twenty seconds left. Perfection is not on the menu. Something is.',
     'Wrap it up. Any answer beats a blank one. That is the entire scoring system.',
     'Twenty seconds. This is not the time to start a second draft.',
     'Still typing? Bold. The clock is not.',
     'Twenty seconds. Commit to something. Anything. Like a resident at 4 a.m.',
     'Clock’s nearly out. Your first idea was fine. Probably.',
-    'If you’re stuck, Beep’s answer is right there. It’s half points and zero dignity.',
+    'If you’re stuck, my ready-made answer is right there. Half points, zero dignity.',
     'Twenty seconds. Type now, regret later. Standard procedure.',
     'Some phones are suspiciously quiet. Twenty seconds.',
     'The timer doesn’t care about your creative process. Twenty seconds.',
   ],
   // the scoreboard has a new leader since the round began; {name} is the new leader
   leadChange: [
-    'New leader: {name}. Nobody saw it coming. I did. I’m on the chart.',
+    'New leader: {name}. Nobody saw it coming. I did. It was on telemetry.',
     '{name} takes the lead. The previous leader is reviewing the tape.',
     'Change at the top. {name}, enjoy it. It’s rarely permanent.',
     '{name} is in first now. Please hold your applause until it matters.',
     'A new name at the top: {name}. The old one is pretending not to care.',
     'Lead change. {name} is in front. Everyone else, consider this feedback.',
     '{name} leads. I’ve updated my expectations. Slightly.',
-    'Shift change at the top of the board. {name} has the pager now.',
+    'Shift change at the top of the board. {name} has the keys now.',
     '{name} pulls ahead. Somebody check on the person who was winning.',
     'The standings have been reorganized. {name} approved this message.',
-    '{name} is winning. I’d say it was close, but I don’t lie to people.',
+    '{name} is in front. Their pulse just went up. Leading is stressful.',
     'New leader, {name}. History will remember this for about a minute.',
   ],
   // exactly one person voted on a matchup
@@ -71,7 +71,7 @@ export const momentHostLines: Record<MomentHostEvent, string[]> = {
     'Nobody voted. That’s a split decision with no decision.',
     'Zero votes cast. Abstaining is still a choice. A lazy one.',
     'No one voted. I’ll be documenting this.',
-    'Silence. Either a tie or a nap. Probably a nap.',
+    'Silence. My readings say the room is awake. Your thumbs say otherwise.',
     'Nobody picked. Even the indecisive are disappointed.',
     'No votes. Both answers get the participation points.',
     'Zero votes. The phones are awake. Are you?',
@@ -84,12 +84,12 @@ export const momentHostLines: Record<MomentHostEvent, string[]> = {
     'Rehired. Same pay. Same coffee. Less dignity.',
     'Back from the break room. Nobody noticed you were gone.',
     'One coffee, back on the floor. Try to keep this one.',
-    'Resurrected. In medicine that’s called a good save.',
+    'Back on the floor. My readings say you missed this.',
     'You’re back. The schedule has been quietly amended.',
     'A ghost answered its way back. Somebody update the census.',
     'Clocked back in. The coffee is lukewarm. So is the welcome.',
     'Back on shift. Don’t make it weird.',
-    'Return of the ghost. Charting will be a nightmare.',
+    'Return of the ghost. Reattaching your leads now.',
     'One more coffee, one more chance. That’s more than most get.',
   ],
   // Pick Your Poison: nobody in the minority volunteered to defend it

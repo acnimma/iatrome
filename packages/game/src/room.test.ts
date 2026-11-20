@@ -56,7 +56,8 @@ function actFor(room: RoomState, id: string, now: number, i: number) {
         playerCommand(room, id, { type: 'pick', side: i % 3 === 0 ? 'b' : 'a' }, now);
         playerCommand(room, id, { type: 'predict', side: 'a' }, now);
       }
-      if (g.phase.name === 'defend' && g.defender === id) playerCommand(room, id, { type: 'defend', text: 'Because I said so.' }, now);
+      if (g.phase.name === 'bet' && g.myBet === null) playerCommand(room, id, { type: 'predict', side: i % 2 ? 'a' : 'b' }, now);
+      if (g.phase.name === 'defence' && i === 1) playerCommand(room, id, { type: 'convinced' }, now);
       return;
   }
 }
@@ -210,7 +211,7 @@ describe('trivia pacing', () => {
 
 describe('Didactics Mode', () => {
   it('splits players into balanced random teams', () => {
-    for (const [n, teams] of [[4, 2], [7, 2], [8, 3], [15, 3], [16, 4], [40, 4]] as const) {
+    for (const [n, teams] of [[4, 2], [7, 2], [11, 2], [12, 3], [16, 3], [40, 8]] as const) {
       const { room, clock } = setup(n, { game: 'didactics' });
       hostCommand(room, { type: 'start' }, clock.now);
       const game = room.game!;
@@ -243,6 +244,8 @@ describe('Didactics Mode', () => {
     const answer = game.questions[game.index].answer;
     // Everyone right: every team gets the full pool.
     ids.forEach((id) => playerCommand(room, id, { type: 'pick-option', option: answer }, clock.now));
+    expect(room.game?.phase.name).toBe('huddle');
+    step(room, clock);
     expect(room.game?.phase.name).toBe('reveal');
     for (const t of game.teams) expect(game.last?.perTeam[t.id].points).toBe(1000);
   });
@@ -413,27 +416,6 @@ describe('polish rules', () => {
       expect(g().last?.revived).toEqual([ids[0]]);
       expect(room.hostLine?.event).toBe('ghostRevive');
     }
-  });
-
-  it('Pick Your Poison: nobody is forced to defend; the first volunteer gets the mic', () => {
-    const { room, ids, clock } = setup(4, { game: 'poison' });
-    hostCommand(room, { type: 'start' }, clock.now);
-    while (room.game?.phase.name !== 'choose') step(room, clock);
-    ids.forEach((id, i) => {
-      playerCommand(room, id, { type: 'pick', side: i === 0 ? 'b' : 'a' }, clock.now);
-      playerCommand(room, id, { type: 'predict', side: 'a' }, clock.now);
-    });
-    while ((room.game?.phase.name as string) === 'reveal') step(room, clock);
-    expect(room.game?.phase.name).toBe('volunteer');
-    playerCommand(room, ids[1], { type: 'volunteer' }, clock.now); // majority can't
-    expect(room.game?.phase.name).toBe('volunteer');
-    playerCommand(room, ids[0], { type: 'volunteer' }, clock.now);
-    expect(room.game?.phase.name).toBe('defend');
-    playerCommand(room, ids[0], { type: 'defend', text: 'Hear me out.' }, clock.now);
-    playerCommand(room, ids[1], { type: 'convinced' }, clock.now);
-    playerCommand(room, ids[1], { type: 'convinced' }, clock.now);
-    const g = room.game?.game === 'poison' ? room.game : null;
-    expect(g?.converts).toEqual([ids[1]]);
   });
 
   it('Sketch: wakes the server for hint letters even when nobody guesses', () => {

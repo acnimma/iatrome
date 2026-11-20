@@ -2,12 +2,13 @@
 
 import { motion } from 'motion/react';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { type Drawing, type GrandRoundsView, LIMITS, type MatchupView, REVEAL, type RoomView, type TaskView } from '@iatrome/game/client';
+import { type Drawing, type GrandRoundsView, LIMITS, type MatchupView, type RoomView, type TaskView, duelRevealTiming, finaleRevealTiming } from '@iatrome/game/client';
 import { useDrawing, useRoom } from '@/realtime/use-room';
 import { Button } from '@/components/ui/Button';
 import { AnswerBox, TextInput } from '@/components/ui/Field';
 import { DrawPad } from '@/components/drawing/DrawPad';
 import { useAfter } from '@/components/ui/Later';
+import { Confetti } from '@/components/ui/Confetti';
 import { DrawingView } from '@/components/drawing/DrawingView';
 import { Choice, PhoneMessage, PhonePrompt, PhoneStack } from '@/components/controller/Phone';
 import { ReactionBar, Scoreboard, nameOf, usePeople } from '@/components/room/RoomBits';
@@ -257,7 +258,13 @@ function MatchupPhone({ view, game, matchup }: { view: RoomView; game: GrandRoun
   const room = useRoom();
   const phase = game.phase.name;
   // The big screen reveals votes, then authors: don't let the phone announce the winner first.
-  const heldBack = useAfter(phase === 'results' && view.screen ? REVEAL.results - 200 : 0, `${matchup.id}-${phase}`);
+  const r0 = matchup.result;
+  const landsAt = !r0
+    ? 0
+    : matchup.finale
+      ? finaleRevealTiming(matchup.entries.length).listAt(matchup.entries.length - 1)
+      : duelRevealTiming(r0.playerVotes.length, r0.consensus).winnerAt;
+  const heldBack = useAfter(phase === 'results' && view.screen ? landsAt : 0, `${matchup.id}-${phase}`);
 
   const sides = matchup.entries.map((_, i) => i);
 
@@ -282,7 +289,7 @@ function MatchupPhone({ view, game, matchup }: { view: RoomView; game: GrandRoun
   if (phase === 'vote') {
     if (!matchup.finale && (matchup.yours !== null || !matchup.canVote)) {
       const title = matchup.yours !== null ? 'Votes are coming in…' : 'Players are voting';
-      if (view.screen) return <PhoneMessage icon={matchup.yours !== null ? 'sweat' : 'popcorn'} title={title}>{matchup.yours !== null ? 'Keep a straight face.' : ''}</PhoneMessage>;
+      if (view.screen) return <PhoneMessage icon={matchup.yours !== null ? 'sweat' : 'popcorn'} title={title}>{matchup.yours !== null ? 'Don’t look at anyone. Especially the person who wrote the other one.' : ''}</PhoneMessage>;
       return (
         <PhoneStack>
           <PhonePrompt label={title} prompt={matchup.prompt} phase={game.phase} pausedAt={view.pausedAt} />
@@ -297,9 +304,10 @@ function MatchupPhone({ view, game, matchup }: { view: RoomView; game: GrandRoun
     if (!matchup.canVote)
       return <PhoneMessage icon="popcorn" title="Everyone’s voting" />;
     const options = sides.filter((side) => !matchup.entries[side].hidden && (matchup.entries[side].text || matchup.entries[side].items || matchup.entries[side].drawingId));
+    if (matchup.finale) return <FinaleVote matchup={matchup} game={game} view={view} options={options} />;
     return (
       <PhoneStack>
-        <PhonePrompt label={matchup.finale ? 'Pick your favourite' : 'Vote for the best'} prompt={matchup.prompt} phase={game.phase} pausedAt={view.pausedAt} />
+        <PhonePrompt label="Vote for the best" prompt={matchup.prompt} phase={game.phase} pausedAt={view.pausedAt} />
         {options.map((side) => {
           const own = matchup.yours === side;
           return (
@@ -333,9 +341,11 @@ function MatchupPhone({ view, game, matchup }: { view: RoomView; game: GrandRoun
   if (matchup.yours !== null && r) {
     const mine = r.points[matchup.yours];
     const won = r.winner === matchup.yours;
+    const sweep = won && r.consensus;
     return (
       <PhoneStack>
-        <PhoneMessage icon={r.outcome === 'duplicate' ? 'upside-down' : won ? (r.consensus ? 'trophy' : 'party') : 'melt'} title={r.outcome === 'duplicate' ? 'Duplicate order!' : won ? 'You won the room!' : 'Not this time'}>
+        {sweep && <Confetti pieces={90} />}
+        <PhoneMessage icon={r.outcome === 'duplicate' ? 'upside-down' : won ? (sweep ? 'trophy' : 'party') : 'melt'} title={r.outcome === 'duplicate' ? 'Duplicate order' : sweep ? 'Pathognomonic!' : won ? 'You won the room' : 'Not this time'}>
           <span className={styles.outcome}>+{mine.toLocaleString()}</span>
         </PhoneMessage>
         <ReactionBar />
@@ -410,4 +420,56 @@ function VoteContent({ matchup, side }: { matchup: MatchupView; side: number }) 
       </ol>
     );
   return <span>{entry.text}</span>;
+}
+
+/** The finale vote: three votes each, stack them on one list or spread them out. */
+function FinaleVote({ matchup, game, view, options }: { matchup: MatchupView; game: GrandRoundsView; view: RoomView; options: number[] }) {
+  const room = useRoom();
+  const left = matchup.picksPerVoter - matchup.myPicks.length;
+  const countOn = (side: number) => matchup.myPicks.filter((p) => p === side).length;
+  return (
+    <PhoneStack>
+      <PhonePrompt
+        label={left > 0 ? `${left} ${left === 1 ? 'vote' : 'votes'} left · stack them if you like` : 'Votes locked in'}
+        prompt={matchup.prompt}
+        phase={game.phase}
+        pausedAt={view.pausedAt}
+      />
+      {options.map((side) => {
+        const own = matchup.yours === side;
+        const n = countOn(side);
+        return (
+          <Choice
+            key={side}
+            tone={own ? 'pearl' : 'black'}
+            disabled={own}
+            picked={n > 0}
+            dimmed={own || (left === 0 && n === 0)}
+            onClick={() => {
+              if (own || left === 0) return;
+              haptic(left === 1 ? 'success' : 'tap');
+              play('vote');
+              room.command({ type: 'vote', side });
+            }}
+          >
+            <VoteContent matchup={matchup} side={side} />
+            {own && <span className={styles.yours}>Yours</span>}
+            {n > 0 && <span className={styles.stack}>×{n}</span>}
+          </Choice>
+        );
+      })}
+      {matchup.myPicks.length > 0 && (
+        <Button
+          tone="ghost"
+          block
+          onClick={() => {
+            haptic('tap');
+            room.command({ type: 'unvote' });
+          }}
+        >
+          Take my votes back
+        </Button>
+      )}
+    </PhoneStack>
+  );
 }

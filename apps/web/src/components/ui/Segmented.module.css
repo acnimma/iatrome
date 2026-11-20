@@ -48,3 +48,8 @@
   position: relative;
   z-index: 1;
 }
+
+/* White on the black pill, whatever order the stylesheets load in. */
+.on .text {
+  color: #fff;
+}

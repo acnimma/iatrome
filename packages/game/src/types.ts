@@ -127,7 +127,7 @@ export interface Drawing {
   strokes: Stroke[];
 }
 
-export const DRAW_COLORS = ['#1f2a4d', '#cc4e73', '#4988b8', '#ccb64a', '#67a1c6', '#f7f3ec', '#3f9d6e', '#8a5a44'] as const;
+export const DRAW_COLORS = ['#1f2a4d', '#d93a4c', '#f08a24', '#f2c53d', '#3a9e4f', '#2f78d4', '#8d55cf', '#8a5a3c'] as const;
 export const DRAW_SIZES = [6, 14, 32] as const;
 export const CANVAS_SIZE = 1000;
 

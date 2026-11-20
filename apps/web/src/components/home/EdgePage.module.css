@@ -1,0 +1,72 @@
+.page {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  padding: max(24px, env(safe-area-inset-top)) 16px max(24px, env(safe-area-inset-bottom));
+}
+
+.logo img {
+  display: block;
+  width: min(220px, 60vw);
+}
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: min(460px, 100%);
+  padding: 64px 24px 26px;
+  margin-top: 52px;
+  border: var(--outline);
+  border-radius: 32px;
+  background: var(--card);
+  box-shadow: var(--gloss), var(--shadow-lg);
+  text-align: center;
+}
+
+/* Beep perches on the card's top edge like it's mounted on the pole. */
+.beep {
+  position: absolute;
+  top: -58px;
+  width: 118px;
+  filter: drop-shadow(0 10px 14px rgb(31 42 77 / 0.25));
+}
+
+.eyebrow {
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--rose-kiss);
+}
+
+.title {
+  composes: blackText from '../ui/Jelly.module.css';
+  font-family: var(--font-play);
+  font-size: clamp(2rem, 8vw, 2.6rem);
+  font-weight: 400;
+  line-height: 1.05;
+}
+
+.line {
+  max-width: 34ch;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--ink-soft);
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: min(420px, 100%);
+}
+
+.home {
+  text-decoration: none;
+}

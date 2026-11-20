@@ -1,5 +1,5 @@
 import { type HostEvent, curbsideGeneric, differentials, doodles, playerDifferentials, playerQuips, quips } from '@iatrome/content';
-import { GRAND_ROUNDS as GR, LIMITS, REVEAL } from '../../constants';
+import { GRAND_ROUNDS as GR, LIMITS } from '../../constants';
 import { cleanText, sameAnswer } from '../../text';
 import type { Drawing, GameResult, Highlight, Phase } from '../../types';
 import { validDrawing } from '../../drawing';
@@ -15,6 +15,7 @@ import {
 } from '../context';
 import { BEEP, mixedKinds, ring, spreadOrder } from './assign';
 import { type Side, scoreFinale, scoreForfeit, scoreVotes } from './scoring';
+import { duelReadTiming, duelRevealTiming, finaleRevealTiming } from './timing';
 
 // ── State ────────────────────────────────────────────────────────────────────
 
@@ -54,8 +55,10 @@ interface Matchup {
   curbside: [string, string] | null;
   playerIds: string[];
   entries: Entry[];
-  /** voterId → entry index. */
+  /** Duels: voterId → entry index. */
   votes: Record<string, number>;
+  /** Finale: voterId → up to GR.finalePicks entry indexes (stacking allowed). */
+  picks: Record<string, number[]>;
   result: MatchupResult | null;
 }
 
@@ -69,6 +72,8 @@ export interface GrandRoundsState extends BaseGameState {
   roundStart: Record<string, number>;
   /** Beep has nagged about the writing time this round. */
   nagged: boolean;
+  /** Beep has filled the writing silence this round. */
+  bantered: boolean;
   /** Every finished matchup, for end-of-game highlights. */
   archive: { round: number; prompt: string; kind: MatchupKind; entries: Entry[]; result: MatchupResult }[];
 }
@@ -78,7 +83,9 @@ export type GrandRoundsAction =
   | { type: 'list'; matchupId: string; items: string[]; final: boolean }
   | { type: 'doodle'; matchupId: string; drawing: Drawing; final: boolean }
   | { type: 'curbside'; matchupId: string }
-  | { type: 'vote'; side: number };
+  | { type: 'vote'; side: number }
+  /** Finale: take back your votes and place them again. */
+  | { type: 'unvote' };
 
 // ── Views ────────────────────────────────────────────────────────────────────
 
@@ -108,6 +115,9 @@ export interface MatchupView {
   /** Viewer-specific. */
   canVote: boolean;
   myVote: number | null;
+  /** Finale: the lists you've put your votes on (stacking allowed), and how many you get. */
+  myPicks: number[];
+  picksPerVoter: number;
   /** Which entry is the viewer's own answer (only ever told to its author). */
   yours: number | null;
 }
@@ -159,6 +169,7 @@ export const grandRounds: GameModule<GrandRoundsState, GrandRoundsAction, GrandR
       current: 0,
       roundStart: {},
       nagged: false,
+      bantered: false,
       archive: [],
     };
     startRound(state, ctx);
@@ -167,6 +178,7 @@ export const grandRounds: GameModule<GrandRoundsState, GrandRoundsAction, GrandR
 
   act(state, ctx, playerId, action) {
     if (action.type === 'vote') return vote(state, ctx, playerId, action.side);
+    if (action.type === 'unvote') return unvote(state, playerId);
     if (state.phase.name !== 'write') return { error: 'Too late for that one!' };
     const matchup = state.matchups.find((m) => m.id === action.matchupId);
     const side = matchup?.playerIds.indexOf(playerId) ?? -1;
@@ -198,9 +210,7 @@ export const grandRounds: GameModule<GrandRoundsState, GrandRoundsAction, GrandR
       case 'results':
         if (state.current + 1 < state.matchups.length) beginPresent(state, ctx, state.current + 1);
         else if (state.round + 1 < ROUNDS) {
-          const [before, now] = [leaderOf(state.roundStart), leaderOf(state.scores)];
-          if (before && now && before !== now) ctx.say('leadChange', { name: ctx.person(now)?.name ?? 'Someone' });
-          else ctx.say('scoreboard');
+          sayScoreboard(state, ctx);
           setPhase(state, ctx, 'scores', GR.scores);
         } else setPhase(state, ctx, 'done', null);
         return;
@@ -264,13 +274,21 @@ export const grandRounds: GameModule<GrandRoundsState, GrandRoundsAction, GrandR
   },
 
   wakeAt(state) {
-    const { name, endsAt } = state.phase;
-    return name === 'write' && endsAt !== null && !state.nagged ? [endsAt - GR.nagAt] : [];
+    const { name, startedAt, endsAt } = state.phase;
+    if (name !== 'write' || endsAt === null) return [];
+    return [...(state.bantered ? [] : [banterAt(startedAt, endsAt)]), ...(state.nagged ? [] : [endsAt - GR.nagAt])];
   },
 
   tick(state, ctx) {
     const { name, startedAt, endsAt } = state.phase;
-    if (name !== 'write' || state.nagged || endsAt === null || endsAt - startedAt < GR.nagAt * 2 || endsAt - ctx.now > GR.nagAt) return false;
+    if (name !== 'write' || endsAt === null) return false;
+    // Fill the silence once, a little before halfway through the writing.
+    if (!state.bantered && ctx.now >= banterAt(startedAt, endsAt) && endsAt - ctx.now > GR.nagAt) {
+      state.bantered = true;
+      if (unwritten(state, ctx).length) ctx.say('writingBanter');
+      return true;
+    }
+    if (state.nagged || endsAt - startedAt < GR.nagAt * 2 || endsAt - ctx.now > GR.nagAt) return false;
     state.nagged = true;
     if (unwritten(state, ctx).length) ctx.say('writeNag');
     return true;
@@ -285,6 +303,7 @@ function startRound(state: GrandRoundsState, ctx: GameContext) {
   state.current = 0;
   state.roundStart = { ...state.scores };
   state.nagged = false;
+  state.bantered = false;
 
   // A name to drop into an inside-joke prompt: anyone except the two people answering.
   const subjectFor = (pair: readonly string[]) => {
@@ -356,6 +375,7 @@ function newMatchup(
     playerIds,
     entries: playerIds.map(entry),
     votes: {},
+    picks: {},
     result: null,
   };
 }
@@ -445,8 +465,13 @@ function beginPresent(state: GrandRoundsState, ctx: GameContext, index: number) 
   const m = state.matchups[index];
   // Drafts that never got submitted still count when the timer runs out.
   for (const e of m.entries) e.final = e.final || hasContent(e);
-  const lists = isFinale(m) ? m.entries.filter((e) => hasContent(e)).length : 0;
-  setPhase(state, ctx, 'present', GR.present[m.kind] + lists * GR.presentPerList);
+  if (isFinale(m)) {
+    const lists = m.entries.filter((e) => hasContent(e)).length;
+    setPhase(state, ctx, 'present', GR.present.differential + lists * GR.presentPerList);
+    return;
+  }
+  const [a, b] = m.entries;
+  setPhase(state, ctx, 'present', duelReadTiming(m.prompt, a.text, b.text, m.kind === 'doodle' ? 'doodle' : 'quip').total);
 }
 
 function live(m: Matchup, ctx: GameContext, side: number) {
@@ -482,7 +507,8 @@ function voters(_state: GrandRoundsState, ctx: GameContext, m: Matchup) {
 function votingDone(state: GrandRoundsState, ctx: GameContext, m: Matchup) {
   const eligible = voters(state, ctx, m);
   const players = eligible.filter((id) => state.playerIds.includes(id));
-  return (players.length ? players : eligible).every((id) => id in m.votes);
+  const done = (id: string) => (isFinale(m) ? (m.picks[id]?.length ?? 0) >= GR.finalePicks : id in m.votes);
+  return (players.length ? players : eligible).every(done);
 }
 
 function leaderOf(scores: Record<string, number>) {
@@ -503,8 +529,19 @@ function vote(state: GrandRoundsState, ctx: GameContext, voterId: string, side: 
   if (m.entries[side].playerId === voterId || (!isFinale(m) && m.playerIds.includes(voterId))) return { error: 'No voting for yourself!' };
   const eligible = voters(state, ctx, m);
   if (!eligible.includes(voterId)) return { error: 'You can’t vote on this one.' };
-  m.votes[voterId] = side;
+  if (isFinale(m)) {
+    const mine = (m.picks[voterId] ??= []);
+    if (mine.length >= GR.finalePicks) return;
+    mine.push(side);
+  } else m.votes[voterId] = side;
   if (votingDone(state, ctx, m)) finish(state, ctx);
+}
+
+/** Finale only: take your votes back while voting is still open. */
+function unvote(state: GrandRoundsState, voterId: string): ActionOutcome | void {
+  const m = state.matchups[state.current];
+  if (state.phase.name !== 'vote' || !m || !isFinale(m)) return;
+  delete m.picks[voterId];
 }
 
 // ── Results ──────────────────────────────────────────────────────────────────
@@ -518,8 +555,10 @@ function finish(state: GrandRoundsState, ctx: GameContext) {
   const playerVotes = Object.entries(m.votes).map(([voterId, side]) => ({ voterId, side: side as Side }));
   const base = { playerVotes, consensus: false };
 
-  // Beep waits for the stage to finish revealing before reacting.
-  const say = (event: HostEvent) => ctx.say(event, undefined, REVEAL.results);
+  // Beep waits for the stage to light up the winner before reacting.
+  const reveal = duelRevealTiming(Object.keys(m.votes).length, false);
+  const say = (event: HostEvent, vars?: Record<string, string>) => ctx.say(event, vars, reveal.winnerAt);
+  const nameOf = (side: Side) => ctx.person(m.entries[side].playerId)?.name ?? 'Someone';
   let result: MatchupResult;
   if (!alive[0] && !alive[1]) {
     result = { ...base, outcome: 'empty', shares: [0, 0], points: [0, 0], winner: null };
@@ -546,11 +585,11 @@ function finish(state: GrandRoundsState, ctx: GameContext) {
     const w = score.winner;
     const total = playerVotes.length;
     if (total === 0) say('noVotes');
-    else if (total === 1) say('oneVote');
     else if (w === null) say('tie');
-    else if (m.entries[w].playerId === BEEP) say('beepWins');
-    else if (score.consensus) say('consensus');
+    else if (score.consensus) say('pathognomonic', { name: nameOf(w) });
     else if (curbside[w]) say('curbsideWin');
+    else if (m.kind === 'quip' && m.entries[w].text && ctx.rng.int(3) > 0) say('matchupWinner', { name: nameOf(w), answer: quoteable(m.entries[w].text!) });
+    else if (total === 1) say('oneVote');
     else if (score.shares[w] >= 0.75) say('blowout');
   }
 
@@ -558,8 +597,10 @@ function finish(state: GrandRoundsState, ctx: GameContext) {
 }
 
 function finishFinale(state: GrandRoundsState, ctx: GameContext, m: Matchup) {
-  const say = (event: HostEvent) => ctx.say(event, undefined, REVEAL.results);
-  const playerVotes = Object.entries(m.votes).map(([voterId, side]) => ({ voterId, side }));
+  // Beep reacts once the winning list (revealed last) lands.
+  const reveal = finaleRevealTiming(m.entries.length);
+  const say = (event: HostEvent, vars?: Record<string, string>) => ctx.say(event, vars, reveal.listAt(m.entries.length - 1) + 600);
+  const playerVotes = Object.entries(m.picks).flatMap(([voterId, sides]) => sides.map((side) => ({ voterId, side })));
   const votes = m.entries.map(() => 0);
   const audience = m.entries.map(() => 0);
   for (const v of playerVotes) if (live(m, ctx, v.side)) (state.playerIds.includes(v.voterId) ? votes : audience)[v.side] += 1;
@@ -567,12 +608,13 @@ function finishFinale(state: GrandRoundsState, ctx: GameContext, m: Matchup) {
   const alive = liveCount(m, ctx);
   const result: MatchupResult = { outcome: alive ? 'vote' : 'empty', playerVotes, ...score };
   const w = score.winner;
+  const punchline = w === null ? null : (m.entries[w].items?.filter(Boolean).at(-1) ?? null);
   if (!alive) say('forfeit');
   else if (!playerVotes.length) say('noVotes');
   else if (w === null) say('tie');
-  else if (m.entries[w].playerId === BEEP) say('beepWins');
-  else if (score.consensus) say('consensus');
-  else if (score.shares[w] >= 0.6) say('blowout');
+  else if (score.consensus) say('pathognomonic', { name: ctx.person(m.entries[w].playerId)?.name ?? 'Someone' });
+  else if (punchline) say('matchupWinner', { name: ctx.person(m.entries[w].playerId)?.name ?? 'Someone', answer: quoteable(punchline) });
+  else say('blowout');
   settleResult(state, ctx, m, result);
 }
 
@@ -583,7 +625,10 @@ function settleResult(state: GrandRoundsState, ctx: GameContext, m: Matchup, res
     if (e.playerId !== BEEP && e.playerId in state.scores) state.scores[e.playerId] += result.points[side];
   });
   state.archive.push({ round: state.round, prompt: m.prompt, kind: m.kind, entries: m.entries, result });
-  setPhase(state, ctx, 'results', isFinale(m) ? GR.results + 1_500 * m.entries.length : GR.results);
+  const duration = isFinale(m)
+    ? finaleRevealTiming(m.entries.length).total
+    : duelRevealTiming(result.playerVotes.length, result.outcome === 'vote' && result.consensus).total;
+  setPhase(state, ctx, 'results', duration);
 }
 
 function matchupView(state: GrandRoundsState, ctx: GameContext, m: Matchup, viewer: Viewer): MatchupView {
@@ -612,12 +657,39 @@ function matchupView(state: GrandRoundsState, ctx: GameContext, m: Matchup, view
     finale: isFinale(m),
     entries: m.entries.map(entry),
     result: revealed ? m.result : null,
-    votesIn: Object.keys(m.votes).length,
+    votesIn: isFinale(m) ? Object.values(m.picks).filter((p) => p.length >= GR.finalePicks).length : Object.keys(m.votes).length,
     votersExpected: v.length,
     canVote,
     myVote: viewerId ? (m.votes[viewerId] ?? null) : null,
+    myPicks: viewerId ? (m.picks[viewerId] ?? []) : [],
+    picksPerVoter: isFinale(m) ? GR.finalePicks : 1,
     yours: viewerId && m.playerIds.includes(viewerId) ? m.playerIds.indexOf(viewerId) : null,
   };
+}
+
+/** Host lines quote answers as “{answer}.”: drop the answer's own closing punctuation and quotes. */
+const quoteable = (text: string) => text.trim().replace(/["“”'’]+$/, '').replace(/[.!?…,;:]+$/, '').replace(/^["“”'‘]+/, '');
+
+/** A little before halfway through the writing: when the silence starts to show. */
+const banterAt = (startedAt: number, endsAt: number) => startedAt + (endsAt - startedAt) * 0.4;
+
+/** Between rounds: a new leader, a big climber, or a gentle word for whoever is last. */
+function sayScoreboard(state: GrandRoundsState, ctx: GameContext) {
+  const name = (id: string) => ctx.person(id)?.name ?? 'Someone';
+  const [before, now] = [leaderOf(state.roundStart), leaderOf(state.scores)];
+  if (before && now && before !== now) return ctx.say('leadChange', { name: name(now) });
+  const rank = (scores: Record<string, number>) => {
+    const ids = state.playerIds.filter((id) => ctx.person(id)).sort((a, b) => scores[b] - scores[a]);
+    return (id: string) => ids.indexOf(id);
+  };
+  const was = rank(state.roundStart);
+  const is = rank(state.scores);
+  const climber = state.playerIds.filter((id) => ctx.person(id)).sort((a, b) => was(a) - is(a) - (was(b) - is(b)))[0];
+  if (climber && was(climber) - is(climber) >= 2) return ctx.say('comeback', { name: name(climber) });
+  const players = state.playerIds.filter((id) => ctx.person(id));
+  const last = players.sort((a, b) => state.scores[a] - state.scores[b])[0];
+  if (last && players.length >= 3 && ctx.rng.int(2) === 0) return ctx.say('lastPlace', { name: name(last) });
+  ctx.say('scoreboard');
 }
 
 // ── Highlights ───────────────────────────────────────────────────────────────

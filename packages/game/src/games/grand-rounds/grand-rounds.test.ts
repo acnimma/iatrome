@@ -68,11 +68,11 @@ describe('scoring', () => {
     expect(r.points).toEqual([2500, 0]);
   });
 
-  it('lets a single vote pick the winner but not take the whole pool', () => {
+  it('pays nothing for an answer nobody voted for, even with a single voter', () => {
     const r = scoreVotes({ votes: [1, 0], multiplier: 1, curbside: none });
     expect(r.consensus).toBe(false);
     expect(r.winner).toBe(0);
-    expect(r.points).toEqual([750, 350]);
+    expect(r.points).toEqual([1100, 0]);
   });
 
   it('counts the audience as one block worth a third', () => {

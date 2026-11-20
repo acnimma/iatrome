@@ -37,8 +37,6 @@ export function scoreVotes({ votes, audience = [0, 0], multiplier, curbside }: S
         : crowd
           ? share(audience, crowd)
           : 0.5;
-  // One voter decides the winner but not the whole pool.
-  if (total === 1) shareA = shareA > 0.5 ? GR.soloVoteCap : 1 - GR.soloVoteCap;
   const shares: [number, number] = [shareA, 1 - shareA];
   const winner: Side | null = Math.abs(shareA - 0.5) < 1e-9 ? null : shareA > 0.5 ? 0 : 1;
   const consensus = winner !== null && total >= 2 && votes[winner] + audience[winner] === total;

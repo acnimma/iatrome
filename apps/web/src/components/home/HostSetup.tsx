@@ -2,14 +2,15 @@
 
 import { motion } from 'motion/react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { type CreateRoomResponse, ROOM, type RoomSettings, defaultSettings } from '@iatrome/game/client';
 import { realtimeHttpUrl } from '@/realtime/config';
-import { rememberHost, rememberPassword } from '@/realtime/identity';
+import { lastName, rememberHost, rememberName, rememberPassword } from '@/realtime/identity';
+import { rememberAutoJoin } from '@/realtime/auto-join';
 import { BackButton } from '@/components/ui/BackButton';
 import { Button } from '@/components/ui/Button';
 import { TextInput } from '@/components/ui/Field';
-import { GamePicker, ModePicker, type ScreenChoice, ScreenPicker, TimeToggle } from '@/components/room/GameSettings';
+import { CROWD_LABEL, GamePicker, ModePicker, type ScreenChoice, ScreenPicker, TimeToggle } from '@/components/room/GameSettings';
 import { unlockAudio } from '@/lib/sound';
 import { track } from '@vercel/analytics';
 import { useTurnstile } from './Turnstile';
@@ -20,17 +21,25 @@ export function HostSetup() {
   const router = useRouter();
   const [settings, setSettings] = useState<RoomSettings>(defaultSettings);
   const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
+  useEffect(() => setName(lastName()), []);
   const [screen, setScreen] = useState<ScreenChoice>('big');
   // Hosting from a phone almost always means there's no TV involved.
   useEffect(() => {
     if (window.matchMedia('(pointer: coarse) and (max-width: 700px)').matches) setScreen('phones');
   }, []);
   const [busy, setBusy] = useState(false);
+  const nameRef = useRef<HTMLInputElement>(null);
   const human = useTurnstile();
   const [error, setError] = useState<string | null>(null);
 
   const create = async () => {
     unlockAudio();
+    if (screen === 'phones' && !name.trim()) {
+      setError('Type your name first. You’re playing too.');
+      nameRef.current?.focus();
+      return;
+    }
     setBusy(true);
     setError(null);
     try {
@@ -46,6 +55,10 @@ export function HostSetup() {
       rememberHost(code, hostToken);
       track('room_created', { game: settings.game, mode: settings.mode, screen });
       rememberPassword(code, password.trim());
+      if (screen === 'phones') {
+        rememberName(name.trim());
+        rememberAutoJoin(code, name.trim());
+      }
       router.push(screen === 'phones' ? `/play/${code}` : `/host/${code}`);
     } catch (e) {
       setError(e instanceof TypeError ? 'Can’t reach the game server. Check your connection and try again.' : (e as Error).message);
@@ -72,9 +85,23 @@ export function HostSetup() {
           <section className={styles.setting}>
             <h2 className={styles.label}>Screen</h2>
             <ScreenPicker value={screen} onChange={setScreen} />
+            {screen === 'phones' && (
+              <div className={styles.hostName}>
+                <TextInput
+                  ref={nameRef}
+                  label="Your name"
+                  hint="You host from your phone and play too."
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  maxLength={ROOM.maxNameLength}
+                  placeholder="Dr. Nickname"
+                  autoCapitalize="words"
+                />
+              </div>
+            )}
           </section>
           <section className={styles.setting}>
-            <h2 className={styles.label}>Crowd</h2>
+            <h2 className={styles.label}>{CROWD_LABEL}</h2>
             <ModePicker value={settings.mode} onChange={(mode) => setSettings((s) => ({ ...s, mode }))} />
           </section>
           <section className={styles.setting}>
@@ -100,9 +127,11 @@ export function HostSetup() {
             </p>
           )}
           {human.element}
-          <Button size="xl" className={styles.create} onClick={create} disabled={busy}>
-            {busy ? 'Opening the room…' : 'Create room'}
-          </Button>
+          <div className={styles.createBar}>
+            <Button size="xl" className={styles.create} onClick={create} waiting={busy}>
+              {busy ? 'Opening the room' : 'Create room'}
+            </Button>
+          </div>
         </div>
       </motion.div>
     </main>

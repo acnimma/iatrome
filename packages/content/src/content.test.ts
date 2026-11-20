@@ -6,13 +6,18 @@ import {
   doodles,
   hostEvents,
   hostLines,
-  namedHostEvents,
+  hostEventVars,
   playerDifferentials,
   playerQuips,
   quips,
   sketchTerms,
   trivia,
 } from './index';
+import { quips as quipsNormal } from './packs/quips';
+import { quipsPro } from './packs/quips-pro';
+import { playerDifferentials as playerDifferentialsNormal, playerQuips as playerQuipsNormal } from './packs/player-prompts';
+import { playerDifferentialsPro, playerQuipsPro } from './packs/player-prompts-pro';
+import { showHostLines } from './packs/host-lines-show';
 
 const packs = { quips, playerQuips, playerDifferentials, doodles, differentials, dilemmas, sketchTerms, trivia };
 
@@ -99,6 +104,38 @@ describe('prompts are short and one sentence', () => {
   });
 });
 
+// Variety: no sentence frame (the first three words) may carry more than 8% of a pack.
+describe('prompts do not lean on one frame', () => {
+  const frame = (t: string) =>
+    t
+      .toLowerCase()
+      .replace(/[^a-z{} ]/g, '')
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 3)
+      .join(' ');
+  const sources = {
+    quips: quipsNormal,
+    quipsPro,
+    playerQuips: playerQuipsNormal,
+    playerQuipsPro,
+    playerDifferentials: playerDifferentialsNormal,
+    playerDifferentialsPro,
+    allQuips: quips,
+  };
+  for (const [name, pack] of Object.entries(sources))
+    it(`${name}: no frame over 8%`, () => {
+      const counts = new Map<string, number>();
+      for (const p of pack) counts.set(frame(p.text), (counts.get(frame(p.text)) ?? 0) + 1);
+      for (const [f, n] of counts) expect(n / pack.length, `"${f}" starts ${n} of ${pack.length}`).toBeLessThanOrEqual(0.08);
+    });
+  it('Normal quips keep plenty of fill-in-the-blanks (15 to 20%)', () => {
+    const share = quipsNormal.filter((q) => q.text.includes('____')).length / quipsNormal.length;
+    expect(share).toBeGreaterThanOrEqual(0.15);
+    expect(share).toBeLessThanOrEqual(0.2);
+  });
+});
+
 describe('Inside jokes', () => {
   it('name exactly one player, and fit on screen once the name is in', () => {
     for (const p of [...playerQuips, ...playerDifferentials]) {
@@ -154,12 +191,22 @@ describe('Beep', () => {
   it('has a deep pool of lines for every event', () => {
     for (const event of hostEvents) expect(hostLines[event]?.length ?? 0, event).toBeGreaterThanOrEqual(10);
   });
-  it('only uses {name} where a name is passed in', () => {
+  it('has an extra-deep pool for the show moments', () => {
+    for (const [event, lines] of Object.entries(showHostLines)) expect(lines.length, event).toBeGreaterThanOrEqual(14);
+  });
+  it('reads aloud in about three seconds (at most 18 words)', () => {
+    for (const lines of Object.values(hostLines)) for (const l of lines) expect(l.split(/\s+/).length, l).toBeLessThanOrEqual(18);
+  });
+  it('is a bedside heart monitor: no pager, robot or flatline jokes', () => {
+    for (const lines of Object.values(hostLines))
+      for (const l of lines) expect(l, l).not.toMatch(/\b(pager|robot|bots?|plastic|rectangle|flatline|flatlined)\b|playing too/i);
+  });
+  it('only uses the {vars} each event is given', () => {
     for (const event of hostEvents)
       for (const line of hostLines[event]) {
+        const allowed = (hostEventVars[event] ?? []).map((v) => `{${v}}`);
         const vars = line.match(/\{(\w+)\}/g) ?? [];
-        if (namedHostEvents.includes(event)) expect(vars.every((v) => v === '{name}'), line).toBe(true);
-        else expect(vars, `${event}: ${line}`).toEqual([]);
+        expect(vars.filter((v) => !allowed.includes(v)), `${event}: ${line}`).toEqual([]);
       }
   });
 });

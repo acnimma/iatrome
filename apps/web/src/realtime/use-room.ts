@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, useSyncExternalStore } from 'react';
 import type { Drawing } from '@iatrome/game/client';
-import { RoomClient, type Snapshot } from './room-client';
+import { EMPTY_SNAPSHOT, RoomClient, type Snapshot } from './room-client';
 
 /** Open (and own) a connection to a room for the lifetime of the component. */
 export function useRoomConnection(code: string, asHost: boolean): RoomClient | null {
@@ -15,7 +15,7 @@ export function useRoomConnection(code: string, asHost: boolean): RoomClient | n
   return client;
 }
 
-const empty: Snapshot = { status: 'connecting', view: null, role: null, error: null, removed: null, feedback: null };
+const empty: Snapshot = EMPTY_SNAPSHOT;
 
 export function useSnapshot(client: RoomClient | null): Snapshot {
   return useSyncExternalStore(

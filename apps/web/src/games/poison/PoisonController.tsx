@@ -1,16 +1,18 @@
 'use client';
 
-import { useState } from 'react';
-import { LIMITS, type PoisonView, type RoomView } from '@iatrome/game/client';
+import { motion } from 'motion/react';
+import { POISON, type PoisonView, type RoomView } from '@iatrome/game/client';
 import { useRoom } from '@/realtime/use-room';
 import { Button } from '@/components/ui/Button';
-import { AnswerBox } from '@/components/ui/Field';
 import { Choice, PhoneMessage, PhonePrompt, PhoneStack } from '@/components/controller/Phone';
 import { ReactionBar, nameOf, usePeople } from '@/components/room/RoomBits';
 import { StatButton } from '@/components/room/Stat';
+import { TimerRing } from '@/components/ui/TimerRing';
 import { haptic } from '@/lib/haptics';
 import { useAfter } from '@/components/ui/Later';
 import styles from './Poison.module.css';
+
+type Side = 'a' | 'b';
 
 export function PoisonController({ view, game }: { view: RoomView; game: PoisonView }) {
   const room = useRoom();
@@ -20,11 +22,19 @@ export function PoisonController({ view, game }: { view: RoomView; game: PoisonV
   const phase = game.phase.name;
   const defender = nameOf(people, game.defender);
   const stepReady = useAfter(450, `${game.number}-${game.mine?.side ?? 'none'}`);
+  const text = (s: Side | null | undefined) => (s === 'a' ? game.a : s === 'b' ? game.b : '');
 
   if (phase === 'intro')
     return (
       <PhoneMessage icon="game-poison" title="Pick Your Poison">
-        Pick a side, then read the room.
+        Pick a side, then guess what everyone else picked.
+      </PhoneMessage>
+    );
+
+  if (phase === 'final')
+    return (
+      <PhoneMessage icon="star" title="Final dilemma">
+        Worth triple. Every point is still in play.
       </PhoneMessage>
     );
 
@@ -43,14 +53,12 @@ export function PoisonController({ view, game }: { view: RoomView; game: PoisonV
       { side: 'b' as const, text: game.b, tone: 'blue' as const },
     ];
     const step = mine.side ? 'predict' : 'pick';
-    // A double tap on step one shouldn't land on step two.
-    const ready = stepReady;
     if (mine.side && mine.predict) return <PhoneMessage icon="lock" title="Locked in">Waiting for everyone else…</PhoneMessage>;
     return (
       <PhoneStack>
         <PhonePrompt
           label={`${game.multiplier > 1 ? 'Final dilemma · ×3 · ' : ''}${step === 'pick' ? 'Step 1 of 2' : 'Step 2 of 2'}`}
-          prompt={step === 'pick' ? 'Would you rather…' : 'What did MOST people pick?'}
+          prompt={step === 'pick' ? 'Would you rather…' : 'What did most of the OTHERS pick?'}
           phase={game.phase}
           pausedAt={view.pausedAt}
         />
@@ -59,7 +67,8 @@ export function PoisonController({ view, game }: { view: RoomView; game: PoisonV
           <Choice
             key={`${step}-${o.side}`}
             tone={o.tone}
-            disabled={!ready}
+            // A double tap on step one shouldn't land on step two.
+            disabled={!stepReady}
             onClick={() => {
               haptic('success');
               room.command({ type: step, side: o.side });
@@ -68,98 +77,153 @@ export function PoisonController({ view, game }: { view: RoomView; game: PoisonV
             {o.text}
           </Choice>
         ))}
-        {step === 'predict' && <p className={styles.note}>You picked: {mine.side === 'a' ? game.a : game.b}</p>}
+        {step === 'predict' && <p className={styles.note}>You picked: {text(mine.side)}. Your own pick doesn’t count.</p>}
       </PhoneStack>
     );
   }
 
-  const mySide = game.sides?.[me] ?? null;
-  const inMinority = Boolean(mySide && (game.majority === 'a' || game.majority === 'b') && mySide !== game.majority);
+  const mySide = (game.sides?.[me] ?? null) as Side | null;
+  const minoritySide: Side | null = game.majority === 'a' ? 'b' : game.majority === 'b' ? 'a' : null;
+  const inMajority = Boolean(playing && mySide && mySide === game.majority);
+  const flipped = game.flips.includes(me);
+  const isDefender = game.defender === me;
+  const pay = game.pay;
+  const myPoints = pay
+    ? ([
+        ['read the others', pay.read[me]],
+        ['alone', pay.lone[me]],
+        ['flips', pay.flips[me]],
+        ['bet', pay.bet[me]],
+      ] as const).filter(([, n]) => n)
+    : [];
+  const points = myPoints.length > 0 && (
+    <div className={styles.phonePoints}>
+      {myPoints.map(([why, n]) => (
+        <span key={why}>
+          +{n} {why}
+        </span>
+      ))}
+    </div>
+  );
 
-  if (phase === 'volunteer')
-    return inMinority ? (
-      <PhoneStack>
-        <PhoneMessage icon="mic" title="You’re in the minority">
-          Want to defend it? Nobody has to. You earn points for everyone you convince.
+  if (phase === 'bet') {
+    if (isDefender)
+      return (
+        <PhoneStack>
+          <PhoneMessage icon="mic" title="You’re up">
+            You’re speaking for {text(minoritySide)}. Out loud, in a moment. Every switch pays.
+          </PhoneMessage>
+          <ReactionBar />
+        </PhoneStack>
+      );
+    if (!inMajority)
+      return (
+        <PhoneStack>
+          <PhoneMessage icon="mic" title={`${defender} has the floor next`}>
+            {mySide === minoritySide ? 'They’re speaking for your side. Look supportive.' : 'The majority is placing bets.'}
+          </PhoneMessage>
+          <ReactionBar />
+        </PhoneStack>
+      );
+    if (game.myBet !== null)
+      return (
+        <PhoneMessage icon="lock" title="Bet placed">
+          {game.myBet ? 'You think someone caves.' : 'You think nobody budges.'}
         </PhoneMessage>
-        <Button size="xl" block onClick={() => { haptic('success'); room.command({ type: 'volunteer' }); }}>
-          Defend it
-        </Button>
-      </PhoneStack>
-    ) : (
-      <PhoneMessage icon="mic" title="Any defenders?">
-        Waiting to see if the minority wants to explain itself.
-      </PhoneMessage>
-    );
-
-  if (phase === 'defend' && game.defender === me) return <Defend view={view} game={game} />;
-
-  if (phase === 'defend')
+      );
     return (
       <PhoneStack>
-        <PhoneMessage icon="mic" title={`${defender} is defending it`}>
-          They’re writing. Brace yourself.
+        <PhonePrompt label={`Quick bet · +${POISON.betPoints * game.multiplier} if you call it`} prompt={`${defender} is about to defend it. Will anyone switch?`} phase={game.phase} pausedAt={view.pausedAt} />
+        {/* The bet rides on `predict`: a = someone switches, b = nobody does. */}
+        <Choice tone="gold" onClick={() => { haptic('success'); room.command({ type: 'predict', side: 'a' }); }}>
+          Yes, someone caves
+        </Choice>
+        <Choice tone="sky" onClick={() => { haptic('success'); room.command({ type: 'predict', side: 'b' }); }}>
+          No, nobody budges
+        </Choice>
+      </PhoneStack>
+    );
+  }
+
+  if (phase === 'defence') {
+    if (isDefender)
+      return (
+        <div className={styles.phoneFloor}>
+          <TimerRing phase={game.phase} pausedAt={view.pausedAt} size={96} ticks />
+          <h2 className={styles.phoneFloorTitle}>Make your case. Out loud.</h2>
+          <p className={styles.phoneFloorSide}>You’d rather {text(minoritySide)}.</p>
+          <motion.span key={game.flips.length} className={styles.phoneCount} initial={{ scale: 1.6 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 500, damping: 14 }}>
+            {game.flips.length}
+          </motion.span>
+          <p className={styles.phoneFloorSide}>{game.flips.length === 1 ? 'person switched' : 'people switched'}</p>
+        </div>
+      );
+    if (inMajority && !flipped)
+      return (
+        <PhoneStack>
+          <PhonePrompt label={`${defender} has the floor`} prompt={`They’d rather ${text(minoritySide)}.`} phase={game.phase} pausedAt={view.pausedAt} />
+          <Button
+            tone="gold"
+            size="xl"
+            block
+            className={styles.convince}
+            onClick={() => {
+              haptic('success');
+              room.command({ type: 'convinced' });
+            }}
+          >
+            Convinced. I’m switching.
+          </Button>
+          <p className={styles.note}>You’d rather {text(mySide)}. For now.</p>
+        </PhoneStack>
+      );
+    return (
+      <PhoneStack>
+        <PhoneMessage icon="mic" title={flipped ? 'Switched' : `${defender} has the floor`}>
+          {flipped ? `You’re on ${defender}’s side now. They get the credit.` : 'Listen. React if you must.'}
         </PhoneMessage>
         <ReactionBar />
       </PhoneStack>
     );
+  }
 
-  if (phase === 'defence') {
-    const canConvince = playing && game.defender !== me && mySide === game.majority;
-    const convinced = game.converts.includes(me);
+  if (phase === 'verdict') {
+    const others = game.flips.filter((id) => id !== me).length;
+    const title = isDefender
+      ? game.flips.length
+        ? `You flipped ${game.flips.length}`
+        : 'Nobody budged'
+      : game.myBet !== null
+        ? pay?.bet[me]
+          ? 'Called it'
+          : 'Bad bet'
+        : game.flips.length
+          ? `${game.flips.length} switched`
+          : 'Nobody budged';
     return (
       <PhoneStack>
-        {!view.screen && game.defence ? (
-          <div className={styles.phoneDefence}>
-            <span className={styles.phoneDefenceLabel}>{defender}, in their defence</span>
-            <blockquote>“{game.defence}”</blockquote>
-          </div>
-        ) : (
-          <PhoneMessage icon="mic" title={game.defender === me ? 'Your defence is up' : `${defender}’s defence is up`} />
-        )}
-        {canConvince && (
-          <Button tone={convinced ? 'pearl' : 'gold'} size="lg" block disabled={convinced} onClick={() => { haptic('success'); room.command({ type: 'convinced' }); }}>
-            {convinced ? 'Convinced. Noted.' : 'Convinced'}
-          </Button>
-        )}
+        <PhoneMessage icon={isDefender ? 'mic' : pay?.bet[me] ? 'target' : 'scales'} title={title}>
+          {!isDefender && game.myBet !== null && (others ? `${others} switched.` : 'Nobody else switched.')}
+          {points}
+        </PhoneMessage>
         <ReactionBar />
       </PhoneStack>
     );
   }
 
   // Reveal
-  const earned = game.earned[me];
+  const read = pay?.read[me];
+  const alone = pay?.lone[me];
+  const title = alone ? 'Alone on this one' : read ? 'You read the room' : game.majority === 'tie' ? 'Dead even' : 'Misread the room';
   return (
     <PhoneStack>
-      <PhoneMessage icon={earned ? 'brain' : game.majority === 'tie' ? 'scales' : 'see-no-evil'} title={earned ? 'You read the room!' : game.majority === 'tie' ? 'Dead even' : 'Misread the room'}>
-        {earned ? `+${earned} points` : ''}
+      <PhoneMessage icon={alone ? 'mic' : read ? 'brain' : game.majority === 'tie' ? 'scales' : 'see-no-evil'} title={title}>
+        {alone ? `Contrarian bonus, and an AMA tag (${game.ama[me] ?? 1} so far).` : ''}
+        {points}
       </PhoneMessage>
       {!view.screen && game.counts && <Split a={game.a ?? ''} b={game.b ?? ''} counts={game.counts} />}
       <ReactionBar />
     </PhoneStack>
-  );
-}
-
-function Defend({ view, game }: { view: RoomView; game: PoisonView }) {
-  const room = useRoom();
-  const [text, setText] = useState('');
-  const side = game.sides?.[view.you!.id];
-  return (
-    <form
-      className={styles.defend}
-      onSubmit={(e) => {
-        e.preventDefault();
-        if (!text.trim()) return;
-        haptic('success');
-        room.command({ type: 'defend', text });
-      }}
-    >
-      <PhonePrompt label="You’re in the minority!" prompt={`Defend: you’d rather ${side === 'a' ? game.a : game.b}.`} phase={game.phase} pausedAt={view.pausedAt} />
-      <AnswerBox value={text} maxLength={LIMITS.defence} onChange={(e) => setText(e.target.value)} placeholder="Make your case…" autoFocus />
-      <Button size="lg" block type="submit" disabled={!text.trim()}>
-        Rest my case
-      </Button>
-    </form>
   );
 }
 

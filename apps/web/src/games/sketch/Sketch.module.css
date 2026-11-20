@@ -52,6 +52,15 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
+  column-gap: 40px;
+  row-gap: 12px;
+  max-width: 100%;
+}
+
+/* Letters of one word stay together; the column gap above is the space between words. */
+.word {
+  display: inline-flex;
+  align-items: flex-end;
   gap: 8px;
 }
 
@@ -66,6 +75,12 @@
   text-transform: uppercase;
 }
 
+.punct {
+  align-self: center;
+  font-size: clamp(1.4rem, 2.6vw, 2.2rem);
+  font-weight: 900;
+}
+
 .maskRevealed .letter {
   border: var(--outline);
   border-radius: 10px;
@@ -73,8 +88,25 @@
   box-shadow: var(--gloss);
 }
 
-.gap {
-  width: 18px;
+.maskPhone {
+  justify-content: flex-start;
+  column-gap: 12px;
+  row-gap: 6px;
+}
+
+.maskPhone .word {
+  gap: 3px;
+}
+
+.maskPhone .letter {
+  width: 14px;
+  height: 24px;
+  border-bottom-width: 3px;
+  font-size: 1.1rem;
+}
+
+.maskPhone .punct {
+  font-size: 1.1rem;
 }
 
 .side {
@@ -198,11 +230,9 @@
   letter-spacing: -0.02em;
 }
 
-.phoneMask {
-  font-size: 1.4rem;
-  font-weight: 900;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+.phoneHead > .mask {
+  flex: 1;
+  min-width: 0;
 }
 
 .guessForm {
@@ -218,11 +248,11 @@
 }
 
 .gotIt {
-  padding: 14px;
+  padding: 8px 14px;
   border: var(--outline);
   border-radius: var(--radius-pill);
   background: color-mix(in srgb, #3f9d6e 30%, var(--card));
-  font-size: 1.3rem;
+  font-size: 1.05rem;
   font-weight: 900;
   text-align: center;
 }
@@ -245,4 +275,248 @@
   font-weight: 800;
   color: #8a7522;
   text-align: center;
+}
+
+.pills {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.canvasWrap {
+  position: relative;
+  width: min(54vh, 100%);
+}
+
+.stampSpot {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  font-size: 1.4rem;
+}
+
+/* Warmer/colder nudges from people who already got it: they pop in beside the canvas. */
+.nudges {
+  position: absolute;
+  top: 12px;
+  left: calc(100% + 12px);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  pointer-events: none;
+}
+
+.nudge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px 6px 6px;
+  border: var(--outline);
+  border-radius: var(--radius-pill);
+  box-shadow: var(--gloss), var(--shadow-sm);
+  font-family: var(--font-play);
+  font-size: 1.3rem;
+  white-space: nowrap;
+}
+
+.warm {
+  background: color-mix(in srgb, var(--rose-kiss) 55%, var(--card));
+}
+
+.cold {
+  background: color-mix(in srgb, var(--sky-blue) 60%, var(--card));
+}
+
+.flagMeter {
+  font-weight: 800;
+  color: var(--rose-kiss);
+  text-align: center;
+}
+
+.feedEmpty {
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.feedCount {
+  margin-left: auto;
+  padding: 1px 9px;
+  border-radius: var(--radius-pill);
+  background: var(--ink);
+  color: var(--card);
+  font-size: 0.85rem;
+  font-weight: 900;
+}
+
+/* ── Gallery ─────────────────────────────────────────── */
+.gallery {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: min(1320px, 100%);
+}
+
+.galleryTitle {
+  composes: blackText from '../../components/ui/Jelly.module.css';
+  font-family: var(--font-play);
+  font-size: 3.4rem;
+  font-weight: 400;
+}
+
+.gallerySub {
+  margin-bottom: 10px;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+
+.galleryGrid {
+  display: grid;
+  grid-template-columns: repeat(var(--cols, 4), minmax(0, var(--tile, 230px)));
+  justify-content: center;
+  gap: 22px;
+  width: 100%;
+}
+
+.tile {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 0;
+}
+
+.tile figcaption {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.tile figcaption strong {
+  font-family: var(--font-play);
+  font-size: 1.2rem;
+  font-weight: 400;
+}
+
+.tile figcaption span {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+
+/* On the stage, each drawing hangs in a chunky frame. */
+.frame {
+  padding: 10px 10px 8px;
+  border: var(--outline);
+  border-radius: 18px;
+  background: var(--card);
+  box-shadow: var(--gloss), var(--shadow-md);
+}
+
+/* ── Phone extras ────────────────────────────────────── */
+.phoneCanvas {
+  position: relative;
+}
+
+.phoneStamp {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  padding: 4px 14px;
+  border: 3px solid var(--rose-kiss);
+  border-radius: 10px;
+  background: rgb(255 255 255 / 0.85);
+  color: var(--rose-kiss);
+  font-size: 1.3rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transform: translate(-50%, -50%) rotate(-8deg);
+  pointer-events: none;
+}
+
+.phoneNudge {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  padding: 4px 12px;
+  border: var(--outline);
+  border-radius: var(--radius-pill);
+  font-weight: 900;
+  box-shadow: var(--shadow-sm);
+}
+
+.nudgeRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.flag {
+  align-self: center;
+}
+
+/* The artist's view of the guesses: one quiet line under the pad. */
+.ticker {
+  display: flex;
+  gap: 6px;
+  min-height: 30px;
+  overflow: hidden;
+  mask-image: linear-gradient(90deg, #000 85%, transparent);
+}
+
+.tickerEmpty {
+  align-self: center;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.tick {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border: 1.5px solid var(--ink);
+  border-radius: var(--radius-pill);
+  background: var(--card);
+  font-size: 0.85rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.tick b {
+  font-weight: 900;
+}
+
+.tick em {
+  font-style: normal;
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8a7522;
+}
+
+.tickClose {
+  background: color-mix(in srgb, var(--royal-gold) 40%, var(--card));
+}
+
+.phoneGallery {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.phoneGallery .tile {
+  padding: 6px;
+  border: var(--outline);
+  border-radius: 14px;
+  background: var(--card);
 }

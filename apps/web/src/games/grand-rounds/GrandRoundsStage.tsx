@@ -1,8 +1,8 @@
 'use client';
 
 import { AnimatePresence, motion } from 'motion/react';
-import { useEffect } from 'react';
-import { type EntryView, GRAND_ROUNDS, type GrandRoundsView, type MatchupView, type RoomView } from '@iatrome/game/client';
+import { useEffect, useRef, useState } from 'react';
+import { type EntryView, GRAND_ROUNDS, type GrandRoundsView, type MatchupView, type RoomView, duelReadTiming, duelRevealTiming, finaleRevealTiming } from '@iatrome/game/client';
 import { useDrawing, useRoom } from '@/realtime/use-room';
 import { DrawingView } from '@/components/drawing/DrawingView';
 import { jelly } from '@/components/ui/jelly';
@@ -11,8 +11,8 @@ import { TimerRing } from '@/components/ui/TimerRing';
 import { AvatarRow, CountUp, IntroCard, Pill, Scoreboard, Stamp, nameOf, usePeople } from '@/components/room/RoomBits';
 import { play } from '@/lib/sound';
 import { Icon } from '@/components/icons/Icon';
-import { speak } from '@/lib/speech';
 import { ROUND_NAMES, ROUND_BLURBS } from './rounds';
+import { Pathognomonic } from './Pathognomonic';
 import styles from './GrandRounds.module.css';
 
 export function GrandRoundsStage({ view, game }: { view: RoomView; game: GrandRoundsView }) {
@@ -52,6 +52,12 @@ function Writing({ view, game }: { view: RoomView; game: GrandRoundsView }) {
   const players = view.people.filter((p) => p.inGame).map((p) => p.id);
   const waiting = new Set(game.waitingOn);
   const done = new Set(players.filter((id) => !waiting.has(id)));
+  // Every lock-in gets a little sting, so the room hears the pressure building.
+  const locked = useRef(done.size);
+  useEffect(() => {
+    if (done.size > locked.current) play('lockin');
+    locked.current = done.size;
+  }, [done.size]);
   const title = game.round === 2 ? 'Write your differential' : game.round === 1 ? 'Write & draw on your phones' : 'Answer on your phones';
   return (
     <div className={styles.writing}>
@@ -65,12 +71,34 @@ function Writing({ view, game }: { view: RoomView; game: GrandRoundsView }) {
 
 // ── The duel ─────────────────────────────────────────────────────────────────
 
+/** Milliseconds since the current phase began (server time), ticking while the show runs. */
+function usePhaseClock(game: GrandRoundsView) {
+  const room = useRoom();
+  const { startedAt, name } = game.phase;
+  const live = name === 'present' || name === 'results';
+  const [elapsed, setElapsed] = useState(() => room.serverNow() - startedAt);
+  useEffect(() => {
+    setElapsed(room.serverNow() - startedAt);
+    if (!live) return;
+    const t = setInterval(() => setElapsed(room.serverNow() - startedAt), 80);
+    return () => clearInterval(t);
+  }, [room, startedAt, live]);
+  return live ? elapsed : Infinity;
+}
+
 function Matchup({ view, game, matchup }: { view: RoomView; game: GrandRoundsView; matchup: MatchupView }) {
   const phase = game.phase.name;
+  const elapsed = usePhaseClock(game);
+  const people = usePeople(view);
   const result = phase === 'results' ? matchup.result : null;
-  const { at, scale } = useRevealClock(game, matchup);
-  useMatchupSounds(matchup, phase);
-  const listGap = GRAND_ROUNDS.presentPerList / 1000;
+  const [a, b] = matchup.entries;
+  const read = duelReadTiming(matchup.prompt, a.text, b?.text ?? null, matchup.kind === 'doodle' ? 'doodle' : 'quip');
+  const reveal = duelRevealTiming(result?.playerVotes.length ?? 0, Boolean(result?.consensus));
+  useMatchupShow(matchup, phase, elapsed, read);
+
+  // When each answer appears: in the present phase it follows the read-aloud; afterwards, always shown.
+  const shownAt = (side: number) =>
+    phase !== 'present' ? 0 : matchup.finale ? 600 + side * GRAND_ROUNDS.presentPerList : side === 0 ? read.aAt : read.bAt;
 
   return (
     <div className={styles.matchup}>
@@ -83,35 +111,33 @@ function Matchup({ view, game, matchup }: { view: RoomView; game: GrandRoundsVie
       </div>
 
       <motion.h2 className={styles.prompt} initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ type: 'spring', stiffness: 300, damping: 22 }}>
-        {matchup.prompt}
+        <Narrated text={matchup.prompt} startAt={250} elapsed={phase === 'present' ? elapsed : Infinity} />
       </motion.h2>
 
       {matchup.finale ? (
-        <div className={styles.board} style={{ '--cols': boardColumns(matchup.entries.length) } as React.CSSProperties}>
-          {matchup.entries.map((_, side) => (
-            <AnswerCard key={side} view={view} matchup={matchup} side={side} phase={phase} delay={at(0.6 + side * listGap)} lineGap={0.6 * scale} replayMs={4200 * scale} />
-          ))}
-        </div>
+        <FinaleBoard view={view} matchup={matchup} phase={phase} elapsed={elapsed} shownAt={shownAt} />
       ) : (
-      <div className={styles.versus}>
-        {([0, 1] as const).map((side) => (
-          <AnswerCard key={side} view={view} matchup={matchup} side={side} phase={phase} delay={at(ENTRY[matchup.kind][side])} lineGap={0.85 * scale} replayMs={4200 * scale} />
-        ))}
-        <motion.span
-          className={`${styles.vs} ${jelly('pearl')}`}
-          initial={{ scale: 0 }}
-          animate={{ scale: 1, rotate: [0, -10, 10, 0] }}
-          transition={{ delay: at(ENTRY[matchup.kind][1] + 0.2), scale: { type: 'spring', stiffness: 400, damping: 12 }, rotate: { duration: 0.6 } }}
-        >
-          VS
-        </motion.span>
-      </div>
+        <div className={styles.versus}>
+          {([0, 1] as const).map((side) => (
+            <AnswerCard key={side} view={view} matchup={matchup} side={side} phase={phase} elapsed={elapsed} shown={elapsed >= shownAt(side)} reveal={reveal} typeAt={shownAt(side)} />
+          ))}
+          {elapsed >= shownAt(1) && (
+            <motion.span
+              className={`${styles.vs} ${jelly('pearl')}`}
+              initial={{ scale: 0 }}
+              animate={{ scale: 1, rotate: [0, -10, 10, 0] }}
+              transition={{ scale: { type: 'spring', stiffness: 400, damping: 12 }, rotate: { duration: 0.6 } }}
+            >
+              VS
+            </motion.span>
+          )}
+        </div>
       )}
 
       <div className={styles.footer}>
         {phase === 'vote' && (
           <motion.div className={styles.votePrompt} initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
-            <strong>Vote on your phones</strong>
+            <strong>{matchup.finale ? `Vote on your phones · ${matchup.picksPerVoter} votes each, stack them if you like` : 'Vote on your phones'}</strong>
             <span className={styles.pips}>
               {Array.from({ length: Math.max(matchup.votersExpected, matchup.votesIn) }, (_, i) => (
                 <motion.span key={i} className={i < matchup.votesIn ? styles.pipOn : styles.pip} animate={i < matchup.votesIn ? { scale: [1, 1.5, 1] } : {}} />
@@ -119,125 +145,201 @@ function Matchup({ view, game, matchup }: { view: RoomView; game: GrandRoundsVie
             </span>
           </motion.div>
         )}
-        {result && <ResultBanner result={result} />}
+        {result && !matchup.finale && elapsed >= reveal.winnerAt && <ResultBanner result={result} />}
       </div>
+
+      {result?.consensus && result.winner !== null && (
+        <Pathognomonic
+          show={elapsed >= (matchup.finale ? finaleRevealTiming(matchup.entries.length).listAt(matchup.entries.length - 1) : reveal.winnerAt)}
+          name={nameOf(people, matchup.entries[result.winner].author)}
+        />
+      )}
     </div>
   );
 }
 
-/** When each answer appears during the present phase, in seconds at normal speed. */
-const ENTRY = {
-  quip: [1.1, 2.3],
-  doodle: [0.5, 0.9],
-  differential: [0.8, 3.8],
-} as const;
-
 /** Two to a row up to four lists, then three, then four. */
 const boardColumns = (n: number) => (n <= 4 ? 2 : n <= 6 || n === 9 ? 3 : 4);
 
-/**
- * Reveal timing synced to the server: delays scale with the phase's real length and
- * account for time already elapsed (so a reconnecting stage catches up instantly).
- */
-function useRevealClock(game: GrandRoundsView, matchup: MatchupView) {
-  const room = useRoom();
-  const { startedAt, endsAt, name } = game.phase;
-  const present = name === 'present' && endsAt !== null;
-  const lists = matchup.finale ? matchup.entries.filter((e) => e.items).length : 0;
-  const expected = GRAND_ROUNDS.present[matchup.kind] + lists * GRAND_ROUNDS.presentPerList;
-  const scale = present ? (endsAt - startedAt) / expected : 0;
-  const elapsed = present ? Math.max(0, (room.serverNow() - startedAt) / 1000) : 0;
-  const at = (seconds: number) => (present ? Math.max(0, seconds * scale - elapsed) : 0);
-  return { at, scale };
+/** The finale: everyone's list, revealed fewest votes first so the winner lands last. */
+function FinaleBoard({ view, matchup, phase, elapsed, shownAt }: { view: RoomView; matchup: MatchupView; phase: string; elapsed: number; shownAt: (side: number) => number }) {
+  const result = phase === 'results' ? matchup.result : null;
+  const votesFor = (side: number) => result?.playerVotes.filter((v) => v.side === side).length ?? 0;
+  const order = matchup.entries.map((_, i) => i).sort((x, y) => votesFor(x) - votesFor(y) || x - y);
+  const timing = finaleRevealTiming(matchup.entries.length);
+  return (
+    <div className={styles.board} style={{ '--cols': boardColumns(matchup.entries.length) } as React.CSSProperties}>
+      {matchup.entries.map((_, side) => {
+        const revealAt = timing.listAt(order.indexOf(side));
+        return (
+          <AnswerCard
+            key={side}
+            view={view}
+            matchup={matchup}
+            side={side}
+            phase={phase}
+            elapsed={elapsed}
+            shown={elapsed >= shownAt(side)}
+            reveal={{ voterAt: () => revealAt, winnerAt: revealAt, authorAt: revealAt + 200, pointsAt: revealAt + 500, total: timing.total }}
+            waiting={Boolean(result) && elapsed < revealAt}
+          />
+        );
+      })}
+    </div>
+  );
 }
 
-function AnswerCard({ view, matchup, side, phase, delay, lineGap, replayMs }: { view: RoomView; matchup: MatchupView; side: number; phase: string; delay: number; lineGap: number; replayMs: number }) {
+type Reveal = ReturnType<typeof duelRevealTiming>;
+
+function AnswerCard({
+  view,
+  matchup,
+  side,
+  phase,
+  elapsed,
+  shown,
+  reveal,
+  waiting = false,
+  typeAt,
+}: {
+  view: RoomView;
+  matchup: MatchupView;
+  side: number;
+  phase: string;
+  elapsed: number;
+  shown: boolean;
+  reveal: Reveal;
+  waiting?: boolean;
+  /** When this answer starts typing in during the present phase (duels only). */
+  typeAt?: number;
+}) {
   const people = usePeople(view);
   const entry = matchup.entries[side];
   const result = phase === 'results' ? matchup.result : null;
-  const won = result?.winner === side;
-  const lost = result && result.winner !== null && result.winner !== side;
-  const voters = result?.playerVotes.filter((v) => v.side === side) ?? [];
+  // Nobody wins until the drumroll is over: both cards stay neutral while the votes land.
+  const decided = result && elapsed >= reveal.winnerAt;
+  const won = decided && result.winner === side;
+  const lost = decided && result.winner !== null && result.winner !== side && !matchup.finale;
+  const all = result?.playerVotes ?? [];
+  // Voters land one at a time, alternating sides, in the order they're listed.
+  const mine = all.map((v, i) => ({ ...v, i })).filter((v) => v.side === side);
+  const landed = mine.filter((v) => elapsed >= reveal.voterAt(matchup.finale ? 0 : v.i));
+  const total = all.length;
   const share = result ? Math.round(result.shares[side] * 100) : 0;
   const author = entry.author ? people.get(entry.author) : null;
   const tilt = matchup.finale ? (side % 2 ? 2 : -2) : side === 0 ? -3 : 3;
 
+  if (!shown) return <div className={styles.answerSlot} aria-hidden />;
+
   return (
     <motion.div
-      className={`${styles.answer} ${jelly()} ${won ? styles.won : ''} ${lost ? styles.lost : ''}`}
+      className={`${styles.answer} ${jelly()} ${won ? styles.won : ''} ${lost ? styles.lost : ''} ${waiting ? styles.waiting : ''}`}
       initial={{ y: 40, opacity: 0, rotate: tilt }}
       animate={{ y: 0, opacity: 1, rotate: 0 }}
-      transition={{ delay, type: 'spring', stiffness: 260, damping: 20 }}
+      transition={{ type: 'spring', stiffness: 260, damping: 20 }}
     >
-      <AnswerContent entry={entry} kind={matchup.kind} replayMs={phase === 'present' ? replayMs : 0} delay={delay} lineGap={lineGap} />
+      <AnswerContent entry={entry} kind={matchup.kind} replay={phase === 'present'} typedFrom={phase === 'present' && typeAt !== undefined ? elapsed - typeAt : Infinity} />
 
-      {result && (
+      {result && !waiting && (
         <div className={styles.reveal}>
           <div className={styles.voters}>
-            {voters.map((v, i) => {
-              const p = people.get(v.voterId);
-              return p ? (
-                <motion.span key={v.voterId} initial={{ scale: 0, y: -60 }} animate={{ scale: 1, y: 0 }} transition={{ delay: 0.3 + i * 0.15, type: 'spring', stiffness: 500, damping: 15 }}>
-                  <Avatar avatar={p.avatar} size={34} />
-                </motion.span>
-              ) : null;
-            })}
+            <AnimatePresence>
+              {landed.map((v, k) => {
+                const p = people.get(v.voterId);
+                return p ? (
+                  <motion.span key={`${v.voterId}-${k}`} initial={{ scale: 0, y: -80, rotate: -20 }} animate={{ scale: 1, y: 0, rotate: 0 }} transition={{ type: 'spring', stiffness: 520, damping: 14 }}>
+                    <Avatar avatar={p.avatar} size={34} />
+                  </motion.span>
+                ) : null;
+              })}
+            </AnimatePresence>
           </div>
-          {matchup.finale ? (
+          {matchup.finale || total < 4 ? (
             <span className={styles.voteCount}>
-              {voters.length} {voters.length === 1 ? 'vote' : 'votes'}
+              {landed.length} {landed.length === 1 ? 'vote' : 'votes'}
             </span>
           ) : (
             <div className={styles.shareBar}>
-              <motion.span initial={{ width: 0 }} animate={{ width: `${share}%` }} transition={{ delay: 0.4, duration: 1, ease: [0.22, 1, 0.36, 1] }} />
-              <CountUp className={styles.share} value={share} duration={1200} />
+              <motion.span initial={{ width: 0 }} animate={{ width: decided ? `${share}%` : '0%' }} transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }} />
+              {decided && <CountUp className={styles.share} value={share} duration={900} />}
             </div>
           )}
-          <motion.div className={styles.author} initial={{ rotateX: 90, opacity: 0 }} animate={{ rotateX: 0, opacity: 1 }} transition={{ delay: 1.6, type: 'spring', stiffness: 300, damping: 20 }}>
-            {entry.author === 'beep' ? (
-              <span className={styles.authorName}>Beep, your host</span>
-            ) : author ? (
-              <>
-                <Avatar avatar={author.avatar} size={40} />
-                <span className={styles.authorName}>{author.name}</span>
-              </>
-            ) : (
-              <span className={styles.authorName}>{nameOf(people, entry.author)}</span>
-            )}
-            <motion.span className={styles.points} initial={{ scale: 0, y: 10 }} animate={{ scale: 1, y: 0 }} transition={{ delay: 2.2, type: 'spring', stiffness: 500, damping: 12 }}>
-              +{result.points[side].toLocaleString()}
-            </motion.span>
-          </motion.div>
-          {entry.curbside && (
-            <motion.span className={styles.curbside} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 2.4 }}>
-              Curbside consult · half points
-            </motion.span>
+          {elapsed >= reveal.authorAt && (
+            <motion.div className={styles.author} initial={{ rotateX: 90, opacity: 0 }} animate={{ rotateX: 0, opacity: 1 }} transition={{ type: 'spring', stiffness: 300, damping: 20 }}>
+              {author ? (
+                <>
+                  <Avatar avatar={author.avatar} size={40} />
+                  <span className={styles.authorName}>{author.name}</span>
+                </>
+              ) : (
+                <span className={styles.authorName}>{nameOf(people, entry.author)}</span>
+              )}
+              {elapsed >= reveal.pointsAt && (
+                <motion.span className={styles.points} initial={{ scale: 0, y: 10 }} animate={{ scale: 1, y: 0 }} transition={{ type: 'spring', stiffness: 500, damping: 12 }}>
+                  +<CountUp value={result.points[side]} duration={700} />
+                </motion.span>
+              )}
+            </motion.div>
           )}
+          {entry.curbside && elapsed >= reveal.authorAt && <span className={styles.curbside}>Curbside consult · half points</span>}
         </div>
       )}
     </motion.div>
   );
 }
 
-function AnswerContent({ entry, kind, replayMs, delay, lineGap }: { entry: EntryView; kind: MatchupView['kind']; replayMs: number; delay: number; lineGap: number }) {
+function AnswerContent({ entry, kind, replay, typedFrom = Infinity }: { entry: EntryView; kind: MatchupView['kind']; replay: boolean; typedFrom?: number }) {
   const drawing = useDrawing(entry.drawingId);
-  if (entry.hidden) return <p className={styles.missing}>
+  if (entry.hidden)
+    return (
+      <p className={styles.missing}>
         <Icon name="eye-closed" size={44} /> Hidden by the host
-      </p>;
-  if (kind === 'doodle') return entry.drawingId ? <DrawingView drawing={drawing} replayMs={replayMs > 300 ? replayMs : undefined} className={styles.doodle} /> : <p className={styles.missing}>No drawing</p>;
+      </p>
+    );
+  if (kind === 'doodle')
+    return entry.drawingId ? <DrawingView drawing={drawing} replayMs={replay ? 2_200 : undefined} className={styles.doodle} /> : <p className={styles.missing}>No drawing</p>;
   if (kind === 'differential') {
     if (!entry.items) return <p className={styles.missing}>No answer</p>;
     return (
       <ol className={styles.list}>
         {entry.items.map((item, i) => (
-          <motion.li key={i} initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ delay: replayMs ? delay + i * lineGap : 0 }}>
+          <motion.li key={i} initial={replay ? { x: -20, opacity: 0 } : false} animate={{ x: 0, opacity: 1 }} transition={{ delay: replay ? 0.25 + i * 0.55 : 0 }}>
             {item || '…'}
           </motion.li>
         ))}
       </ol>
     );
   }
-  return entry.text ? <p className={styles.quip}>{entry.text}</p> : <p className={styles.missing}>No answer</p>;
+  return entry.text ? (
+    <p className={styles.quip}>
+      <Narrated text={entry.text} startAt={0} elapsed={typedFrom} />
+    </p>
+  ) : (
+    <p className={styles.missing}>No answer</p>
+  );
+}
+
+/**
+ * Visual narration: the words land one at a time at reading pace, like Beep is presenting them.
+ * The full text is laid out from the start (invisible words keep their space), so nothing reflows.
+ */
+function Narrated({ text, startAt, elapsed }: { text: string; startAt: number; elapsed: number }) {
+  const words = text.split(/(\s+)/);
+  let n = -1;
+  return (
+    <>
+      {words.map((w, i) => {
+        if (/^\s+$/.test(w)) return w;
+        n += 1;
+        const on = elapsed >= startAt + n * GRAND_ROUNDS.readMsPerWord;
+        return (
+          <span key={i} className={on ? styles.wordOn : styles.wordOff}>
+            {w}
+          </span>
+        );
+      })}
+    </>
+  );
 }
 
 function ResultBanner({ result }: { result: NonNullable<MatchupView['result']> }) {
@@ -248,35 +350,66 @@ function ResultBanner({ result }: { result: NonNullable<MatchupView['result']> }
         ? { text: 'Forfeit', tone: 'gold' as const, note: 'No answer means the other side takes it all.' }
         : result.outcome === 'empty'
           ? { text: 'Nobody answered', tone: 'ink' as const, note: '' }
-          : result.consensus
-            ? { text: 'Consensus', tone: 'rose' as const, note: 'The whole room agreed. That never happens. Bonus points.' }
-            : result.winner === null
+          : result.playerVotes.length === 0
+            ? { text: 'No votes', tone: 'ink' as const, note: 'Nobody voted. Nobody scores.' }
+            : result.winner === null && !result.consensus
               ? { text: 'Tie', tone: 'sky' as const, note: '' }
               : null;
   if (!stamp) return null;
-  // Lands with the sting, after the votes and authors are revealed.
   return (
-    <motion.div className={styles.banner} initial={{ opacity: 0, scale: 0.6 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 1.5, type: 'spring', stiffness: 380, damping: 16 }}>
+    <motion.div className={styles.banner} initial={{ opacity: 0, scale: 0.6 }} animate={{ opacity: 1, scale: 1 }} transition={{ type: 'spring', stiffness: 380, damping: 16 }}>
       <Stamp tone={stamp.tone}>{stamp.text}</Stamp>
       {stamp.note && <span className={styles.bannerNote}>{stamp.note}</span>}
     </motion.div>
   );
 }
 
-function useMatchupSounds(matchup: MatchupView, phase: string) {
+/**
+ * The show's soundtrack and narration, in step with the phase clock: Beep reads the prompt and
+ * each answer as it appears, the drumroll races, each vote lands with a blip, the winner gets a
+ * sting (or the full PATHOGNOMONIC alarm).
+ */
+function useMatchupShow(matchup: MatchupView, phase: string, elapsed: number, read: ReturnType<typeof duelReadTiming>) {
+  const fired = useRef(new Set<string>());
+  const key = `${matchup.id}-${phase}`;
+  const cue = (id: string, at: number, run: () => void) => {
+    const k = `${key}:${id}`;
+    if (elapsed >= at && !fired.current.has(k)) {
+      fired.current.add(k);
+      // Skip cues that are long past (a reconnecting stage shouldn't replay the whole show).
+      if (elapsed - at < 1_500) run();
+    }
+  };
   useEffect(() => {
     if (phase === 'present') {
-      play('whoosh');
-      const [a, b] = matchup.entries;
-      const say = matchup.kind === 'quip' && !matchup.finale ? `${matchup.prompt}. ${a.text ?? ''}. Or. ${b.text ?? ''}` : matchup.prompt;
-      speak(say);
+      cue('open', 0, () => play('whoosh'));
+      if (matchup.finale) {
+        matchup.entries.forEach((e, i) =>
+          cue(`list-${i}`, 600 + i * GRAND_ROUNDS.presentPerList, () => play('pop')),
+        );
+      } else {
+        cue('a', read.aAt, () => play('pop'));
+        cue('b', read.bAt, () => play('pop'));
+      }
     }
-    if (phase === 'vote') play('vote');
+    if (phase === 'vote') cue('vote', 0, () => play('vote'));
     if (phase === 'results' && matchup.result) {
       const r = matchup.result;
-      play('drumroll');
-      const t = setTimeout(() => play(r.outcome === 'duplicate' ? 'buzz' : r.consensus ? 'consensus' : 'reveal'), 1500);
-      return () => clearTimeout(t);
+      if (matchup.finale) {
+        const timing = finaleRevealTiming(matchup.entries.length);
+        cue('drum', 0, () => play('drumroll'));
+        matchup.entries.forEach((_, rank) =>
+          cue(`rank-${rank}`, timing.listAt(rank), () => {
+            const last = rank === matchup.entries.length - 1;
+            play(last ? (r.consensus ? 'pathognomonic' : 'win') : 'reveal');
+          }),
+        );
+      } else {
+        const reveal = duelRevealTiming(r.playerVotes.length, r.consensus);
+        cue('drum', 0, () => play('drumroll'));
+        r.playerVotes.forEach((_, i) => cue(`voter-${i}`, reveal.voterAt(i), () => play('vote')));
+        cue('winner', reveal.winnerAt, () => play(r.outcome === 'duplicate' ? 'buzz' : r.consensus ? 'pathognomonic' : r.winner === null ? 'tick' : 'reveal'));
+      }
     }
-  }, [phase, matchup.id]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [phase, matchup.id, Math.floor(elapsed / 80)]); // eslint-disable-line react-hooks/exhaustive-deps
 }

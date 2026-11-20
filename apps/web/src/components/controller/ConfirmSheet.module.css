@@ -1,0 +1,56 @@
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgb(31 42 77 / 0.3);
+  backdrop-filter: blur(4px);
+}
+
+.sheet {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: min(560px, 100%);
+  padding: 10px 20px max(24px, env(safe-area-inset-bottom));
+  border: var(--outline);
+  border-bottom: 0;
+  border-radius: 28px 28px 0 0;
+  background: var(--card);
+  box-shadow: var(--shadow-lg);
+}
+
+.grabber {
+  align-self: center;
+  width: 44px;
+  height: 5px;
+  border-radius: 99px;
+  background: color-mix(in srgb, var(--ink) 20%, transparent);
+}
+
+.title {
+  font-family: var(--font-play);
+  font-size: 1.6rem;
+  font-weight: 400;
+  line-height: 1.15;
+  text-shadow: var(--play-raised);
+}
+
+.text {
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--ink-soft);
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.danger {
+  color: var(--rose-kiss);
+}

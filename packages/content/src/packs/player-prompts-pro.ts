@@ -51,18 +51,18 @@ export const playerQuipsPro: QuipPrompt[] = [
 ];
 
 export const playerDifferentialsPro: DifferentialPrompt[] = [
-  { id: 'pd-p001', text: 'Three things {player} copy-forwards into every note', breadth: 'clinical', beep: ['Yesterday’s weather', 'A typo from 2021', '“Will follow up,” undying'] },
+  { id: 'pd-p001', text: 'Three pages {player} sends before 6 a.m.', breadth: 'clinical', beep: ['“Just FYI”', '“Never mind”', '“Okay, actually”'] },
   { id: 'pd-p002', text: 'Three things hidden in {player}’s locker', breadth: 'clinical', beep: ['Two granola bars', 'A phone charger, coiled with love', 'Someone else’s stethoscope'] },
   { id: 'pd-p003', text: 'Three red flags in {player}’s residency application', breadth: 'clinical', beep: ['Hobbies: “napping, competitively”', 'A letter of rec from their mom', 'A personal statement in rhyme'] },
-  { id: 'pd-p004', text: 'Three things {player} says at sign-out to sound calm', breadth: 'clinical', beep: ['“Super stable”', '“Nothing pending”', '“I believe in you. Bye.”'] },
+  { id: 'pd-p004', text: 'Three calm-sounding phrases {player} uses at sign-out', breadth: 'clinical', beep: ['“Super stable”', '“Nothing pending”', '“I believe in you. Bye.”'] },
   { id: 'pd-p005', text: 'Three notes on {player}’s OR preference card', breadth: 'clinical', beep: ['Music: loud, bad', 'Gloves: “small, actually”', 'Snack: pre-opened, on the stool'] },
   { id: 'pd-p006', text: 'Three answers {player} gives about the Krebs cycle', breadth: 'clinical', beep: ['“It’s a cycle. Of Krebs.”', '“Citrate is involved?”', '“Ask me about urea.”'] },
   { id: 'pd-p007', text: 'Three rejected titles for {player}’s grand rounds talk', breadth: 'clinical', beep: ['Potassium: My Journey', 'Am I Sure? A Retrospective', 'Ten Years of Copy-Forward'] },
-  { id: 'pd-p008', text: 'Three things {player} mutters while scrubbing in', breadth: 'clinical', beep: ['“Fingers, thumbs, I remember this”', '“Do not touch your mask”', '“Itch. Oh no. Itch.”'] },
-  { id: 'pd-p009', text: 'Three things {player} would change as program director', breadth: 'clinical', beep: ['Nap Fridays', 'Rounds capped at 20 minutes', 'Scrubs that fit'] },
-  { id: 'pd-p010', text: 'Three things {player} radios in on their first EMS shift', breadth: 'clinical', beep: ['“Copy. What’s copy?”', '“ETA: we got lost”', '“Can we stop for snacks?”'] },
+  { id: 'pd-p008', text: 'While scrubbing in, {player} mutters these three things', breadth: 'clinical', beep: ['“Fingers, thumbs, I remember this”', '“Do not touch your mask”', '“Itch. Oh no. Itch.”'] },
+  { id: 'pd-p009', text: 'As program director, {player} would change three things', breadth: 'clinical', beep: ['Nap Fridays', 'Rounds capped at 20 minutes', 'Scrubs that fit'] },
+  { id: 'pd-p010', text: '{player}’s first three radio calls on an EMS shift', breadth: 'clinical', beep: ['“Copy. What’s copy?”', '“ETA: we got lost”', '“Can we stop for snacks?”'] },
   { id: 'pd-p011', text: 'Three things {player} does to avoid a procedure', breadth: 'clinical', beep: ['Pages the senior “for teaching”', 'Watches four videos', 'Asks the nurse, who already did it'] },
-  { id: 'pd-p012', text: 'Three things {player} says right before a procedure goes sideways', breadth: 'clinical', beep: ['“Easy one”', '“Hold this”', '“Can someone page my senior? Calmly.”'] },
+  { id: 'pd-p012', text: 'Right before a procedure goes sideways, {player} says three things', breadth: 'clinical', beep: ['“Easy one”', '“Hold this”', '“Can someone page my senior? Calmly.”'] },
   { id: 'pd-p013', text: 'Three excuses {player} gives for a late note', breadth: 'clinical', beep: ['“The EHR ate it”', '“I was being thorough”', '“What note?”'] },
-  { id: 'pd-p014', text: 'Three things {player} says during a rectal exam', breadth: 'clinical', beep: ['“Almost done”', '“Hi again”', '“Great. Great. Great.”'] },
+  { id: 'pd-p014', text: 'Three items {player} leaves in the call room', breadth: 'clinical', beep: ['One sock', 'Half a granola bar', 'A pager, still going'] },
 ];

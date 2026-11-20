@@ -7,7 +7,6 @@ import { useState } from 'react';
 import { AVATARS, type GameResult, REVEAL, type RoomView, gameInfo } from '@iatrome/game/client';
 import { useRoom } from '@/realtime/use-room';
 import { Avatar, avatarTone } from '@/components/ui/Avatar';
-import { BackButton } from '@/components/ui/BackButton';
 import { Icon } from '@/components/icons/Icon';
 import { rememberSession } from '@/realtime/identity';
 import { Button } from '@/components/ui/Button';
@@ -19,23 +18,51 @@ import { SettingsDialog } from '@/components/room/SettingsDialog';
 import { MyStat } from '@/components/room/Stat';
 import { InviteButton } from '@/components/room/InviteButton';
 import { haptic } from '@/lib/haptics';
+import { GAME_ICONS } from '@/components/room/GameSettings';
+import { ConfirmSheet } from './ConfirmSheet';
 import { PhoneMessage } from './Phone';
 import { useIsHost } from './PhoneHost';
 import styles from './ControllerLobby.module.css';
 
-/** Leave the room for good: frees your name and seat, forgets the session, goes home. */
-function LeaveButton({ code }: { code: string }) {
+/**
+ * Leave the room for good: frees your name and seat, forgets the session, goes home.
+ * Quiet, and never one tap: players get "tap again", a phones-only host gets told what it costs.
+ */
+function LeaveButton({ view }: { view: RoomView }) {
   const room = useRoom();
   const router = useRouter();
+  const isHost = useIsHost(view.code);
+  const [asking, setAsking] = useState(false);
+  const leave = () => {
+    room.command({ type: 'leave' });
+    rememberSession(view.code, null);
+    router.push('/');
+  };
+  if (isHost && !view.screen) {
+    return (
+      <>
+        <Button tone="ghost" size="sm" onClick={() => setAsking(true)} aria-haspopup="dialog">
+          <Icon name="back" size={22} /> Leave
+        </Button>
+        <ConfirmSheet
+          open={asking}
+          title="End the room for everyone?"
+          confirm="End the room"
+          onConfirm={() => {
+            room.host({ type: 'close' });
+            leave();
+          }}
+          onClose={() => setAsking(false)}
+        >
+          You’re the host. If you leave, the room closes and everyone in it goes home.
+        </ConfirmSheet>
+      </>
+    );
+  }
   return (
-    <BackButton
-      label="Leave room"
-      onClick={() => {
-        room.command({ type: 'leave' });
-        rememberSession(code, null);
-        router.push('/');
-      }}
-    />
+    <Button tone="ghost" size="sm" confirm="Tap again to leave" onClick={leave}>
+      <Icon name="back" size={22} /> Leave
+    </Button>
   );
 }
 
@@ -55,7 +82,7 @@ export function ControllerLobby({ view }: { view: RoomView }) {
   return (
     <div className={styles.lobby}>
       <div className={styles.topBar}>
-        <LeaveButton code={view.code} />
+        <LeaveButton view={view} />
       </div>
       <motion.button
         type="button"
@@ -100,9 +127,14 @@ export function ControllerLobby({ view }: { view: RoomView }) {
 
       {isHost && !view.screen && (
         <>
-          <Button tone="pearl" onClick={() => setEditing(true)} aria-haspopup="dialog">
-            <Icon name="settings" size={22} /> {info.title} · {view.settings.mode === 'pro' ? 'Pro' : 'Normal'}
-          </Button>
+          <button type="button" className={styles.gamePill} onClick={() => setEditing(true)} aria-haspopup="dialog" aria-label={`Change game: ${info.title}, ${view.settings.mode === 'pro' ? 'Pro' : 'Normal'}`}>
+            <Icon name={GAME_ICONS[view.settings.game]} size={34} />
+            <span className={styles.gamePillText}>
+              <strong>{info.title}</strong>
+              <span>{view.settings.mode === 'pro' ? 'Pro' : 'Normal'}{view.settings.extendedTimers ? ' · More time' : ''}</span>
+            </span>
+            <span className={styles.gamePillAction}>Change</span>
+          </button>
           <SettingsDialog open={editing} settings={view.settings} onChange={(settings) => room.host({ type: 'settings', settings })} onClose={() => setEditing(false)} />
         </>
       )}
@@ -119,15 +151,26 @@ export function ControllerLobby({ view }: { view: RoomView }) {
 
       {view.screen ? <InviteButton code={view.code} /> : <JoinCard code={view.code} />}
 
-      {isVip && (
+      {/* One obvious place to start: the big screen when there is one, the VIP's phone when there isn't. */}
+      {isVip && view.screen && (
+        <p className={styles.vipScreen}>
+          <Icon name="star" size={22} /> You’re the VIP. Start it on the big screen when everyone’s in.
+        </p>
+      )}
+      {isVip && !view.screen && (
         <div className={styles.vip}>
-          <Button size="xl" block disabled={needed > 0} onClick={() => {
-            room.command({ type: 'start' });
-            track('game_started', { game: view.settings.game, players: players.length, screen: view.screen ? 'big' : 'phones' });
-          }}>
-            {needed > 0 ? `Need ${needed} more` : 'Everybody’s in. Start!'}
+          <Button
+            size="xl"
+            block
+            waiting={needed > 0}
+            onClick={() => {
+              room.command({ type: 'start' });
+              track('game_started', { game: view.settings.game, players: players.length, screen: 'phones' });
+            }}
+          >
+            {needed > 0 ? `Waiting for ${needed} more player${needed === 1 ? '' : 's'}` : 'Everybody’s in. Start!'}
           </Button>
-          <p className={styles.vipNote}>You’re the VIP, so you can start the game.</p>
+          <p className={styles.vipNote}>{needed > 0 ? `${info.title} needs at least ${info.min}. Send them the code.` : 'You’re the VIP, so you start the game.'}</p>
         </div>
       )}
     </div>
@@ -171,7 +214,7 @@ export function ControllerResults({ view, result }: { view: RoomView; result: Ga
   return (
     <div className={styles.lobby}>
       <div className={styles.topBar}>
-        <LeaveButton code={view.code} />
+        <LeaveButton view={view} />
       </div>
       {!revealed ? (
         <PhoneMessage icon="drum" title="Eyes up." />
@@ -188,7 +231,7 @@ export function ControllerResults({ view, result }: { view: RoomView; result: Ga
           <ReactionBar />
         </>
       )}
-      {isVip && (
+      {isVip && !view.screen && (
         <Button size="lg" block onClick={() => {
             room.command({ type: 'start' });
             track('game_started', { game: view.settings.game, screen: view.screen ? 'big' : 'phones', again: true });

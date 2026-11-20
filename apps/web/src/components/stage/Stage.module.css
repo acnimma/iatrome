@@ -139,3 +139,16 @@
   font-weight: 800;
   color: var(--ink-soft);
 }
+
+/* A gentle nudge until the browser allows sound. */
+.soundHint {
+  composes: jelly black from '../ui/Jelly.module.css';
+  position: fixed;
+  top: 14px;
+  left: 50%;
+  z-index: 40;
+  translate: -50% 0;
+  padding: 10px 20px;
+  border-radius: var(--radius-pill);
+  font-weight: 800;
+}

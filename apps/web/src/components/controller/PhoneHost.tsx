@@ -7,6 +7,7 @@ import { useRoom } from '@/realtime/use-room';
 import { hostToken } from '@/realtime/identity';
 import { Avatar } from '@/components/ui/Avatar';
 import { Toggle } from '@/components/ui/Toggle';
+import { useConfirm } from '@/components/ui/Button';
 import { Icon } from '@/components/icons/Icon';
 import styles from './PhoneHost.module.css';
 
@@ -26,6 +27,7 @@ export function HostMenu({ view }: { view: RoomView }) {
   const [open, setOpen] = useState(false);
   const playing = view.stage === 'playing';
   const others = view.people.filter((p) => p.id !== view.you?.id);
+  const confirm = useConfirm();
 
   useEffect(() => {
     if (!open) return;
@@ -42,7 +44,8 @@ export function HostMenu({ view }: { view: RoomView }) {
   return (
     <>
       <button type="button" className={styles.trigger} onClick={() => setOpen(true)} aria-label="Host controls" aria-haspopup="dialog">
-        <Icon name="settings" size={26} />
+        <Icon name="mic" size={22} />
+        <span>Host</span>
       </button>
       <AnimatePresence>
         {open && (
@@ -66,8 +69,8 @@ export function HostMenu({ view }: { view: RoomView }) {
                   <button type="button" className={styles.action} onClick={() => run({ type: view.paused ? 'resume' : 'pause' })}>
                     <Icon name={view.paused ? 'play' : 'pause'} size={22} /> {view.paused ? 'Resume' : 'Pause'}
                   </button>
-                  <button type="button" className={styles.action} onClick={() => run({ type: 'skip' })}>
-                    <Icon name="skip" size={22} /> Skip ahead
+                  <button type="button" className={`${styles.action} ${confirm.armed('skip') ? styles.armed : ''}`} onClick={() => confirm.ask('skip', () => run({ type: 'skip' }))}>
+                    <Icon name="skip" size={22} /> {confirm.armed('skip') ? 'Tap to skip' : 'Skip ahead'}
                   </button>
                 </div>
               )}
@@ -82,11 +85,21 @@ export function HostMenu({ view }: { view: RoomView }) {
                       <li key={p.id} className={styles.person}>
                         <Avatar avatar={p.avatar} size={34} />
                         <span className={styles.name}>{p.name}</span>
-                        <button type="button" className={styles.small} onClick={() => room.host({ type: 'kick', id: p.id })}>
-                          Kick
+                        <button
+                          type="button"
+                          className={`${styles.small} ${confirm.armed(`kick:${p.id}`) ? styles.armed : ''}`}
+                          onClick={() => confirm.ask(`kick:${p.id}`, () => room.host({ type: 'kick', id: p.id }))}
+                          aria-label={confirm.armed(`kick:${p.id}`) ? `Confirm kick ${p.name}` : `Kick ${p.name}`}
+                        >
+                          {confirm.armed(`kick:${p.id}`) ? 'Sure?' : 'Kick'}
                         </button>
-                        <button type="button" className={`${styles.small} ${styles.danger}`} onClick={() => room.host({ type: 'ban', id: p.id })}>
-                          Ban
+                        <button
+                          type="button"
+                          className={`${styles.small} ${confirm.armed(`ban:${p.id}`) ? styles.armed : ''}`}
+                          onClick={() => confirm.ask(`ban:${p.id}`, () => room.host({ type: 'ban', id: p.id }))}
+                          aria-label={confirm.armed(`ban:${p.id}`) ? `Confirm ban ${p.name}` : `Ban ${p.name}`}
+                        >
+                          {confirm.armed(`ban:${p.id}`) ? 'Sure?' : 'Ban'}
                         </button>
                       </li>
                     ))}
@@ -95,8 +108,8 @@ export function HostMenu({ view }: { view: RoomView }) {
               )}
 
               {playing && (
-                <button type="button" className={`${styles.action} ${styles.danger}`} onClick={() => run({ type: 'end' })}>
-                  End game and go back to the lobby
+                <button type="button" className={`${styles.quiet} ${confirm.armed('end') ? styles.armed : ''}`} onClick={() => confirm.ask('end', () => run({ type: 'end' }))}>
+                  {confirm.armed('end') ? 'Tap again to end it for everyone' : 'End game and go back to the lobby'}
                 </button>
               )}
             </motion.div>

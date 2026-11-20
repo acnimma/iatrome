@@ -179,7 +179,7 @@ export function Scoreboard({ view, scores, previous, limit = 10 }: { view: RoomV
             <span className={styles.rank}>{i + 1}</span>
             <Avatar avatar={p.avatar} size={44} />
             <span className={styles.scoreName}>
-              {p.name}
+              <span className={styles.scoreNameText}>{p.name}</span>
               {gain > 0 && (
                 <motion.span className={styles.gain} initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.4 + i * 0.06, type: 'spring', stiffness: 420, damping: 14 }}>
                   +{gain.toLocaleString()}

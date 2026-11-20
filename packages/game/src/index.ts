@@ -8,6 +8,7 @@ export { games, type GameState, type GameView, type GameAction } from './games/r
 export { gameInfo } from './games/info';
 export type { Viewer } from './games/context';
 export type { GrandRoundsView, MatchupView, EntryView, TaskView, MatchupResult, MatchupKind } from './games/grand-rounds';
+export { duelReadTiming, duelRevealTiming, finaleRevealTiming } from './games/grand-rounds/timing';
 export type { SketchView } from './games/sketch';
 export type { SurviveView } from './games/survive';
 export type { PoisonView } from './games/poison';

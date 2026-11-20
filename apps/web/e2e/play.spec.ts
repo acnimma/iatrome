@@ -123,6 +123,7 @@ test('moderation: password, kick and ban', async ({ browser }) => {
 
   await stage.getByText('Troll').hover();
   await stage.getByRole('button', { name: 'Ban Troll' }).click();
+  await stage.getByRole('button', { name: 'Confirm ban Troll' }).click(); // destructive: tap twice
   await expect(phone.getByText('You’ve been banned from this room')).toBeVisible();
 
   // Coming back with a new name, even with the right password, doesn't work: the device is banned.
@@ -141,11 +142,11 @@ test('phones only: host from a phone, play with no big screen', async ({ browser
   await host.goto('/host');
   await expect(host.getByRole('radio', { name: /Just phones/ })).toHaveAttribute('aria-checked', 'true');
   await host.getByRole('radio', { name: /Survive the Shift/ }).click();
+  // The host types their name in setup and walks straight into the lobby.
+  await host.getByLabel('Your name').fill('Ana');
   await host.getByRole('button', { name: 'Create room' }).click();
   await host.waitForURL(/\/play\//);
   const code = host.url().split('/').pop()!;
-  await host.getByLabel('Your name').fill('Ana');
-  await host.getByRole('button', { name: 'Join game' }).click();
   await expect(host.getByText('Friends join with')).toBeVisible();
 
   const friend = await joinPhone(browser, code, 'Ben', 1);

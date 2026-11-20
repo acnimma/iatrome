@@ -8,8 +8,8 @@ import { useRoom } from '@/realtime/use-room';
 import { roomPassword } from '@/realtime/identity';
 import { siteDisplayHost } from '@/realtime/config';
 import { Avatar } from '@/components/ui/Avatar';
-import { BackButton } from '@/components/ui/BackButton';
-import { Button } from '@/components/ui/Button';
+import { useRouter } from 'next/navigation';
+import { Button, useConfirm } from '@/components/ui/Button';
 import { SettingsDialog } from '@/components/room/SettingsDialog';
 import { StatHolders } from '@/components/room/Stat';
 import { InviteButton } from '@/components/room/InviteButton';
@@ -20,6 +20,8 @@ import { Icon } from '@/components/icons/Icon';
 
 export function StageLobby({ view, hideCode }: { view: RoomView; hideCode: boolean }) {
   const room = useRoom();
+  const router = useRouter();
+  const confirm = useConfirm();
   const [site, setSite] = useState('');
   const [password, setPassword] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
@@ -43,7 +45,9 @@ export function StageLobby({ view, hideCode }: { view: RoomView; hideCode: boole
     <div className={styles.lobby}>
       <section className={styles.join}>
         <div className={styles.home}>
-          <BackButton href="/" label="Home" />
+          <Button tone="ghost" size="sm" confirm="Tap again to close the stage" onClick={() => router.push('/')}>
+            <Icon name="back" size={22} /> Home
+          </Button>
         </div>
         <img src="/brand/wordmark.svg" alt="iatrome" className={styles.wordmark} />
         <p className={styles.lead}>Grab your phone and go to</p>
@@ -62,7 +66,7 @@ export function StageLobby({ view, hideCode }: { view: RoomView; hideCode: boole
             )}
             {!hideCode && <InviteButton code={view.code} />}
             {view.locked && <Pill tone="rose">Room locked</Pill>}
-            <p className={styles.note}>No real patients or identifiers, please.</p>
+            <p className={styles.note}>Leave real patients out of it. Nobody here signed a consent form.</p>
           </div>
         </div>
       </section>
@@ -113,14 +117,25 @@ export function StageLobby({ view, hideCode }: { view: RoomView; hideCode: boole
                 exit={{ scale: 0, opacity: 0 }}
                 transition={{ type: 'spring', stiffness: 420, damping: 16 }}
               >
-                <Avatar avatar={p.avatar} size={bubble} name={p.name} dim={!p.connected} badge={view.vip === p.id ? <Icon name="star" size={Math.round(bubble * 0.32)} label="VIP" /> : undefined} />
-                <span className={styles.playerActions}>
-                  <button type="button" className={styles.kick} onClick={() => room.host({ type: 'kick', id: p.id })} aria-label={`Kick ${p.name}`}>
-                    Kick
-                  </button>
-                  <button type="button" className={styles.ban} onClick={() => room.host({ type: 'ban', id: p.id })} aria-label={`Ban ${p.name}`}>
-                    Ban
-                  </button>
+                <Avatar avatar={p.avatar} size={bubble} dim={!p.connected} badge={view.vip === p.id ? <Icon name="star" size={Math.round(bubble * 0.32)} label="VIP" /> : undefined} />
+                {/* Wraps to two lines rather than cutting "Benjamin Franklin" short. */}
+                <span className={`${styles.playerName} ${p.connected ? '' : styles.away}`}>{p.name}</span>
+                <span className={`${styles.playerActions} ${confirm.armed(`kick:${p.id}`) || confirm.armed(`ban:${p.id}`) ? styles.asking : ''}`}>
+                  {(['kick', 'ban'] as const).map((type) => {
+                    const key = `${type}:${p.id}`;
+                    const verb = type === 'kick' ? 'Kick' : 'Ban';
+                    return (
+                      <button
+                        key={type}
+                        type="button"
+                        className={`${styles.kick} ${confirm.armed(key) ? styles.armed : ''}`}
+                        onClick={() => confirm.ask(key, () => room.host({ type, id: p.id }))}
+                        aria-label={confirm.armed(key) ? `Confirm ${type} ${p.name}` : `${verb} ${p.name}`}
+                      >
+                        {confirm.armed(key) ? `${verb}?` : verb}
+                      </button>
+                    );
+                  })}
                 </span>
               </motion.li>
             ))}
@@ -136,7 +151,7 @@ export function StageLobby({ view, hideCode }: { view: RoomView; hideCode: boole
           <Button
             size="xl"
             block
-            disabled={needed > 0}
+            waiting={needed > 0}
             onClick={() => {
               unlockAudio();
               room.host({ type: 'start' });

@@ -6,7 +6,7 @@ export const ROOM = {
   codeLength: 6,
   maxPeople: 44, // everyone connected to one room
   maxPlayers: 40, // most players any game supports
-  maxNameLength: 16,
+  maxNameLength: 20,
   maxPasswordLength: 32,
   /** A dropped player still counts as present this long (phones sleep, tunnels happen). */
   reconnectGrace: 20_000,
@@ -34,6 +34,26 @@ export const GRAND_ROUNDS = {
   present: { quip: 4_000, doodle: 6_500, differential: 7_500 },
   /** The finale reveals every list one after another: this long per list, on top of the base. */
   presentPerList: 2_600,
+  /**
+   * Duels are read aloud: the prompt, a beat, answer A, a beat, answer B. The present phase is
+   * as long as that takes (lead-in + per word), so the read never gets cut off.
+   */
+  readLeadIn: 1_200,
+  readMsPerWord: 360,
+  readGap: 700,
+  presentMax: 15_000,
+  /**
+   * The reveal, as a show: a drumroll (Beep's heart racing), voters land one by one, the winner
+   * lights up, the author flips over, the points count up. Results last as long as that takes.
+   */
+  drumroll: 1_600,
+  perVoter: 380,
+  resultsHold: 3_600,
+  /** A unanimous duel gets the full-screen PATHOGNOMONIC moment: this much longer. */
+  pathognomonicExtra: 2_000,
+  /** Finale: every player has this many votes and can stack them; lists are revealed fewest votes first. */
+  finalePicks: 3,
+  finalePerList: 1_700,
   vote: 15_000,
   /** Reading everyone's list takes longer than reading two. */
   voteFinale: 25_000,
@@ -46,8 +66,6 @@ export const GRAND_ROUNDS = {
   multipliers: [1, 2, 4] as const,
   /** People watching (not in the game) vote as one block worth this share of the result. */
   audienceWeight: 1 / 3,
-  /** With a single voter, the winner's share is capped so one person can't swing a full pool. */
-  soloVoteCap: 0.65,
   /** Finale: every vote is worth this (before the multiplier); the most-voted list gets a bonus. */
   finaleVote: 500,
   /** An audience vote in the finale is worth this much of a player's. */
@@ -78,6 +96,17 @@ export const SKETCH = {
   drawerShare: 0.5,
   /** Hint letters appear at these points of the drawing time. */
   hintsAt: [0.45, 0.7],
+  /** Small groups go round twice (one lap would leave the final stretch to one drawing), on a shorter clock. */
+  twoLapsUpTo: 4,
+  drawTwoLaps: 65_000,
+  /** The end-of-game gallery: a base, plus a little per drawing, capped. */
+  gallery: 3_000,
+  galleryPerDrawing: 600,
+  galleryMax: 9_000,
+  /** Solvers can nudge the room (warmer, colder) this often. */
+  nudgeCooldown: 1_500,
+  /** "They're writing letters": at least this share of guessers (and at least 2) voids the artist's points. */
+  flagShare: 0.5,
 } as const;
 
 export const SURVIVE = {
@@ -86,18 +115,28 @@ export const SURVIVE = {
   intro: 4_500,
   question: 15_000,
   reveal: 6_500,
+  /** Extra reveal time when someone clocks out, so they get their moment on stage. */
+  outScene: 3_000,
+  /** Beep's clock-out line lands with the scene, after the answer. */
+  outLineDelay: 1_800,
+  /** The Sign-out title card before the final chase. */
+  chaseIntro: 6_000,
   coffees: 2,
-  /** Short and tense beats long and grinding: Trivia Murder Party runs about 7–9. */
+  /** Short and tense beats long and grinding: Trivia Murder Party runs about 7–9. Everyone plays all of them. */
   maxQuestions: 12,
-  /** The last question is "last call": worth this much more. */
-  lastCallFactor: 2,
-  /** Correct answers score base + up to speedBonus for answering fast. */
+  /** Sign-out, the final chase: the last questions climb through these multipliers, ghosts at full value. */
+  chaseFactors: [2, 2, 3] as readonly number[],
+  /** Correct answers score base + up to speedBonus for answering fast (the leader gets no speed bonus in the chase). */
   base: 100,
   speedBonus: 100,
-  /** Clocked-out players keep answering for a share of the points. */
+  /** Paid to everyone still on shift after each question: staying on shift is worth something. */
+  shiftPay: 50,
+  /** Clocked-out players keep answering for a share of the points (full value in the chase). */
   ghostFactor: 0.5,
   /** This many right in a row as a ghost puts you back on shift with one coffee. As often as you earn it. */
   ghostRevive: 2,
+  /** Mercy (every survivor missed, nobody loses a coffee) needs at least this many on shift, and never applies in the chase. */
+  mercyFrom: 3,
 } as const;
 
 /** Long questions (Pro vignettes) get extra reading time: per character past `free`, capped. */
@@ -109,19 +148,25 @@ export const POISON = {
   intro: 4_500,
   choose: 20_000,
   reveal: 5_500,
-  /** The minority gets a moment to volunteer a defence. Nobody is forced to. */
-  volunteer: 6_000,
-  defend: 15_000,
-  /** The majority reads the defence and can tap "Convinced". */
-  defence: 9_000,
+  /** Before the defence, the majority bets on whether anyone will switch. */
+  bet: 7_000,
+  /** Against Medical Advice: the defender argues out loud while the majority can switch sides. */
+  defence: 20_000,
+  /** Who switched, and who called it. */
+  verdict: 5_000,
+  /** The final dilemma's title card. */
+  finalIntro: 5_000,
   rounds: 8,
   /** The final dilemma is worth this much more: anyone can still win it. */
   finalFactor: 3,
-  /** Calling the majority pays this, up to double when the room was nearly split. */
+  /** Calling the other players' majority pays this, up to double when they were nearly split. Half if they tied. */
   predictPoints: 100,
-  defendPoints: 50,
-  /** Per person the defence convinced. */
-  convertPoints: 50,
+  /** The only one on your side (with at least two on the other): the contrarian bonus. */
+  loneBonus: 100,
+  /** The defender, per person they talked into switching. */
+  flipPoints: 100,
+  /** A right call on "Will anyone switch?". Small on purpose. */
+  betPoints: 50,
 } as const;
 
 export const DIDACTICS = {
@@ -130,13 +175,27 @@ export const DIDACTICS = {
   intro: 6_000,
   teams: 8_000,
   question: 20_000,
+  /** Once everyone has answered (or time is up), teams see their split and can switch once. */
+  huddle: 7_000,
   reveal: 7_000,
   standings: 7_000,
   questions: 12,
   /** Show the team standings after every this many questions. */
   standingsEvery: 3,
-  /** The last questions are worth double. */
+  /** Before the final question: lightning questions, worth double, short clock, no huddle. */
   lightning: 3,
+  lightningIntro: 4_500,
+  lightningQuestion: 12_000,
+  /** The final question: each team's captain bets a share of the team's score. */
+  wager: 15_000,
+  wagers: [0, 0.25, 0.5, 1] as const,
+  /** A team below this bets as if it had this much, so a team near zero can still swing. Losses never go below zero. */
+  wagerFloor: 1_000,
+  /** Split, then answer, then every team's swing. */
+  finalReveal: 10_000,
+  /** Teams of about this many: up to `maxTeams`, never fewer than 2. */
+  perTeam: 5.5,
+  maxTeams: 8,
   /** Each question splits this many points per team by share of members right. */
   pool: 1_000,
   /** Individual points (for the MVP): base + up to speedBonus for a fast right answer. */
