@@ -92,7 +92,7 @@ export function PoisonStage({ view, game }: { view: RoomView; game: PoisonView }
         <span className={styles.or}>or</span>
       </div>
       {phase === 'choose' && <AvatarRow ids={players} view={view} size={48} done={new Set(game.done)} />}
-      {revealed && game.majority === 'tie' && <Stamp tone="sky">Dead even!</Stamp>}
+      {revealed && game.majority === 'tie' && <Stamp tone="sky">Dead even</Stamp>}
       {revealed && Object.keys(game.earned).length > 0 && (
         <p className={styles.earned}>
           Read the room: {Object.keys(game.earned).map((id) => nameOf(people, id)).join(', ')}

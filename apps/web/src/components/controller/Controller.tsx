@@ -42,7 +42,7 @@ function PhoneScreen({ code, snap }: { code: string; snap: Snapshot }) {
   if (snap.removed) return <Removed reason={snap.removed} />;
   if (snap.error === 'no-room') return <NoRoom code={code} />;
   if (snap.status === 'needs-join' || snap.status === 'joining') return <JoinForm code={code} snap={snap} />;
-  if (!snap.view) return <p className={styles.connecting}>Paging the room…</p>;
+  if (!snap.view) return <p className={styles.connecting}>Connecting…</p>;
   return <InRoom view={snap.view} reconnecting={snap.status === 'reconnecting'} />;
 }
 
@@ -129,7 +129,7 @@ function FeedbackToast({ feedback }: { feedback: Snapshot['feedback'] }) {
 function Removed({ reason }: { reason: 'kicked' | 'banned' | 'closed' }) {
   return (
     <div className={styles.center}>
-      <h1 className={styles.bigTitle}>{reason === 'banned' ? 'You’ve been discharged' : 'You were removed'}</h1>
+      <h1 className={styles.bigTitle}>{reason === 'banned' ? 'You’ve been banned from this room' : 'You were removed'}</h1>
       <p className={styles.soft}>{reason === 'banned' ? 'The host banned this device from the room.' : 'The host removed you from the room.'}</p>
       <Link href="/">
         <Button tone="card" size="lg">

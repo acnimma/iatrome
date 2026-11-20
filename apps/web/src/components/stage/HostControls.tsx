@@ -53,7 +53,7 @@ export function HostControls({ view, prefs, onPrefs }: { view: RoomView; prefs: 
             <Toggle label="Hide room code" hint="Streaming? Keep the code off screen." checked={prefs.hideCode} onChange={(hideCode) => onPrefs({ hideCode })} />
             <Toggle
               label="Lock room"
-              hint="Nobody new can join, not even to watch."
+              hint="Nobody new can join."
               checked={view.locked}
               onChange={(locked) => room.host({ type: locked ? 'lock' : 'unlock' })}
             />

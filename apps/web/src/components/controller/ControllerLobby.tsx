@@ -86,8 +86,8 @@ export function ControllerLobby({ view }: { view: RoomView }) {
           ))}
         </div>
       ) : (
-        <PhoneMessage title={me.role === 'audience' ? 'You’re in the audience' : 'You’re in!'}>
-          {me.role === 'audience' ? 'You’ll get to vote on everyone’s answers.' : `Next up: ${info.title}. Eyes on the big screen.`}
+        <PhoneMessage title={me.role === 'audience' ? 'You’re up next game' : 'You’re in!'}>
+          {me.role === 'audience' ? 'This game is full. You’ll be dealt into the next one.' : `Next up: ${info.title}. Eyes on the big screen.`}
         </PhoneMessage>
       )}
 

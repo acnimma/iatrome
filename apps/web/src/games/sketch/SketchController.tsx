@@ -49,7 +49,7 @@ export function SketchController({ view, game }: { view: RoomView; game: SketchV
         </PhoneStack>
       ) : (
         <PhoneMessage icon="thinking" title={`${drawerName} is choosing…`}>
-          Get your guessing thumbs ready.
+          Get ready to guess.
         </PhoneMessage>
       );
     case 'draw':

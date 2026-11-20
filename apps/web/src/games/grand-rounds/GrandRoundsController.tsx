@@ -234,7 +234,7 @@ function MatchupPhone({ view, game, matchup }: { view: RoomView; game: GrandRoun
   if (phase === 'present') {
     return matchup.yours !== null ? (
       <PhoneMessage icon="shush" title="This one’s yours">
-        Look innocent. Don’t give it away.
+        Keep a straight face.
       </PhoneMessage>
     ) : (
       <PhoneMessage icon="eye" title="Get ready to vote">

@@ -60,7 +60,7 @@ export function StageLobby({ view, hideCode }: { view: RoomView; hideCode: boole
             )}
             {!hideCode && <InviteButton code={view.code} />}
             {view.locked && <Pill tone="rose">Room locked</Pill>}
-            <p className={styles.note}>No real patients. No identifiers. Just vibes.</p>
+            <p className={styles.note}>No real patients or identifiers, please.</p>
           </div>
         </div>
       </section>

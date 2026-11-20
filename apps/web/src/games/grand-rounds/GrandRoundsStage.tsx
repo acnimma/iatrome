@@ -56,7 +56,7 @@ function Writing({ view, game }: { view: RoomView; game: GrandRoundsView }) {
     <div className={styles.writing}>
       <TimerRing phase={game.phase} pausedAt={view.pausedAt} size={150} ticks />
       <h2 className={styles.heading}>{title}</h2>
-      <p className={styles.sub}>Be funny. Be fast. Your answer stays anonymous until the votes are in.</p>
+      <p className={styles.sub}>Answers stay anonymous until the votes are in.</p>
       <AvatarRow ids={players} view={view} size={68} done={done} />
     </div>
   );
@@ -101,7 +101,7 @@ function Matchup({ view, game, matchup }: { view: RoomView; game: GrandRoundsVie
       <div className={styles.footer}>
         {phase === 'vote' && (
           <motion.div className={styles.votePrompt} initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
-            <strong>Vote on your phones!</strong>
+            <strong>Vote on your phones</strong>
             <span className={styles.pips}>
               {Array.from({ length: Math.max(matchup.votersExpected, matchup.votesIn) }, (_, i) => (
                 <motion.span key={i} className={i < matchup.votesIn ? styles.pipOn : styles.pip} animate={i < matchup.votesIn ? { scale: [1, 1.5, 1] } : {}} />

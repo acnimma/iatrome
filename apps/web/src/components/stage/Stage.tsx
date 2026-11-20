@@ -170,7 +170,7 @@ function Loading() {
     <div className={styles.problem}>
       <Backdrop />
       <motion.div animate={{ scale: [1, 1.08, 1] }} transition={{ repeat: Infinity, duration: 1.2 }} className={styles.loading}>
-        Paging the room…
+        Connecting…
       </motion.div>
     </div>
   );
