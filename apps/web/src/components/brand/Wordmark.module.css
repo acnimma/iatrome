@@ -56,21 +56,38 @@
   pointer-events: none;
 }
 
-/* the palette glimpsed inside the tablet as it cracks open */
-.flashClip {
+/* The hollow inside the tablet: a warm back wall, round like the tablet itself. */
+.cavity {
   position: absolute;
-  z-index: 2;
   overflow: hidden;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 38%, #f6f2ec, #d9d2c6 70%, #b9b3aa);
   pointer-events: none;
+}
+
+/* The helix stands on the score line, so it leans with it. */
+.helixAxis {
+  position: absolute;
+  inset: 0;
 }
 
 .flash {
   position: absolute;
-  inset: auto 0 0;
-  height: 70%; /* room above for the spring overshoot, so it's never cut off */
+  top: 2%;
+  left: 31%;
+  width: 38%;
+  height: 96%;
   opacity: 0;
   transform-origin: 50% 100%;
   will-change: transform, opacity;
+}
+
+/* Shading under the rim, drawn over the helix so it sits down inside. */
+.rim {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
 }
 
 /* The helix scrolls by one full twist, on a loop, so it reads as spiralling. */
@@ -78,9 +95,9 @@
   display: block;
   width: 100%;
   height: 100%;
-  /* soft ends, so the scrolling strand trails off instead of stopping dead */
-  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 12%, #000 90%, transparent);
-  mask-image: linear-gradient(to bottom, transparent, #000 12%, #000 90%, transparent);
+  /* the bottom fades into the depth of the tablet; the top trails off */
+  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 14%, #000 62%, transparent 92%);
+  mask-image: linear-gradient(to bottom, transparent, #000 14%, #000 62%, transparent 92%);
 }
 
 .spiral {

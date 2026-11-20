@@ -27,14 +27,18 @@ const { pivot, radius, tilt } = W.tablet;
 const pct = (n: number) => `${(n * 100).toFixed(2)}%`;
 /** The hinge the tablet's halves open around (the bottom of its score line), relative to its box. */
 const hinge = `${pct((pivot.x - tabletBox.x) / tabletBox.width)} ${pct((pivot.y - tabletBox.y) / tabletBox.height)}`;
-/** The double helix inside the crack, standing on the hinge along the score line. */
-const flashPlacement = {
-  left: pct((pivot.x - radius * 0.5 - tabletBox.x) / tabletBox.width),
-  top: pct((pivot.y - radius * 3.4 - tabletBox.y) / tabletBox.height),
-  width: pct((radius * 1.0) / tabletBox.width),
-  height: pct((radius * 3.4) / tabletBox.height),
-  rotate: `${tilt}deg`,
+/** The tablet's centre: the score line runs from the hinge up through it, leaning by `tilt`. */
+const lean = (tilt * Math.PI) / 180;
+const centre = { x: pivot.x + radius * Math.sin(lean), y: pivot.y - radius * Math.cos(lean) };
+/** The hollow inside the tablet: its own circle, behind the halves, seen only through the crack. */
+const cavityPlacement = {
+  left: pct((centre.x - radius - tabletBox.x) / tabletBox.width),
+  top: pct((centre.y - radius - tabletBox.y) / tabletBox.height),
+  width: pct((radius * 2) / tabletBox.width),
+  height: pct((radius * 2) / tabletBox.height),
 };
+/** The rim's width inside the cavity, matching the halves' outline (viewBox units, diameter 100). */
+const rim = (W.tablet.outline / radius) * 100;
 
 // ── Interaction tuning (wordmark units) ──────────────────────────────────────
 
@@ -263,6 +267,13 @@ export function Wordmark({ className }: { className?: string }) {
       <span className="visually-hidden">iatrome</span>
       <svg className={styles.paint} aria-hidden>
         <defs dangerouslySetInnerHTML={{ __html: W.paint.replaceAll('__ID__', id) }} />
+        <defs>
+          {/* shading inside the tablet: shadowed under the rim, so the helix sits down in it */}
+          <radialGradient id={`${id}-depth`} cx="0.5" cy="0.58" r="0.5">
+            <stop offset="0.55" stopColor="#0e101b" stopOpacity="0" />
+            <stop offset="1" stopColor="#0e101b" stopOpacity="0.45" />
+          </radialGradient>
+        </defs>
       </svg>
 
       {/* every shadow sits below every letter */}
@@ -290,6 +301,18 @@ export function Wordmark({ className }: { className?: string }) {
           <span ref={(el) => void (glyphs.current[i] = el)} className={styles.glyph} style={{ transformOrigin: seat(box) }}>
             {i === W.tablet.index ? (
               <>
+                {/* the hollow inside: back wall, the helix rising out of it, then the rim; the halves cover all but the crack */}
+                <span className={styles.cavity} style={cavityPlacement}>
+                  <span className={styles.helixAxis} style={{ rotate: `${tilt}deg` }}>
+                    <span ref={flashRef} className={styles.flash}>
+                      <Helix />
+                    </span>
+                  </span>
+                  <svg viewBox="0 0 100 100" className={styles.rim} aria-hidden>
+                    <circle cx="50" cy="50" r={50} fill={`url(#${id}-depth)`} />
+                    <circle cx="50" cy="50" r={50} fill="none" stroke={W.tablet.colors.line} strokeWidth={rim * 2} />
+                  </svg>
+                </span>
                 {parts.map((d, k) => (
                   <span key={d} ref={(el) => void (halves.current[k] = el)} className={styles.half} style={{ transformOrigin: hinge }}>
                     <svg viewBox={viewBox(box)} aria-hidden>
@@ -297,12 +320,6 @@ export function Wordmark({ className }: { className?: string }) {
                     </svg>
                   </span>
                 ))}
-                {/* clipped at the hinge, so the helix rises out of the crack and sinks back in */}
-                <span className={styles.flashClip} style={flashPlacement}>
-                  <span ref={flashRef} className={styles.flash}>
-                    <Helix />
-                  </span>
-                </span>
               </>
             ) : (
               <svg viewBox={viewBox(box)} aria-hidden>
