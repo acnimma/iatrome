@@ -87,7 +87,7 @@
   border: var(--outline);
   border-radius: 24px;
   background: var(--card);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--gloss), var(--shadow-md);
 }
 
 .joinLabel {
@@ -126,9 +126,10 @@
   gap: 8px;
   padding: 10px 14px;
   border: var(--outline);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   background: var(--card);
   font-weight: 800;
+  box-shadow: var(--gloss), var(--shadow-md);
 }
 
 .teams .myTeamRow {

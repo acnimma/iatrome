@@ -58,9 +58,9 @@ export const differentials: DifferentialPrompt[] = [
   },
   {
     id: "diff-010",
-    text: "Three warning signs your study group isn’t working",
+    text: "Three signs your dentist does not like you",
     breadth: "universal",
-    beep: ["Agenda item one: snacks", "400 texts, zero notes", "We gave the skeleton a backstory"],
+    beep: ["Every visit starts with “so…”", "Asks questions mid-drill, on purpose", "Gives you the beige toothbrush"],
   },
   {
     id: "diff-011",
@@ -70,9 +70,9 @@ export const differentials: DifferentialPrompt[] = [
   },
   {
     id: "diff-012",
-    text: "Three rejected names for the funny bone",
+    text: "Three things your mom says when you call her sick",
     breadth: "universal",
-    beep: ["The Ow Spot", "Elbow Lightning", "Technically the ulnar nerve"],
+    beep: ["“Are you drinking water?”", "“It’s that phone”", "“I’ll come over.” (She’s outside.)"],
   },
   {
     id: "diff-013",
@@ -118,9 +118,9 @@ export const differentials: DifferentialPrompt[] = [
   },
   {
     id: "diff-020",
-    text: "Three things written on the whiteboard that nobody erases",
+    text: "Three things written on the whiteboard in your hospital room",
     breadth: "universal",
-    beep: ["A reminder from 2017", "A phone number for no one", "DO NOT ERASE (origin unknown)"],
+    beep: ["Your nurse: Kim (left in 2019)", "Goal: walk", "Pain: a smiley face, somehow"],
   },
   {
     id: "diff-021",
@@ -154,9 +154,9 @@ export const differentials: DifferentialPrompt[] = [
   },
   {
     id: "diff-026",
-    text: "Three rejected units of measurement in medicine",
+    text: "Three better ways to rate pain than 1 to 10",
     breadth: "universal",
-    beep: ["A smidge per kilo", "One heaping IV", "Milligrams per mood"],
+    beep: ["In stubbed toes", "Number of swears", "Grandmas required to calm you"],
   },
   {
     id: "diff-027",
@@ -178,9 +178,9 @@ export const differentials: DifferentialPrompt[] = [
   },
   {
     id: "diff-030",
-    text: "Three things you will definitely not find in the textbook",
+    text: "Three things the doctor’s office will never tell you",
     breadth: "universal",
-    beep: ["Where the good coffee is", "Which stapler actually works", "Which elevator is cursed"],
+    beep: ["Where the doctor actually is", "The fish’s name", "Why the clock is 20 minutes slow"],
   },
   {
     id: "diff-031",
@@ -208,9 +208,9 @@ export const differentials: DifferentialPrompt[] = [
   },
   {
     id: "diff-035",
-    text: "Three sounds you hear in every exam hall",
+    text: "Three sounds you hear in every waiting room",
     breadth: "universal",
-    beep: ["Aggressive sniffing", "A stomach rumbling in C minor", "Someone finishing in 20 minutes"],
+    beep: ["A cough with real ambition", "A phone video at full volume", "The fish tank, judging"],
   },
   {
     id: "diff-036",
@@ -238,9 +238,9 @@ export const differentials: DifferentialPrompt[] = [
   },
   {
     id: "diff-040",
-    text: "Three new nerves discovered during finals week",
+    text: "Three bones the anatomy textbook forgot",
     breadth: "universal",
-    beep: ["The “Not Today” nerve", "Cranial nerve XIII: Panic", "The nerve to ask for a curve"],
+    beep: ["The wishbone", "The lazy bone", "The bone you pick with your sister"],
   },
   {
     id: "diff-041",
@@ -262,15 +262,15 @@ export const differentials: DifferentialPrompt[] = [
   },
   {
     id: "diff-044",
-    text: "Three things you should never do in the library during exam season",
+    text: "Three things you should never do in a doctor’s waiting room",
     breadth: "universal",
-    beep: ["Unwrap anything crunchy", "Breathe audibly", "Ask “How much have you studied?”"],
+    beep: ["Sit next to the cougher", "Ask “so what are you in for?”", "Make eye contact with the fish"],
   },
   {
     id: "diff-045",
-    text: "Three things the thyroid says in its performance review",
+    text: "Three items on a hospital bill nobody can explain",
     breadth: "universal",
-    beep: ["I run heat AND metabolism", "Butterfly-shaped, very professional", "The pituitary keeps micromanaging me"],
+    beep: ["Chair, sat in: $45", "Use of the word “hmm”", "One tissue: $38"],
   },
   {
     id: "diff-046",
@@ -286,9 +286,9 @@ export const differentials: DifferentialPrompt[] = [
   },
   {
     id: "diff-048",
-    text: "Three facts you learned and instantly forgot",
+    text: "Three medical “facts” your grandparents still believe",
     breadth: "universal",
-    beep: ["All 27 bones in the hand", "Which kidney sits lower", "That entire Tuesday lecture"],
+    beep: ["Swallowed gum stays seven years", "Wet hair gives you a cold", "Carrots give you night vision"],
   },
   {
     id: "diff-049",
@@ -304,9 +304,9 @@ export const differentials: DifferentialPrompt[] = [
   },
   {
     id: "diff-051",
-    text: "Three tips for surviving a 12-hour shift",
+    text: "Three ways to survive a day home sick",
     breadth: "universal",
-    beep: ["Hydrate, then never find a bathroom", "Eat lunch at 10 a.m. or never", "Trust no elevator"],
+    beep: ["Soup, couch, daytime TV judges", "Hourly symptom texts to Mom", "Naps in four-minute bursts"],
   },
   {
     id: "diff-052",
@@ -358,9 +358,9 @@ export const differentials: DifferentialPrompt[] = [
   },
   {
     id: "diff-060",
-    text: "Three signs you’ve been on call too long",
+    text: "Three signs you have become your parents at the doctor",
     breadth: "universal",
-    beep: ["You answer the doorbell like a page", "Your dreams have a pager tone", "You charted your breakfast"],
+    beep: ["You brought a printed list", "You asked about the parking", "You told the nurse about your knee"],
   },
   {
     id: "diff-061",
@@ -376,9 +376,9 @@ export const differentials: DifferentialPrompt[] = [
   },
   {
     id: "diff-063",
-    text: "Three things your flashcards would say if they could talk",
+    text: "Three things a childproof pill bottle says to adults",
     breadth: "universal",
-    beep: ["Me again!", "You got me wrong yesterday", "We’re breeding in your backpack"],
+    beep: ["Push AND turn. Both. Together.", "Nice try", "I’m doing this for the kids"],
   },
   {
     id: "diff-064",
@@ -541,5 +541,107 @@ export const differentials: DifferentialPrompt[] = [
     text: "Three things the pharmacist thinks when you ask “is this normal?”",
     breadth: "universal",
     beep: ["Depends what “this” is", "Please don’t show me", "Sir, this is a drive-through"],
+  },
+  {
+    id: "diff-091",
+    text: "Three things your insurance won’t cover",
+    breadth: "universal",
+    beep: ["Your left foot", "Weekends", "Anything you actually need"],
+  },
+  {
+    id: "diff-092",
+    text: "Three questions that got cut from the new-patient form",
+    breadth: "universal",
+    beep: ["Rate your elbow’s attitude", "Any ghosts? List them.", "Who do you blame?"],
+  },
+  {
+    id: "diff-093",
+    text: "Three lies on a bottle of children’s medicine",
+    breadth: "universal",
+    beep: ["“Yummy grape flavor”", "“Easy to measure”", "“Child-resistant.” The child won."],
+  },
+  {
+    id: "diff-094",
+    text: "Three things dads say instead of going to the doctor",
+    breadth: "universal",
+    beep: ["“It’s just a muscle”", "“Walk it off”", "“I’ll see how it is next year”"],
+  },
+  {
+    id: "diff-095",
+    text: "Three things in every grandparent’s medicine cabinet",
+    breadth: "universal",
+    beep: ["Ointment from 1987", "A thermometer older than you", "Forty loose cotton balls"],
+  },
+  {
+    id: "diff-096",
+    text: "Three things the internet says you have after one sneeze",
+    breadth: "universal",
+    beep: ["The plague", "A rare goat allergy", "Three days to live, or a cold"],
+  },
+  {
+    id: "diff-097",
+    text: "Three things that happen right after you cancel a doctor’s appointment",
+    breadth: "universal",
+    beep: ["You feel perfect", "They have an opening today", "The symptom comes back, smugly"],
+  },
+  {
+    id: "diff-098",
+    text: "Three last words of a cold you finally beat",
+    breadth: "universal",
+    beep: ["I’ll be back in October", "Tell the toddler hi", "It was the doorknob. Always."],
+  },
+  {
+    id: "diff-099",
+    text: "Three things the tooth fairy has to explain to her accountant",
+    breadth: "universal",
+    beep: ["Why molars cost more", "The dentures incident", "Pillow-related travel expenses"],
+  },
+  {
+    id: "diff-100",
+    text: "Three rules for visiting someone in hospital",
+    breadth: "universal",
+    beep: ["Never eat their pudding", "Never say “you look tired”", "Leave before the nurse sighs"],
+  },
+  {
+    id: "diff-101",
+    text: "Three things a medieval doctor would blame your cold on",
+    breadth: "universal",
+    beep: ["The moon", "Thursday", "Insulting a goat"],
+  },
+  {
+    id: "diff-102",
+    text: "Three ways to take a pill you can’t bring yourself to swallow",
+    breadth: "universal",
+    beep: ["Hide it in pudding", "Hope", "Negotiate with it"],
+  },
+  {
+    id: "diff-103",
+    text: "Three things your phone’s health app is judging you for",
+    breadth: "universal",
+    beep: ["Twelve steps on Sunday", "Screen time: yes", "Sleep: four hours, in pieces"],
+  },
+  {
+    id: "diff-104",
+    text: "Three reasons the nurse always says “little pinch”",
+    breadth: "universal",
+    beep: ["“Medium stab” tested poorly", "Legal said so", "Nobody would come back"],
+  },
+  {
+    id: "diff-105",
+    text: "Three uses for the free hospital socks with grippy bottoms",
+    breadth: "universal",
+    beep: ["Indoor ice skating, safely", "Puppets", "Wearing them for the rest of your life"],
+  },
+  {
+    id: "diff-106",
+    text: "Three ways to tell your appointment is running late",
+    breadth: "universal",
+    beep: ["You’ve read the fish tank twice", "The receptionist avoids your eyes", "You aged, visibly"],
+  },
+  {
+    id: "diff-107",
+    text: "Three excuses dentists hear for not flossing",
+    breadth: "universal",
+    beep: ["“I forgot”", "“My gums are shy”", "“I floss. Just not visibly.”"],
   },
 ];

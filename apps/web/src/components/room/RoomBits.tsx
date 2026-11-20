@@ -6,6 +6,7 @@ import QRCode from 'qrcode';
 import { type PersonView, REACTIONS, type RoomView, gameInfo, type GameId } from '@iatrome/game/client';
 import { useRoom } from '@/realtime/use-room';
 import { Avatar } from '@/components/ui/Avatar';
+import { useAfter } from '@/components/ui/Later';
 import { Icon } from '@/components/icons/Icon';
 import { haptic } from '@/lib/haptics';
 import styles from './RoomBits.module.css';
@@ -154,27 +155,41 @@ export function Stamp({ children, tone = 'rose' }: { children: React.ReactNode; 
 
 // ── Scores ───────────────────────────────────────────────────────────────────
 
-/** Animated leaderboard: rows slide into rank order. */
-export function Scoreboard({ view, scores, limit = 10 }: { view: RoomView; scores: Record<string, number>; limit?: number }) {
+/**
+ * Animated leaderboard. Given `previous` scores, it starts in the old order, shows each
+ * player's gain, counts up from the old totals, then re-sorts so you can watch people move.
+ */
+export function Scoreboard({ view, scores, previous, limit = 10 }: { view: RoomView; scores: Record<string, number>; previous?: Record<string, number> | null; limit?: number }) {
   const people = usePeople(view);
+  const moved = useAfter(previous ? 1_400 : 0, previous);
+  const shown = previous && !moved ? previous : scores;
   const rows = Object.entries(scores)
     .filter(([id]) => people.has(id))
-    .sort((a, b) => b[1] - a[1])
+    .sort((a, b) => (shown[b[0]] ?? 0) - (shown[a[0]] ?? 0))
     .slice(0, limit);
-  const top = Math.max(1, rows[0]?.[1] ?? 1);
+  const top = Math.max(1, ...rows.map(([id]) => shown[id] ?? 0));
   return (
     <ol className={styles.scoreboard}>
       {rows.map(([id, score], i) => {
         const p = people.get(id)!;
+        const before = previous?.[id] ?? 0;
+        const gain = previous ? score - before : 0;
         return (
-          <motion.li key={id} layout className={styles.scoreRow} initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.06, type: 'spring', stiffness: 300, damping: 24 }}>
+          <motion.li key={id} layout className={styles.scoreRow} initial={{ opacity: 0, x: -30 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.06, type: 'spring', stiffness: 300, damping: 24, layout: { type: 'spring', stiffness: 260, damping: 26 } }}>
             <span className={styles.rank}>{i + 1}</span>
             <Avatar avatar={p.avatar} size={44} />
-            <span className={styles.scoreName}>{p.name}</span>
-            <span className={styles.scoreBar}>
-              <motion.span initial={{ width: 0 }} animate={{ width: `${(score / top) * 100}%` }} transition={{ delay: 0.2 + i * 0.06, duration: 0.9, ease: [0.22, 1, 0.36, 1] }} />
+            <span className={styles.scoreName}>
+              {p.name}
+              {gain > 0 && (
+                <motion.span className={styles.gain} initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.4 + i * 0.06, type: 'spring', stiffness: 420, damping: 14 }}>
+                  +{gain.toLocaleString()}
+                </motion.span>
+              )}
             </span>
-            <CountUp className={styles.scoreValue} value={score} />
+            <span className={styles.scoreBar}>
+              <motion.span initial={{ width: 0 }} animate={{ width: `${((shown[id] ?? 0) / top) * 100}%` }} transition={{ delay: 0.2 + i * 0.06, duration: 0.9, ease: [0.22, 1, 0.36, 1] }} />
+            </span>
+            <CountUp className={styles.scoreValue} value={shown[id] ?? 0} from={previous ? before : 0} />
           </motion.li>
         );
       })}
@@ -182,10 +197,9 @@ export function Scoreboard({ view, scores, limit = 10 }: { view: RoomView; score
   );
 }
 
-export function CountUp({ value, className, duration = 900 }: { value: number; className?: string; duration?: number }) {
-  const [shown, setShown] = useState(0);
+export function CountUp({ value, className, duration = 900, from = 0 }: { value: number; className?: string; duration?: number; from?: number }) {
+  const [shown, setShown] = useState(from);
   useEffect(() => {
-    const from = 0;
     const start = performance.now();
     let raf = 0;
     const frame = (t: number) => {
@@ -195,7 +209,7 @@ export function CountUp({ value, className, duration = 900 }: { value: number; c
     };
     raf = requestAnimationFrame(frame);
     return () => cancelAnimationFrame(raf);
-  }, [value, duration]);
+  }, [value, duration, from]);
   return <span className={className}>{shown.toLocaleString()}</span>;
 }
 

@@ -1,5 +1,5 @@
-import { curbsideGeneric, differentials, doodles, playerDifferentials, playerQuips, quips } from '@iatrome/content';
-import { GRAND_ROUNDS as GR, LIMITS } from '../../constants';
+import { type HostEvent, curbsideGeneric, differentials, doodles, playerDifferentials, playerQuips, quips } from '@iatrome/content';
+import { GRAND_ROUNDS as GR, LIMITS, REVEAL } from '../../constants';
 import { cleanText, sameAnswer } from '../../text';
 import type { Drawing, GameResult, Highlight, Phase } from '../../types';
 import { validDrawing } from '../../drawing';
@@ -11,6 +11,7 @@ import {
   type Viewer,
   setPhase,
   standings,
+  statted,
 } from '../context';
 import { BEEP, finalePairs, mixedKinds, ring, spreadOrder } from './assign';
 import { type Side, scoreForfeit, scoreVotes } from './scoring';
@@ -57,6 +58,10 @@ export interface GrandRoundsState extends BaseGameState {
   round: number;
   matchups: Matchup[];
   current: number;
+  /** Scores when the round began, so the scoreboard can show who moved. */
+  roundStart: Record<string, number>;
+  /** Beep has nagged about the writing time this round. */
+  nagged: boolean;
   /** Every finished matchup, for end-of-game highlights. */
   archive: { round: number; prompt: string; kind: MatchupKind; entries: Entry[]; result: MatchupResult }[];
 }
@@ -119,6 +124,8 @@ export interface GrandRoundsView {
   /** The viewer's own prompts (write phase, players only). */
   tasks: TaskView[];
   scores: Record<string, number>;
+  /** Scores before this round (scoreboard phase), so it can show who moved. */
+  previousScores: Record<string, number> | null;
 }
 
 // ── Module ───────────────────────────────────────────────────────────────────
@@ -141,6 +148,8 @@ export const grandRounds: GameModule<GrandRoundsState, GrandRoundsAction, GrandR
       round: 0,
       matchups: [],
       current: 0,
+      roundStart: {},
+      nagged: false,
       archive: [],
     };
     startRound(state, ctx);
@@ -180,7 +189,9 @@ export const grandRounds: GameModule<GrandRoundsState, GrandRoundsAction, GrandR
       case 'results':
         if (state.current + 1 < state.matchups.length) beginPresent(state, ctx, state.current + 1);
         else if (state.round + 1 < ROUNDS) {
-          ctx.say('scoreboard');
+          const [before, now] = [leaderOf(state.roundStart), leaderOf(state.scores)];
+          if (before && now && before !== now) ctx.say('leadChange', { name: ctx.person(now)?.name ?? 'Someone' });
+          else ctx.say('scoreboard');
           setPhase(state, ctx, 'scores', GR.scores);
         } else setPhase(state, ctx, 'done', null);
         return;
@@ -196,7 +207,7 @@ export const grandRounds: GameModule<GrandRoundsState, GrandRoundsAction, GrandR
     else if (state.phase.name === 'vote') {
       const m = state.matchups[state.current];
       const v = voters(state, ctx, m);
-      if (!live(m, ctx, 0) || !live(m, ctx, 1) || (v.length > 0 && v.every((id) => id in m.votes))) finish(state, ctx);
+      if (!live(m, ctx, 0) || !live(m, ctx, 1) || (v.length > 0 && votingDone(state, ctx, m))) finish(state, ctx);
     }
   },
 
@@ -227,7 +238,33 @@ export const grandRounds: GameModule<GrandRoundsState, GrandRoundsAction, GrandR
       waitingOn: state.phase.name === 'write' ? unwritten(state, ctx) : [],
       tasks: state.phase.name === 'write' && viewer.kind === 'player' ? tasks(state, viewer.id) : [],
       scores: state.scores,
+      previousScores: state.phase.name === 'scores' ? state.roundStart : null,
     };
+  },
+
+  statKey(state, _ctx, playerId, target) {
+    if (state.phase.name !== 'write') return { error: 'Call it while you’re writing.' };
+    const m = state.matchups.find((x) => x.id === target);
+    if (!m || !m.playerIds.includes(playerId)) return { error: 'Pick one of your own prompts.' };
+    return m.id;
+  },
+
+  statRound(state) {
+    const live = ['present', 'vote', 'results'].includes(state.phase.name);
+    return { key: live ? (state.matchups[state.current]?.id ?? null) : null, revealed: state.phase.name === 'results' };
+  },
+
+  wakeAt(state) {
+    const { name, endsAt } = state.phase;
+    return name === 'write' && endsAt !== null && !state.nagged ? [endsAt - GR.nagAt] : [];
+  },
+
+  tick(state, ctx) {
+    const { name, startedAt, endsAt } = state.phase;
+    if (name !== 'write' || state.nagged || endsAt === null || endsAt - startedAt < GR.nagAt * 2 || endsAt - ctx.now > GR.nagAt) return false;
+    state.nagged = true;
+    if (unwritten(state, ctx).length) ctx.say('writeNag');
+    return true;
   },
 
   bot(state, ctx, botId) {
@@ -259,6 +296,8 @@ export const grandRounds: GameModule<GrandRoundsState, GrandRoundsAction, GrandR
 function startRound(state: GrandRoundsState, ctx: GameContext) {
   const order = ctx.rng.shuffle(state.playerIds.filter((id) => ctx.person(id)));
   state.current = 0;
+  state.roundStart = { ...state.scores };
+  state.nagged = false;
 
   // A name to drop into an inside-joke prompt: anyone except the two people answering.
   const subjectFor = (pair: readonly string[]) => {
@@ -442,9 +481,21 @@ function isDuplicate(m: Matchup) {
   return false;
 }
 
-/** Players who may vote on the current matchup: everyone present except its two authors. */
-function voters(state: GrandRoundsState, ctx: GameContext, m: Matchup) {
-  return ctx.connectedPlayers(state.playerIds).filter((id) => !m.playerIds.includes(id));
+/** Who may vote on the current matchup: everyone in the room except its two authors, audience included. */
+function voters(_state: GrandRoundsState, ctx: GameContext, m: Matchup) {
+  return ctx.connectedPlayers(ctx.room.people.map((p) => p.id)).filter((id) => !m.playerIds.includes(id));
+}
+
+/** Voting closes early once every player who can vote has; the audience never holds it up. */
+function votingDone(state: GrandRoundsState, ctx: GameContext, m: Matchup) {
+  const eligible = voters(state, ctx, m);
+  const players = eligible.filter((id) => state.playerIds.includes(id));
+  return (players.length ? players : eligible).every((id) => id in m.votes);
+}
+
+function leaderOf(scores: Record<string, number>) {
+  const [top, next] = Object.entries(scores).sort((a, b) => b[1] - a[1]);
+  return top && top[1] > 0 && (!next || top[1] > next[1]) ? top[0] : null;
 }
 
 function needsVote(state: GrandRoundsState, ctx: GameContext) {
@@ -461,7 +512,7 @@ function vote(state: GrandRoundsState, ctx: GameContext, voterId: string, side: 
   const eligible = voters(state, ctx, m);
   if (!eligible.includes(voterId)) return { error: 'You can’t vote on this one.' };
   m.votes[voterId] = side;
-  if (eligible.every((id) => id in m.votes)) finish(state, ctx);
+  if (votingDone(state, ctx, m)) finish(state, ctx);
 }
 
 // ── Results ──────────────────────────────────────────────────────────────────
@@ -474,10 +525,12 @@ function finish(state: GrandRoundsState, ctx: GameContext) {
   const playerVotes = Object.entries(m.votes).map(([voterId, side]) => ({ voterId, side }));
   const base = { playerVotes, consensus: false };
 
+  // Beep waits for the stage to finish revealing before reacting.
+  const say = (event: HostEvent) => ctx.say(event, undefined, REVEAL.results);
   let result: MatchupResult;
   if (!alive[0] && !alive[1]) {
     result = { ...base, outcome: 'empty', shares: [0, 0], points: [0, 0], winner: null };
-    ctx.say('forfeit');
+    say('forfeit');
   } else if (alive[0] !== alive[1]) {
     const winner: Side = alive[0] ? 0 : 1;
     result = {
@@ -487,23 +540,28 @@ function finish(state: GrandRoundsState, ctx: GameContext) {
       points: scoreForfeit(winner, multiplier, curbside[winner]),
       winner,
     };
-    ctx.say('forfeit');
+    say('forfeit');
   } else if (isDuplicate(m)) {
     result = { ...base, outcome: 'duplicate', shares: [0.5, 0.5], points: [0, 0], winner: null };
-    ctx.say('duplicate');
+    say('duplicate');
   } else {
     const counts: [number, number] = [0, 0];
-    for (const v of playerVotes) counts[v.side] += 1;
-    const score = scoreVotes({ votes: counts, multiplier, curbside });
+    const audience: [number, number] = [0, 0];
+    for (const v of playerVotes) (state.playerIds.includes(v.voterId) ? counts : audience)[v.side] += 1;
+    const score = scoreVotes({ votes: counts, audience, multiplier, curbside });
     result = { ...base, outcome: 'vote', ...score };
     const w = score.winner;
-    if (w === null) ctx.say('tie');
-    else if (m.entries[w].playerId === BEEP) ctx.say('beepWins');
-    else if (score.consensus) ctx.say('consensus');
-    else if (curbside[w]) ctx.say('curbsideWin');
-    else if (score.shares[w] >= 0.75) ctx.say('blowout');
+    const total = playerVotes.length;
+    if (total === 0) say('noVotes');
+    else if (total === 1) say('oneVote');
+    else if (w === null) say('tie');
+    else if (m.entries[w].playerId === BEEP) say('beepWins');
+    else if (score.consensus) say('consensus');
+    else if (curbside[w]) say('curbsideWin');
+    else if (score.shares[w] >= 0.75) say('blowout');
   }
 
+  result.points = result.points.map((p, side) => statted(state, m.entries[side].playerId, m.id, p)) as [number, number];
   m.result = result;
   m.entries.forEach((e, side) => {
     if (e.playerId !== BEEP && e.playerId in state.scores) state.scores[e.playerId] += result.points[side];

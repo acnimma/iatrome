@@ -1,7 +1,7 @@
 import { type TriviaQuestion, trivia } from '@iatrome/content';
 import { SURVIVE as SV } from '../constants';
 import type { GameResult, Phase } from '../types';
-import { type ActionOutcome, type BaseGameState, type GameContext, type GameModule, sawtooth, setPhase, standings, tidy } from './context';
+import { type ActionOutcome, type BaseGameState, type GameContext, type GameModule, questionTime, sawtooth, setPhase, standings, statted, tidy } from './context';
 
 /**
  * Survive the Shift: elimination trivia. Everyone starts with two coffees; a wrong or
@@ -20,7 +20,10 @@ export interface SurviveState extends BaseGameState {
   /** Question number each player clocked out on. */
   clockedOut: Record<string, number>;
   answers: Record<string, { option: number; at: number }>;
-  last: { lostCoffee: string[]; clockedOut: string[]; mercy: boolean; points: Record<string, number> } | null;
+  last: { lostCoffee: string[]; clockedOut: string[]; revived: string[]; mercy: boolean; points: Record<string, number> } | null;
+  /** Right answers in a row while clocked out, and who has already been revived (once a game). */
+  ghostStreak: Record<string, number>;
+  revived: string[];
 }
 
 export type SurviveAction = { type: 'pick-option'; option: number };
@@ -61,6 +64,8 @@ export const survive: GameModule<SurviveState, SurviveAction, SurviveView> = {
       index: 0,
       coffees: Object.fromEntries(playerIds.map((id) => [id, SV.coffees])),
       clockedOut: {},
+      ghostStreak: {},
+      revived: [],
       answers: {},
       last: null,
     };
@@ -114,9 +119,11 @@ export const survive: GameModule<SurviveState, SurviveAction, SurviveView> = {
         const outB = state.clockedOut[b] ?? Infinity;
         return outB - outA || state.scores[b] - state.scores[a];
       });
+    const total = state.questions.length;
+    const lasted = (id: string) => (id in state.clockedOut ? `Clocked out on question ${state.clockedOut[id] + 1}` : `Survived all ${state.index + 1} of ${total}`);
     return {
       game: 'survive',
-      standings: standings(ctx, state.scores, order),
+      standings: standings(ctx, state.scores, order).map((s) => ({ ...s, note: lasted(s.playerId) })),
       highlights: [
         {
           title: 'Questions survived',
@@ -152,6 +159,15 @@ export const survive: GameModule<SurviveState, SurviveAction, SurviveView> = {
     };
   },
 
+  statKey(state, _ctx, playerId) {
+    if (state.phase.name !== 'question' || !state.playerIds.includes(playerId)) return { error: 'Call it while a question is up.' };
+    return `q${state.index}`;
+  },
+
+  statRound(state) {
+    return { key: `q${state.index}`, revealed: state.phase.name === 'reveal' };
+  },
+
   bot(state, ctx, botId) {
     if (state.phase.name !== 'question' || botId in state.answers || !state.playerIds.includes(botId)) return false;
     const q = state.questions[state.index];
@@ -167,7 +183,8 @@ function survivors(state: SurviveState, ctx: GameContext) {
 function ask(state: SurviveState, ctx: GameContext) {
   state.answers = {};
   state.last = null;
-  setPhase(state, ctx, 'question', SV.question, 'input');
+  const q = state.questions[state.index];
+  setPhase(state, ctx, 'question', questionTime(SV.question, q.question, q.options), 'input');
 }
 
 function reveal(state: SurviveState, ctx: GameContext) {
@@ -179,15 +196,29 @@ function reveal(state: SurviveState, ctx: GameContext) {
   const points: Record<string, number> = {};
   const lostCoffee: string[] = [];
   const clockedOut: string[] = [];
+  const revived: string[] = [];
+  // A phone that dropped out is on break: no coffee lost for a question it never saw.
+  const here = new Set(state.playerIds.filter((id) => ctx.person(id)?.connected || id in state.answers));
 
   for (const id of state.playerIds) {
     if (!ctx.person(id)) continue;
     const ghost = id in state.clockedOut;
     if (correct(id)) {
       const speed = 1 - Math.min(1, (state.answers[id].at - state.phase.startedAt) / duration);
-      points[id] = tidy((SV.base + SV.speedBonus * speed) * (ghost ? SV.ghostFactor : 1));
+      points[id] = statted(state, id, `q${state.index}`, tidy((SV.base + SV.speedBonus * speed) * (ghost ? SV.ghostFactor : 1)));
       state.scores[id] += points[id];
-    } else if (!ghost && !mercy) {
+      if (ghost) {
+        state.ghostStreak[id] = (state.ghostStreak[id] ?? 0) + 1;
+        if (state.ghostStreak[id] >= SV.ghostRevive && !state.revived.includes(id)) {
+          delete state.clockedOut[id];
+          state.coffees[id] = 1;
+          state.revived.push(id);
+          revived.push(id);
+        }
+      }
+    } else if (ghost) {
+      state.ghostStreak[id] = 0;
+    } else if (!mercy && here.has(id)) {
       state.coffees[id] -= 1;
       lostCoffee.push(id);
       if (state.coffees[id] <= 0) {
@@ -197,8 +228,9 @@ function reveal(state: SurviveState, ctx: GameContext) {
     }
   }
 
-  state.last = { lostCoffee, clockedOut, mercy, points };
-  if (mercy) ctx.say('surviveMercy');
+  state.last = { lostCoffee, clockedOut, revived, mercy, points };
+  if (revived.length) ctx.say('ghostRevive');
+  else if (mercy) ctx.say('surviveMercy');
   else if (clockedOut.length) ctx.say('surviveClockOut');
   setPhase(state, ctx, 'reveal', SV.reveal);
 }

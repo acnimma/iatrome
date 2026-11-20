@@ -82,10 +82,24 @@ describe('scoring', () => {
     expect(r.points).toEqual([2500, 0]);
   });
 
-  it('does not call a single vote a consensus', () => {
+  it('lets a single vote pick the winner but not take the whole pool', () => {
     const r = scoreVotes({ votes: [1, 0], multiplier: 1, curbside: none });
     expect(r.consensus).toBe(false);
-    expect(r.points).toEqual([1100, 0]);
+    expect(r.winner).toBe(0);
+    expect(r.points).toEqual([750, 350]);
+  });
+
+  it('counts the audience as one block worth a third', () => {
+    // Players split 2–0 for A; a big audience goes 0–9 for B. Players still decide.
+    const r = scoreVotes({ votes: [2, 0], audience: [0, 9], multiplier: 1, curbside: none });
+    expect(r.shares[0]).toBeCloseTo(2 / 3);
+    expect(r.winner).toBe(0);
+    expect(r.consensus).toBe(false);
+  });
+
+  it('lets the audience decide when no players can vote', () => {
+    const r = scoreVotes({ votes: [0, 0], audience: [3, 1], multiplier: 1, curbside: none });
+    expect(r.shares[0]).toBeCloseTo(0.75);
   });
 
   it('splits evenly on a tie with no bonus', () => {

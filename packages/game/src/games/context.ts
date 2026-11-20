@@ -1,4 +1,5 @@
 import type { HostEvent } from '@iatrome/content';
+import { READING } from '../constants';
 import type { Rng } from '../rng';
 import type { GameId, GameResult, Person, Phase, RoomState } from '../types';
 
@@ -11,8 +12,8 @@ export interface GameContext {
   person(id: string): Person | null;
   /** Of these ids, players still present (connected, or within their reconnect grace). */
   connectedPlayers(playerIds: readonly string[]): string[];
-  /** Have Beep say a line for this event. */
-  say(event: HostEvent, vars?: Record<string, string>): void;
+  /** Have Beep say a line for this event, optionally after `delay` ms (to land after a reveal). */
+  say(event: HostEvent, vars?: Record<string, string>, delay?: number): void;
   /** Scale a phase duration by the room's timer settings. */
   scale(ms: number, kind?: 'input' | 'show'): number;
   /** Draw `count` items no one in this room has seen yet (recycles when exhausted). */
@@ -32,6 +33,22 @@ export interface BaseGameState {
   playerIds: string[];
   scores: Record<string, number>;
   phase: Phase;
+  /** Stats carried in from the last game: who can still call one, and which round each was spent on. */
+  stat?: StatState;
+}
+
+/**
+ * A Stat: the top finishers (and, in bigger groups, a pitied last place) carry one into
+ * the next game. Called on one round, it doubles that player's points for it. Use it or lose it.
+ */
+export interface StatState {
+  ready: string[];
+  used: Record<string, string>;
+}
+
+/** Points for a round, doubled if the player called their Stat on it. */
+export function statted(state: BaseGameState, playerId: string, round: string, points: number) {
+  return state.stat?.used[playerId] === round ? points * 2 : points;
 }
 
 /** A game mode. Modules mutate their state in place; the room persists and broadcasts. */
@@ -52,6 +69,14 @@ export interface GameModule<S extends BaseGameState, A extends { type: string },
   view(state: S, ctx: GameContext, viewer: Viewer): V;
   /** Games that take late arrivals (team trivia) seat them here. */
   addPlayer?(state: S, ctx: GameContext, playerId: string): void;
+  /** The round a Stat called now would land on, or why it can't be called (`target` picks a Grand Rounds prompt). */
+  statKey(state: S, ctx: GameContext, playerId: string, target?: string): string | { error: string };
+  /** The round in play, and whether its results are showing (only then do others see whose Stat was on it). */
+  statRound(state: S): { key: string | null; revealed: boolean };
+  /** Moments inside a phase that need the server awake (hint letters, a nag before time's up). */
+  wakeAt?(state: S): number[];
+  /** Called on every wake; act on any moment that has arrived. Return true if anything changed. */
+  tick?(state: S, ctx: GameContext): boolean;
   /** Dev bots: act if there's something to do. Return true if the bot did something. */
   bot(state: S, ctx: GameContext, botId: string): boolean;
 }
@@ -70,6 +95,12 @@ export function setPhase<N extends string>(
     startedAt: ctx.now,
     endsAt: durationMs === null ? null : ctx.now + ctx.scale(durationMs, kind),
   };
+}
+
+/** A question's timer, plus reading time for long ones (Pro vignettes). */
+export function questionTime(base: number, question: string, options: readonly string[]) {
+  const length = question.length + options.join('').length / 2;
+  return base + Math.min(READING.max, Math.max(0, length - READING.free) * READING.perChar);
 }
 
 /** Sorted standings, ties share a rank. */

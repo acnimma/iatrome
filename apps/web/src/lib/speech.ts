@@ -29,13 +29,14 @@ function pickVoice(): SpeechSynthesisVoice | null {
   return preferred.map((name) => english.find((v) => v.name.includes(name))).find(Boolean) ?? english[0] ?? null;
 }
 
-export function speak(text: string) {
+/** `as: 'beep'` queues the line in Beep's flatter voice instead of cutting off whatever is being read. */
+export function speak(text: string, { as = 'reader' }: { as?: 'reader' | 'beep' } = {}) {
   if (typeof window === 'undefined' || !window.speechSynthesis || !readAloudEnabled() || !text.trim()) return;
   voice ??= pickVoice();
-  window.speechSynthesis.cancel();
+  if (as === 'reader') window.speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text.replace(/_{2,}/g, 'blank'));
   if (voice) u.voice = voice;
-  u.rate = 1.05;
-  u.pitch = 1.05;
+  u.rate = as === 'beep' ? 1 : 1.05;
+  u.pitch = as === 'beep' ? 0.9 : 1.05;
   window.speechSynthesis.speak(u);
 }

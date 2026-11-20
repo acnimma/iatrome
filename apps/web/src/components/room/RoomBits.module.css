@@ -209,10 +209,26 @@
 }
 
 .scoreName {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
   overflow: hidden;
   font-weight: 800;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* The points a player just gained: a little jelly pill. */
+.gain {
+  flex: none;
+  padding: 1px 9px;
+  border: 2px solid var(--ink);
+  border-radius: var(--radius-pill);
+  background: var(--royal-gold);
+  box-shadow: var(--gloss);
+  font-size: 0.78em;
+  font-weight: 900;
 }
 
 .scoreBar {

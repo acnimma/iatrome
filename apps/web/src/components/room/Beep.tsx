@@ -3,20 +3,17 @@
 import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 import type { HostLine } from '@iatrome/game/client';
+import { speak } from '@/lib/speech';
 import styles from './Beep.module.css';
 
 const SHOW_MS = 7_000;
 
 /** Beep: the host. A pager with a face who reacts to everything that happens. */
-export function Beep({ line, size = 120, compact = false }: { line: HostLine | null; size?: number; compact?: boolean }) {
-  const [visible, setVisible] = useState<HostLine | null>(null);
-
+export function Beep({ line, size = 120, compact = false, voiced = false }: { line: HostLine | null; size?: number; compact?: boolean; voiced?: boolean }) {
+  const visible = useHostLine(line);
   useEffect(() => {
-    if (!line) return;
-    setVisible(line);
-    const t = setTimeout(() => setVisible(null), SHOW_MS);
-    return () => clearTimeout(t);
-  }, [line]);
+    if (voiced && visible) speak(visible.text, { as: 'beep' });
+  }, [voiced, visible]);
 
   const talking = Boolean(visible);
 
@@ -80,4 +77,22 @@ export function BeepFace({ talking = false }: { talking?: boolean }) {
       <circle cx="60" cy="86" r="4" fill="#ccb64a" stroke="#1f2a4d" strokeWidth="2" />
     </svg>
   );
+}
+
+/**
+ * The line Beep is saying right now: held back by its `delay` (so a reveal isn't spoiled),
+ * shown for a few seconds, then cleared. Lines that arrive long after they were said are skipped.
+ */
+export function useHostLine(line: HostLine | null, showMs = SHOW_MS) {
+  const [visible, setVisible] = useState<HostLine | null>(null);
+  useEffect(() => {
+    if (!line) return;
+    const wait = Math.max(0, line.delay ?? 0);
+    const timers = [
+      setTimeout(() => setVisible(line), wait),
+      setTimeout(() => setVisible(null), wait + showMs),
+    ];
+    return () => timers.forEach(clearTimeout);
+  }, [line, showMs]);
+  return visible;
 }

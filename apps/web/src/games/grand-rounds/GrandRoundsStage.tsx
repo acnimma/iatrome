@@ -39,7 +39,7 @@ export function GrandRoundsStage({ view, game }: { view: RoomView; game: GrandRo
         {phase === 'scores' && (
           <div className={styles.scores}>
             <h2 className={styles.heading}>After round {game.round + 1}</h2>
-            <Scoreboard view={view} scores={game.scores} />
+            <Scoreboard view={view} scores={game.scores} previous={game.previousScores} />
           </div>
         )}
       </motion.div>
@@ -221,22 +221,23 @@ function AnswerContent({ entry, kind, replayMs, delay, lineGap }: { entry: Entry
 function ResultBanner({ result }: { result: NonNullable<MatchupView['result']> }) {
   const stamp =
     result.outcome === 'duplicate'
-      ? { text: 'Duplicate order!', tone: 'ink' as const, note: 'Same answer twice, so both are cancelled.' }
+      ? { text: 'Duplicate order', tone: 'ink' as const, note: 'Same answer twice. Both cancelled.' }
       : result.outcome === 'forfeit'
         ? { text: 'Forfeit', tone: 'gold' as const, note: 'No answer means the other side takes it all.' }
         : result.outcome === 'empty'
           ? { text: 'Nobody answered', tone: 'ink' as const, note: '' }
           : result.consensus
-            ? { text: 'Consensus!', tone: 'rose' as const, note: 'The whole room agreed. Bonus points!' }
+            ? { text: 'Consensus', tone: 'rose' as const, note: 'The whole room agreed. That never happens. Bonus points.' }
             : result.winner === null
-              ? { text: 'Tie!', tone: 'sky' as const, note: '' }
+              ? { text: 'Tie', tone: 'sky' as const, note: '' }
               : null;
   if (!stamp) return null;
+  // Lands with the sting, after the votes and authors are revealed.
   return (
-    <div className={styles.banner}>
+    <motion.div className={styles.banner} initial={{ opacity: 0, scale: 0.6 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: 1.5, type: 'spring', stiffness: 380, damping: 16 }}>
       <Stamp tone={stamp.tone}>{stamp.text}</Stamp>
       {stamp.note && <span className={styles.bannerNote}>{stamp.note}</span>}
-    </div>
+    </motion.div>
   );
 }
 

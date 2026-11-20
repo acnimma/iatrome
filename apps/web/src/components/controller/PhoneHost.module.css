@@ -7,7 +7,7 @@
   border: var(--outline);
   border-radius: 50%;
   background: var(--card);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--gloss), var(--shadow-md);
   cursor: pointer;
 }
 
@@ -64,10 +64,11 @@
   min-height: 52px;
   padding: 10px 14px;
   border: var(--outline);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   background: var(--card);
   font-weight: 800;
   cursor: pointer;
+  box-shadow: var(--gloss), var(--shadow-md);
 }
 
 .danger {
@@ -115,4 +116,5 @@
   font-size: 0.85rem;
   font-weight: 800;
   cursor: pointer;
+  box-shadow: var(--gloss), var(--shadow-md);
 }

@@ -2,14 +2,16 @@
 
 import { motion } from 'motion/react';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { type Drawing, type GrandRoundsView, LIMITS, type MatchupView, type RoomView, type TaskView } from '@iatrome/game/client';
+import { type Drawing, type GrandRoundsView, LIMITS, type MatchupView, REVEAL, type RoomView, type TaskView } from '@iatrome/game/client';
 import { useDrawing, useRoom } from '@/realtime/use-room';
 import { Button } from '@/components/ui/Button';
 import { AnswerBox, TextInput } from '@/components/ui/Field';
 import { DrawPad } from '@/components/drawing/DrawPad';
+import { useAfter } from '@/components/ui/Later';
 import { DrawingView } from '@/components/drawing/DrawingView';
 import { Choice, PhoneMessage, PhonePrompt, PhoneStack } from '@/components/controller/Phone';
 import { ReactionBar, Scoreboard, nameOf, usePeople } from '@/components/room/RoomBits';
+import { StatButton, StatChip } from '@/components/room/Stat';
 import { haptic } from '@/lib/haptics';
 import { play } from '@/lib/sound';
 import { ROUND_NAMES } from './rounds';
@@ -26,7 +28,13 @@ export function GrandRoundsController({ view, game }: { view: RoomView; game: Gr
         </PhoneMessage>
       );
     case 'write':
-      return playing ? <WriteTasks view={view} game={game} /> : <PhoneMessage icon="pencil" title="Players are writing…">You’ll vote on their answers in a moment.</PhoneMessage>;
+      return playing ? (
+        <WriteTasks view={view} game={game} />
+      ) : (
+        <PhoneMessage icon="pencil" title="Players are writing…">
+          You’re not in this one. You still get a vote.
+        </PhoneMessage>
+      );
     case 'present':
     case 'vote':
     case 'results':
@@ -43,7 +51,7 @@ export function GrandRoundsController({ view, game }: { view: RoomView; game: Gr
           ) : (
             <>
               <h2 className={styles.phoneHeading}>{rank ? `You’re #${rank}` : 'The scores so far'}</h2>
-              <Scoreboard view={view} scores={game.scores} limit={8} />
+              <Scoreboard view={view} scores={game.scores} previous={game.previousScores} limit={8} />
             </>
           )}
           <ReactionBar />
@@ -88,6 +96,13 @@ function WriteTasks({ view, game }: { view: RoomView; game: GrandRoundsView }) {
         </span>
       </div>
       <PhonePrompt label={task.kind === 'doodle' ? 'Draw this' : task.kind === 'differential' ? 'List three' : 'Finish this'} prompt={task.prompt} phase={game.phase} pausedAt={view.pausedAt} />
+      {view.stat.used === task.matchupId ? (
+        <p className={styles.taskNav}>
+          <StatChip /> Your Stat is on this prompt.
+        </p>
+      ) : (
+        <StatButton view={view} target={task.matchupId} label="Stat this prompt ×2" />
+      )}
       {task.kind === 'quip' && <QuipTask task={task} onSkip={open.length > 1 ? () => setIndex((i) => (i + 1) % open.length) : undefined} />}
       {task.kind === 'doodle' && <DoodleTask task={task} />}
       {task.kind === 'differential' && <ListTask task={task} />}
@@ -111,6 +126,7 @@ function useDraftSaver(send: (final: boolean) => void, deps: unknown[]) {
 function QuipTask({ task, onSkip }: { task: TaskView; onSkip?: () => void }) {
   const room = useRoom();
   const [text, setText] = useState(typeof task.draft === 'string' ? task.draft : '');
+  const [confirming, setConfirming] = useState(false);
   const send = (final: boolean) => room.command({ type: 'answer', matchupId: task.matchupId, text, final });
   useDraftSaver(send, [text]);
 
@@ -143,16 +159,20 @@ function QuipTask({ task, onSkip }: { task: TaskView; onSkip?: () => void }) {
           </Button>
         )}
       </div>
-      <Button
-        tone="ghost"
-        block
-        onClick={() => {
-          play('reveal');
-          room.command({ type: 'curbside', matchupId: task.matchupId });
-        }}
-      >
-        <Icon name="stethoscope" size={26} /> Stuck? Curbside consult (half points)
-      </Button>
+      {/* Only offered on an empty answer, and it takes two taps: it replaces whatever you'd write. */}
+      {!text.trim() && (
+        <Button
+          tone="ghost"
+          block
+          onClick={() => {
+            if (!confirming) return setConfirming(true);
+            play('reveal');
+            room.command({ type: 'curbside', matchupId: task.matchupId });
+          }}
+        >
+          <Icon name="stethoscope" size={26} /> {confirming ? 'Tap again. Beep’s answer, half points.' : 'Stuck? Use Beep’s answer (half points)'}
+        </Button>
+      )}
     </form>
   );
 }
@@ -237,6 +257,8 @@ function ListTask({ task }: { task: TaskView }) {
 function MatchupPhone({ view, game, matchup }: { view: RoomView; game: GrandRoundsView; matchup: MatchupView }) {
   const room = useRoom();
   const phase = game.phase.name;
+  // The big screen reveals votes, then authors: don't let the phone announce the winner first.
+  const heldBack = useAfter(phase === 'results' && view.screen ? REVEAL.results - 200 : 0, `${matchup.id}-${phase}`);
 
   if (phase === 'present') {
     return matchup.yours !== null ? (
@@ -292,6 +314,7 @@ function MatchupPhone({ view, game, matchup }: { view: RoomView; game: GrandRoun
   // Results
   const r = matchup.result;
   if (!view.screen && r) return <MatchupReveal view={view} matchup={matchup} />;
+  if (!heldBack) return <PhoneMessage icon="drum" title="Look up." />;
   if (matchup.yours !== null && r) {
     const mine = r.points[matchup.yours];
     const won = r.winner === matchup.yours;

@@ -18,6 +18,7 @@ import { DidacticsController } from '@/games/didactics/DidacticsController';
 import { JoinForm } from './JoinForm';
 import { BeepBanner, PhoneMessage } from './Phone';
 import { HostMenu, useIsHost } from './PhoneHost';
+import { StatCalls, StatOnThis } from '@/components/room/Stat';
 import { ControllerLobby, ControllerResults } from './ControllerLobby';
 import styles from './Controller.module.css';
 
@@ -50,18 +51,26 @@ function PhoneScreen({ code, snap }: { code: string; snap: Snapshot }) {
 function InRoom({ view, reconnecting }: { view: RoomView; reconnecting: boolean }) {
   const me = view.people.find((p) => p.id === view.you?.id);
   const watching = view.stage === 'playing' && !view.you?.inGame;
+  // Grand Rounds lets everyone vote, seated or not; other games park watchers until the next one.
+  const parked = watching && view.game?.game !== 'grand-rounds';
   const isHost = useIsHost(view.code);
   return (
     <>
       <header className={styles.header}>
         {me && <Avatar avatar={me.avatar} size={36} />}
         <span className={styles.me}>{me?.name}</span>
-        {watching && <span className={styles.tag}>Next game</span>}
+        {watching && <span className={styles.tag}>{parked ? 'Next game' : 'Audience'}</span>}
         <span className={styles.code}>{view.code}</span>
         {isHost && !view.screen && <HostMenu view={view} />}
       </header>
       {reconnecting && <div className={styles.reconnecting}>Reconnecting…</div>}
       {!view.screen && view.stage !== 'lobby' && <BeepBanner line={view.hostLine} />}
+      {view.stage === 'playing' && (
+        <div className={styles.statRow}>
+          <StatOnThis view={view} />
+          {!view.screen && <StatCalls view={view} />}
+        </div>
+      )}
       <main className={styles.body}>
         <AnimatePresence mode="wait">
           <motion.div
@@ -74,7 +83,7 @@ function InRoom({ view, reconnecting }: { view: RoomView; reconnecting: boolean 
           >
             {view.stage === 'lobby' && <ControllerLobby view={view} />}
             {view.stage === 'playing' &&
-              (watching ? (
+              (parked ? (
                 <PhoneMessage icon="hourglass" title="You’re in for the next game">
                   A game is already going. You’ll be dealt in when it ends.{view.screen ? ' Enjoy the big screen until then.' : ''}
                 </PhoneMessage>
@@ -111,8 +120,8 @@ function FeedbackToast({ feedback }: { feedback: Snapshot['feedback'] }) {
   const [shown, setShown] = useState<{ text: string; at: number; error: boolean } | null>(null);
   useEffect(() => {
     if (!feedback) return;
-    // "correct"/"close" are handled by the guessing screen itself.
-    const text = feedback.error ?? (feedback.notice && !['correct', 'close'].includes(feedback.notice) ? `Beep wrote: “${feedback.notice}”` : null);
+    // "correct"/"close" are handled by the guessing screen, "stat" by the Stat badge.
+    const text = feedback.error ?? (feedback.notice && !['correct', 'close', 'stat'].includes(feedback.notice) ? `Beep wrote: “${feedback.notice}”` : null);
     if (!text) return;
     if (feedback.error) haptic('error');
     setShown({ text, at: feedback.at, error: Boolean(feedback.error) });

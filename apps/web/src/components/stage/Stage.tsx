@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useRef, useState } from 'react';
-import type { RoomView } from '@iatrome/game/client';
+import { REVEAL, type RoomView } from '@iatrome/game/client';
 import { RoomContext, useRoomConnection, useSnapshot } from '@/realtime/use-room';
 import { Backdrop } from '@/components/ui/Backdrop';
 import { Button } from '@/components/ui/Button';
@@ -19,6 +19,7 @@ import { DidacticsStage } from '@/games/didactics/DidacticsStage';
 import { StageLobby } from './StageLobby';
 import { HostControls } from './HostControls';
 import { Podium } from './Podium';
+import { StatCalls } from '@/components/room/Stat';
 import styles from './Stage.module.css';
 
 export interface StagePrefs {
@@ -90,8 +91,9 @@ function StageScreen({ view, prefs }: { view: RoomView; prefs: StagePrefs }) {
         </AnimatePresence>
       </main>
       <div className={styles.beep}>
-        <Beep line={view.hostLine} size={110} />
+        <Beep line={view.hostLine} size={110} voiced />
       </div>
+      {view.stage === 'playing' && <StatCalls view={view} floating />}
       {view.paused && (
         <motion.div className={styles.paused} initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
           <span>Paused</span>
@@ -129,7 +131,10 @@ function useStageSounds(view: RoomView) {
   useEffect(() => {
     const key = `${view.stage}:${view.game?.phase.name ?? ''}`;
     if (key !== phase.current && phase.current) {
-      if (view.stage === 'over') play('win');
+      if (view.stage === 'over') {
+        play('drumroll');
+        setTimeout(() => play('win'), REVEAL.podium - 200);
+      }
       else if (view.game && ['intro', 'scores'].includes(view.game.phase.name)) play('whoosh');
     }
     phase.current = key;

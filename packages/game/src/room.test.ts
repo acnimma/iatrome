@@ -310,3 +310,148 @@ describe('joining and moderation', () => {
     for (const p of room.people) expect(json).not.toContain(p.token);
   });
 });
+
+describe('Stats (carried into the next game, double one round)', () => {
+  function finished(n: number, game: GameId) {
+    const s = setup(n, { game });
+    hostCommand(s.room, { type: 'start' }, s.clock.now);
+    playToEnd(s.room, s.ids, s.clock);
+    return s;
+  }
+
+  it('go to the top three, plus last place in bigger groups', () => {
+    const { room } = finished(6, 'survive');
+    const grants = Object.values(room.stats ?? {});
+    expect(grants.filter((g) => g === 'top')).toHaveLength(3);
+    expect(grants.filter((g) => g === 'mercy')).toHaveLength(1);
+    const order = room.result!.standings.map((s) => s.playerId);
+    expect(room.stats?.[order[0]]).toBe('top');
+    expect(room.stats?.[order.at(-1)!]).toBe('mercy');
+  });
+
+  it('are scarcer in small groups so they still mean something', () => {
+    const { room } = finished(3, 'survive');
+    expect(Object.keys(room.stats ?? {})).toHaveLength(1);
+  });
+
+  it('double the caller’s points for that round, once', () => {
+    const { room, clock } = finished(6, 'survive');
+    const holder = Object.keys(room.stats!).find((id) => room.stats![id] === 'top')!;
+    const other = room.people.find((p) => !room.stats![p.id])!.id;
+    expect(playerCommand(room, other, { type: 'stat' }, clock.now)).toEqual({ error: 'No game running.' });
+    hostCommand(room, { type: 'start' }, clock.now);
+    while (room.game?.phase.name !== 'question') step(room, clock);
+
+    expect(playerCommand(room, other, { type: 'stat' }, clock.now)).toEqual({ error: 'You don’t have a Stat to call.' });
+    expect(playerCommand(room, holder, { type: 'stat' }, clock.now)).toEqual({ notice: 'stat' });
+    expect(room.hostLine?.event).toBe('statCalled');
+    expect(viewFor(room, { kind: 'player', id: holder }, clock.now).stat).toMatchObject({ ready: false, onThis: true });
+    expect(playerCommand(room, holder, { type: 'stat' }, clock.now)).toEqual({ error: 'You don’t have a Stat to call.' });
+
+    const g = room.game;
+    if (g?.game !== 'survive') throw new Error('expected survive');
+    const answer = g.questions[g.index].answer;
+    playerCommand(room, holder, { type: 'pick-option', option: answer }, clock.now);
+    playerCommand(room, other, { type: 'pick-option', option: answer }, clock.now);
+    while (room.game?.phase.name === 'question') step(room, clock);
+    const last = room.game?.game === 'survive' ? room.game.last : null;
+    expect(last?.points[holder]).toBe(2 * last!.points[other]);
+    expect(viewFor(room, { kind: 'player', id: other }, clock.now).stat.calls).toEqual([holder]);
+  });
+
+  it('never give away who wrote an answer before the results', () => {
+    const { room, ids, clock } = finished(5, 'grand-rounds');
+    room.settings.game = 'grand-rounds';
+    const holder = Object.keys(room.stats!)[0];
+    hostCommand(room, { type: 'start' }, clock.now);
+    while (room.game?.phase.name !== 'write') step(room, clock);
+    const mine = viewFor(room, { kind: 'player', id: holder }, clock.now);
+    const task = mine.game?.game === 'grand-rounds' ? mine.game.tasks[0] : null;
+    expect(playerCommand(room, holder, { type: 'stat', target: 'not-mine' }, clock.now)).toEqual({ error: 'Pick one of your own prompts.' });
+    expect(playerCommand(room, holder, { type: 'stat', target: task!.matchupId }, clock.now)).toEqual({ notice: 'stat' });
+
+    const watcher = ids.find((id) => id !== holder)!;
+    for (let i = 0; i < 3000 && room.stage === 'playing'; i++) {
+      ids.forEach((id, n) => actFor(room, id, clock.now, n));
+      const g = room.game?.game === 'grand-rounds' ? room.game : null;
+      const calls = viewFor(room, { kind: 'player', id: watcher }, clock.now).stat.calls;
+      if (g && g.phase.name !== 'results') expect(calls).toEqual([]);
+      if (g?.phase.name === 'results' && g.matchups[g.current].id === task!.matchupId) {
+        expect(calls).toEqual([holder]);
+        const m = g.matchups[g.current];
+        const side = m.playerIds.indexOf(holder);
+        const r = m.result!;
+        if (r.outcome === 'vote' && r.points[side] > 0) expect(r.points[side] % 2).toBe(0);
+        break;
+      }
+      step(room, clock);
+    }
+  });
+});
+
+describe('polish rules', () => {
+  it('Survive: a phone that dropped out doesn’t lose a coffee for a question it never saw', () => {
+    const { room, ids, clock } = setup(3, { game: 'survive' });
+    hostCommand(room, { type: 'start' }, clock.now);
+    while (room.game?.phase.name !== 'question') step(room, clock);
+    setConnected(room, ids[2], false, clock.now);
+    const s = room.game?.game === 'survive' ? room.game : null;
+    playerCommand(room, ids[1], { type: 'pick-option', option: s!.questions[s!.index].answer }, clock.now);
+    while (room.game?.phase.name === 'question') step(room, clock);
+    const g = room.game;
+    if (g?.game !== 'survive') throw new Error('expected survive');
+    expect(g.coffees[ids[2]]).toBe(2);
+    expect(g.coffees[ids[0]]).toBe(1); // present, didn't answer
+  });
+
+  it('Survive: three right in a row as a ghost puts you back on shift, once', () => {
+    const { room, ids, clock } = setup(3, { game: 'survive' });
+    hostCommand(room, { type: 'start' }, clock.now);
+    const g = () => (room.game?.game === 'survive' ? room.game : null)!;
+    while (room.game?.phase.name !== 'question') step(room, clock);
+    g().coffees[ids[0]] = 0;
+    g().clockedOut[ids[0]] = 0;
+    for (let q = 0; q < 3; q++) {
+      while (room.game?.phase.name !== 'question') step(room, clock);
+      const answer = g().questions[g().index].answer;
+      for (const id of ids) playerCommand(room, id, { type: 'pick-option', option: answer }, clock.now);
+      while (room.game?.phase.name === 'question') step(room, clock);
+    }
+    expect(ids[0] in g().clockedOut).toBe(false);
+    expect(g().coffees[ids[0]]).toBe(1);
+    expect(g().last?.revived).toEqual([ids[0]]);
+    expect(room.hostLine?.event).toBe('ghostRevive');
+  });
+
+  it('Pick Your Poison: nobody is forced to defend; the first volunteer gets the mic', () => {
+    const { room, ids, clock } = setup(4, { game: 'poison' });
+    hostCommand(room, { type: 'start' }, clock.now);
+    while (room.game?.phase.name !== 'choose') step(room, clock);
+    ids.forEach((id, i) => {
+      playerCommand(room, id, { type: 'pick', side: i === 0 ? 'b' : 'a' }, clock.now);
+      playerCommand(room, id, { type: 'predict', side: 'a' }, clock.now);
+    });
+    while ((room.game?.phase.name as string) === 'reveal') step(room, clock);
+    expect(room.game?.phase.name).toBe('volunteer');
+    playerCommand(room, ids[1], { type: 'volunteer' }, clock.now); // majority can't
+    expect(room.game?.phase.name).toBe('volunteer');
+    playerCommand(room, ids[0], { type: 'volunteer' }, clock.now);
+    expect(room.game?.phase.name).toBe('defend');
+    playerCommand(room, ids[0], { type: 'defend', text: 'Hear me out.' }, clock.now);
+    playerCommand(room, ids[1], { type: 'convinced' }, clock.now);
+    playerCommand(room, ids[1], { type: 'convinced' }, clock.now);
+    const g = room.game?.game === 'poison' ? room.game : null;
+    expect(g?.converts).toEqual([ids[1]]);
+  });
+
+  it('Sketch: wakes the server for hint letters even when nobody guesses', () => {
+    const { room, ids, clock } = setup(3, { game: 'sketch' });
+    hostCommand(room, { type: 'start' }, clock.now);
+    while (room.game?.phase.name !== 'choose') step(room, clock);
+    const g = room.game?.game === 'sketch' ? room.game : null;
+    playerCommand(room, g!.turns[g!.turn], { type: 'choose', index: 0 }, clock.now);
+    const { startedAt, endsAt } = room.game!.phase;
+    expect(nextWake(room, clock.now)).toBe(startedAt + 0.45 * (endsAt! - startedAt));
+    void ids;
+  });
+});

@@ -20,7 +20,7 @@ export function PoisonStage({ view, game }: { view: RoomView; game: PoisonView }
   }, [phase, game.number]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (phase === 'intro')
-    return <IntroCard eyebrow="Up next" title="Pick Your Poison" body="Pick your side, then guess which side the room picked. The minority has to defend themselves." />;
+    return <IntroCard eyebrow="Up next" title="Pick Your Poison" body="Pick your side, then guess which side the room picked. Anyone in the minority can defend it." />;
 
   const players = view.people.filter((p) => p.inGame).map((p) => p.id);
   const revealed = game.counts !== null;
@@ -33,15 +33,21 @@ export function PoisonStage({ view, game }: { view: RoomView; game: PoisonView }
       <div className={styles.defence}>
         {defender && <Avatar avatar={defender.avatar} size={110} />}
         <h2 className={styles.heading}>
-          {phase === 'defend' ? `${defender?.name ?? 'Someone'}, defend yourself.` : `${defender?.name ?? 'Someone'} says:`}
+          {phase === 'defend' ? `${defender?.name ?? 'Someone'} volunteered. Bold.` : `${defender?.name ?? 'Someone'} says:`}
         </h2>
         <p className={styles.sub}>They’d rather {side === 'a' ? game.a : game.b}.</p>
         {phase === 'defend' ? (
           <TimerRing phase={game.phase} pausedAt={view.pausedAt} size={110} ticks />
         ) : (
-          <motion.blockquote className={styles.quote} initial={{ scale: 0.7, rotate: -3, opacity: 0 }} animate={{ scale: 1, rotate: -1, opacity: 1 }} transition={{ type: 'spring', stiffness: 300, damping: 16 }}>
-            “{game.defence ?? '…'}”
-          </motion.blockquote>
+          <>
+            <motion.blockquote className={styles.quote} initial={{ scale: 0.7, rotate: -3, opacity: 0 }} animate={{ scale: 1, rotate: -1, opacity: 1 }} transition={{ type: 'spring', stiffness: 300, damping: 16 }}>
+              “{game.defence ?? '…'}”
+            </motion.blockquote>
+            <div className={styles.converts}>
+              <span>{game.converts.length ? `Convinced ${game.converts.length}` : 'Majority: tap “Convinced” if this worked on you'}</span>
+              <AvatarRow ids={game.converts} view={view} size={40} />
+            </div>
+          </>
         )}
       </div>
     );
@@ -93,6 +99,12 @@ export function PoisonStage({ view, game }: { view: RoomView; game: PoisonView }
       </div>
       {phase === 'choose' && <AvatarRow ids={players} view={view} size={48} done={new Set(game.done)} />}
       {revealed && game.majority === 'tie' && <Stamp tone="sky">Dead even</Stamp>}
+      {phase === 'volunteer' && (
+        <motion.div className={styles.volunteer} initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
+          <span>The minority may defend itself. Tap “Defend it” on your phone.</span>
+          <TimerRing phase={game.phase} pausedAt={view.pausedAt} size={56} />
+        </motion.div>
+      )}
       {revealed && Object.keys(game.earned).length > 0 && (
         <p className={styles.earned}>
           Read the room: {Object.keys(game.earned).map((id) => nameOf(people, id)).join(', ')}

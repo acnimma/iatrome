@@ -12,7 +12,7 @@ export default function HomePage() {
         <Wordmark className={styles.wordmark} />
       </h1>
       <p className={styles.say} aria-label="Pronounced EYE-uh-trohm">
-        /ˈaɪ.ə.troʊm/
+        eye-uh-trohm
       </p>
       <p className={styles.tagline}>The party game that speaks fluent medicine.</p>
       <JoinCodeForm />

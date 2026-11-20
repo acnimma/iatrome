@@ -11,6 +11,7 @@ import { DrawPad } from '@/components/drawing/DrawPad';
 import { DrawingView } from '@/components/drawing/DrawingView';
 import { Choice, PhoneMessage, PhoneStack } from '@/components/controller/Phone';
 import { ReactionBar, nameOf, usePeople } from '@/components/room/RoomBits';
+import { StatButton } from '@/components/room/Stat';
 import { haptic } from '@/lib/haptics';
 import { play } from '@/lib/sound';
 import styles from './Sketch.module.css';
@@ -38,6 +39,7 @@ export function SketchController({ view, game }: { view: RoomView; game: SketchV
             <h2 className={styles.phoneTitle}>Pick something to draw</h2>
             <TimerRing phase={game.phase} pausedAt={view.pausedAt} size={52} />
           </div>
+          <StatButton view={view} label="Call your Stat on your turn ×2" />
           {game.choices.map((c, i) => (
             <Choice key={c.answer} tone={(['sky', 'gold', 'rose'] as const)[i]} onClick={() => room.command({ type: 'choose', index: i })}>
               <span className={styles.choiceText}>
@@ -127,21 +129,24 @@ function Guesser({ view, game }: { view: RoomView; game: SketchView }) {
           You got it!
         </motion.p>
       ) : playing ? (
-        <form
-          className={styles.guessForm}
-          onSubmit={(e) => {
-            e.preventDefault();
-            if (!guess.trim()) return;
-            room.command({ type: 'guess', text: guess });
-            setGuess('');
-            input.current?.focus();
-          }}
-        >
-          <TextInput ref={input} value={guess} onChange={(e) => setGuess(e.target.value)} maxLength={LIMITS.guess} placeholder="Your guess…" enterKeyHint="send" autoCapitalize="none" />
-          <Button tone="rose" size="lg" type="submit">
-            Guess
-          </Button>
-        </form>
+        <>
+          <StatButton view={view} />
+          <form
+            className={styles.guessForm}
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!guess.trim()) return;
+              room.command({ type: 'guess', text: guess });
+              setGuess('');
+              input.current?.focus();
+            }}
+          >
+            <TextInput ref={input} value={guess} onChange={(e) => setGuess(e.target.value)} maxLength={LIMITS.guess} placeholder="Your guess…" enterKeyHint="send" autoCapitalize="none" />
+            <Button tone="rose" size="lg" type="submit">
+              Guess
+            </Button>
+          </form>
+        </>
       ) : (
         <p className={styles.solvedCount}>You’re watching. Guesses are for players.</p>
       )}

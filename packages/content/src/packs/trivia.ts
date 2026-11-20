@@ -16,7 +16,7 @@ export const trivia: TriviaQuestion[] = [
   {
     id: 'trivia-002',
     question: 'In 1847, Ignaz Semmelweis slashed childbed fever on his Vienna ward by making doctors wash their hands in what?',
-    options: ['Chlorinated lime solution', 'Vinegar', 'Warm salt water', 'Carbolic acid'],
+    options: ['Chlorinated lime solution', 'Diluted wine vinegar', 'Warm salt water', 'Carbolic acid solution'],
     answer: 0,
     fact: 'The same chemical was used to whiten paper and clean stables. Despite his results, many colleagues rejected the idea.',
     source: 'https://www.sciencehistory.org/education/scientific-biographies/ignaz-semmelweis/',
@@ -166,7 +166,7 @@ export const trivia: TriviaQuestion[] = [
   {
     id: 'trivia-017',
     question: 'When US chemists tested Clark Stanley’s Snake Oil Liniment in 1917, what was missing from it?',
-    options: ['Red pepper', 'Turpentine', 'Any actual snake oil', 'Mineral oil'],
+    options: ['Red pepper extract', 'Turpentine', 'Any actual snake oil', 'Beef fat and mineral oil'],
     answer: 2,
     fact: 'It turned out to be mostly mineral oil with a little beef fat, and “snake oil” became shorthand for fraud.',
     source: 'https://en.wikipedia.org/wiki/Clark_Stanley',
@@ -216,7 +216,7 @@ export const trivia: TriviaQuestion[] = [
   {
     id: 'trivia-022',
     question: 'Joseph Lister pioneered antiseptic surgery in the 1860s using which chemical?',
-    options: ['Iodine', 'Carbolic acid (phenol)', 'Surgical spirit', 'Chlorine bleach'],
+    options: ['Tincture of iodine', 'Carbolic acid (phenol)', 'Surgical spirit (alcohol)', 'Chlorine bleach'],
     answer: 1,
     fact: 'He misted entire operating theatres with carbolic steam spray, then quietly dropped it in 1887, which is how most medical fashions end.',
     source: 'https://collection.sciencemuseumgroup.org.uk/objects/co163555/carbolic-steam-spray-used-by-joseph-lister',
@@ -266,7 +266,7 @@ export const trivia: TriviaQuestion[] = [
   {
     id: 'trivia-027',
     question: 'What did 17th-century plague doctors stuff into the beaks of their masks?',
-    options: ['Lead pellets', 'Wet sand', 'Ice', 'Aromatic herbs and spices'],
+    options: ['Lead pellets for weight', 'Damp sand and gravel', 'Ice, to cool the breath', 'Aromatic herbs and spices'],
     answer: 3,
     fact: 'Under miasma theory, disease spread through foul air, so sweet smells were thought to purify each breath.',
     source: 'https://www.nationalgeographic.com/history/article/plague-doctors-beaked-masks-coronavirus',
@@ -386,7 +386,7 @@ export const trivia: TriviaQuestion[] = [
   {
     id: 'trivia-039',
     question: 'Lady Mary Wortley Montagu promoted smallpox “ingrafting” in England in 1721 after seeing it practised where?',
-    options: ['India', 'The Ottoman Empire', 'Russia', 'China'],
+    options: ['Mughal India', 'The Ottoman Empire', 'Imperial Russia', 'Qing dynasty China'],
     answer: 1,
     fact: 'She had both her children inoculated, and Caroline, Princess of Wales, followed suit with her daughters.',
     source: 'https://www.mprnews.org/story/2021/03/22/npr-a-300-year-old-tale-of-one-womans-quest-to-stop-a-deadly-virus',
@@ -406,7 +406,7 @@ export const trivia: TriviaQuestion[] = [
   {
     id: 'trivia-041',
     question: 'The Edwin Smith Papyrus, a copy roughly 3,600 years old, is an ancient Egyptian guide to what?',
-    options: ['Treating wounds and injuries', 'Astrology', 'Love potions', 'Embalming'],
+    options: ['Treating wounds and injuries', 'Reading the stars', 'Love potions and charms', 'Preparing bodies for burial'],
     answer: 0,
     fact: 'It describes closing wounds with stitches and honey, and contains the earliest known written word for “brain”.',
     source: 'https://en.wikipedia.org/wiki/Edwin_Smith_Papyrus',
@@ -668,7 +668,7 @@ export const trivia: TriviaQuestion[] = [
   {
     id: 'trivia-067',
     question: '“Snatiation” is a word for uncontrollable sneezing triggered by what?',
-    options: ['Loud noises', 'A very full stomach', 'Cold water', 'Laughing'],
+    options: ['Loud, sudden noises', 'A very full stomach', 'Cold water on the face', 'Laughing too hard'],
     answer: 1,
     fact: 'The name is a blend of “sneeze” and “satiation”.',
     source: 'https://www.smithsonianmag.com/smithsonian-institution/ask-smithsonian-why-do-we-sneeze-180957634/',
@@ -758,7 +758,7 @@ export const trivia: TriviaQuestion[] = [
   {
     id: 'trivia-076',
     question: 'How many vertebrae are in a giraffe’s neck?',
-    options: ['Just one', 'Seven, the same as ours', 'About 50', 'About 20'],
+    options: ['Just one, very long', 'Seven, the same as ours', 'About 50, like a snake', 'About 20, all extra long'],
     answer: 1,
     fact: 'Almost all mammals have seven neck vertebrae; a giraffe’s are just enormously long.',
     source: 'https://www.snopes.com/fact-check/giraffes-neck-bones-humans/',
@@ -788,7 +788,7 @@ export const trivia: TriviaQuestion[] = [
   {
     id: 'trivia-079',
     question: 'The classic “tongue map” with separate zones for sweet, salty, sour and bitter is...',
-    options: ['Accurate for adults only', 'Accurate except for umami', 'A myth: all areas sense all tastes', 'Reversed in left-handers'],
+    options: ['Accurate, but only for adults', 'Accurate except for umami', 'A myth: all areas sense all tastes', 'Reversed in left-handed people'],
     answer: 2,
     fact: 'It grew from an exaggerated reading of a 1901 German paper; a 1974 study confirmed every taste is sensed all over the tongue.',
     source: 'https://en.wikipedia.org/wiki/Tongue_map',
@@ -1210,7 +1210,7 @@ export const trivia: TriviaQuestion[] = [
   {
     id: 'trivia-121',
     question: 'Why are fake doctors called “quacks”?',
-    options: ['From the Latin “quaestor”', 'From “quacksalver”, a salve pedlar', 'They wore duck-beak masks', 'They waddled between towns'],
+    options: ['From the Latin “quaestor”, an official', 'From “quacksalver”, a salve pedlar', 'From the duck-beak plague masks', 'They waddled between towns'],
     answer: 1,
     fact: 'The Dutch word combined “to boast or chatter” with “salve”, the ointment they hawked.',
     source: 'https://www.mentalfloss.com/article/33558/why-fake-doctor-called-quack',
@@ -1230,7 +1230,7 @@ export const trivia: TriviaQuestion[] = [
   {
     id: 'trivia-123',
     question: '“Pharmacy” comes from the Greek “pharmakon”. What did “pharmakon” mean?',
-    options: ['Drug, remedy or poison', 'Bitter taste', 'Wise healer', 'Sacred garden'],
+    options: ['Drug, remedy or poison', 'Bitter root or bark', 'Wise healer of the sick', 'Sacred temple garden'],
     answer: 0,
     fact: 'The same word could mean a cure, a poison or a magic spell, depending on context.',
     source: 'https://www.etymonline.com/word/pharmacy',
@@ -1280,7 +1280,7 @@ export const trivia: TriviaQuestion[] = [
   {
     id: 'trivia-128',
     question: 'Florence Nightingale’s famous “coxcomb” charts are better known today as what?',
-    options: ['Rose (polar area) diagrams', 'Venn diagrams', 'Flow charts', 'Box plots'],
+    options: ['Rose (polar area) diagrams', 'Venn diagrams', 'Flow charts', 'Box-and-whisker plots'],
     answer: 0,
     fact: 'She was the first woman elected to the Statistical Society of London, now the Royal Statistical Society.',
     source: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC7660360/',
@@ -1442,7 +1442,7 @@ export const trivia: TriviaQuestion[] = [
   {
     id: 'trivia-144',
     question: 'The anticoagulant warfarin is named partly after “WARF”. What does WARF stand for?',
-    options: ['World Association of Rat Farmers', 'War Against Rodents Federation', 'Wisconsin Alumni Research Foundation', 'Western Anticoagulant Research Fund'],
+    options: ['World Association of Rat Farmers', 'Wisconsin Agricultural Rodent Fund', 'Wisconsin Alumni Research Foundation', 'Western Anticoagulant Research Fund'],
     answer: 2,
     fact: 'It was found after cattle bled from eating mouldy sweet clover hay, and was first sold as rat poison.',
     source: 'https://www.npr.org/sections/health-shots/2017/08/29/531749974/how-moldy-hay-and-sick-cows-led-to-a-life-saving-drug',
@@ -1462,7 +1462,7 @@ export const trivia: TriviaQuestion[] = [
   {
     id: 'trivia-146',
     question: 'Minoxidil, now rubbed on to regrow hair, was first given as tablets to treat what?',
-    options: ['Diabetes', 'Arthritis', 'High blood pressure', 'Acne'],
+    options: ['Type 2 diabetes', 'Arthritis', 'High blood pressure', 'Stomach ulcers'],
     answer: 2,
     fact: 'Patients in trials in the late 1960s started sprouting extra hair, a side effect that became the main event.',
     source: 'https://pharmaceutical-journal.com/article/news/how-minoxidil-was-transformed-from-an-antihypertensive-to-hair-loss-drug',
@@ -1534,7 +1534,7 @@ export const trivia: TriviaQuestion[] = [
   {
     id: 'trivia-153',
     question: 'In 1945, which city became the first to add fluoride to its public water supply?',
-    options: ['Chicago', 'Colorado Springs', 'Boston', 'Grand Rapids, Michigan'],
+    options: ['Chicago, Illinois', 'Colorado Springs, Colorado', 'Boston, Massachusetts', 'Grand Rapids, Michigan'],
     answer: 3,
     fact: 'Within about 10 years, tooth decay among its children had dropped by more than 60%.',
     source: 'https://www.nidcr.nih.gov/research/data-statistics/water-fluoridation',
@@ -1624,7 +1624,7 @@ export const trivia: TriviaQuestion[] = [
   {
     id: 'trivia-162',
     question: 'In the 1830s, an American doctor promoted tomatoes, tomato ketchup included, as medicine for what?',
-    options: ['Diarrhoea and indigestion', 'Baldness', 'Vampire bites', 'Stage fright'],
+    options: ['Diarrhoea and indigestion', 'Baldness and dandruff', 'Fear of public speaking', 'Vampire bites'],
     answer: 0,
     fact: 'By the 1840s, rival doctors were selling concentrated “tomato pills” as cure-alls. Regulation was, at the time, more of a suggestion.',
     source: 'https://daily.jstor.org/tomatoes-as-medicine/',
@@ -1654,7 +1654,7 @@ export const trivia: TriviaQuestion[] = [
   {
     id: 'trivia-165',
     question: 'Playground wisdom says swallowed gum stays in your stomach for seven years. What really happens?',
-    options: ['It stays exactly seven years', 'It slowly inflates into a bubble', 'It passes through in days, undigested', 'It glues your organs together'],
+    options: ['It stays exactly seven years', 'It dissolves slowly over months', 'It passes through in days, undigested', 'It glues your organs together'],
     answer: 2,
     fact: 'Your body can’t digest the gum base, so it travels through and leaves by the usual exit. Seven years was always ambitious.',
     source: 'https://health.clevelandclinic.org/what-happens-when-you-swallow-gum/',
@@ -1684,7 +1684,7 @@ export const trivia: TriviaQuestion[] = [
   {
     id: 'trivia-168',
     question: 'According to US health researchers, how many times a day does the average person pass gas?',
-    options: ['Once, if that', 'About 50', '8 to 14 times', 'Only after beans'],
+    options: ['Once or twice', 'About 50', '8 to 14 times', 'Only after beans'],
     answer: 2,
     fact: 'Up to 25 times a day still counts as normal, and people also burp up to 30 times a day. This is considered healthy.',
     source: 'https://www.niddk.nih.gov/health-information/digestive-diseases/gas-digestive-tract/symptoms-causes',
@@ -1714,7 +1714,7 @@ export const trivia: TriviaQuestion[] = [
   {
     id: 'trivia-171',
     question: 'Whether your earwax is wet and sticky or dry and flaky mostly comes down to what?',
-    options: ['How often you shower', 'A single gene', 'How much cheese you eat', 'Your star sign'],
+    options: ['How often you shower', 'A single gene', 'What you eat', 'Your star sign'],
     answer: 1,
     fact: 'Dry earwax is common in East Asia and wet earwax elsewhere. The same gene also decides how much your armpits smell. It has range.',
     source: 'https://www.nature.com/articles/ng1733',
@@ -1744,7 +1744,7 @@ export const trivia: TriviaQuestion[] = [
   {
     id: 'trivia-174',
     question: 'In the 1600s, Italian doctor Santorio Santorio spent about 30 years doing what?',
-    options: ['Counting his own heartbeats', 'Eating only eggs', 'Sneezing into labelled jars', 'Weighing himself, his food and his poop'],
+    options: ['Counting his own heartbeats each hour', 'Eating nothing but boiled eggs', 'Sneezing into labelled jars', 'Weighing himself, his food and his poop'],
     answer: 3,
     fact: 'From a giant weighing chair, he noticed much of what he ate seemed to vanish. He called it “insensible perspiration” and kept weighing.',
     source: 'https://hekint.org/2017/01/22/santorio-santorio-physician-physiologist-and-weight-watcher/',
@@ -1794,7 +1794,7 @@ export const trivia: TriviaQuestion[] = [
   {
     id: 'trivia-179',
     question: 'England’s King Charles II touched over 90,000 people who believed a royal touch could cure what?',
-    options: ['Baldness', 'Scrofula, the “king’s evil”', 'Bad breath', 'Being a commoner'],
+    options: ['Baldness and grey hair', 'Scrofula, the “king’s evil”', 'Bad breath and toothache', 'Being a commoner'],
     answer: 1,
     fact: 'Each person also received a gold coin called a touch piece, which may explain the turnout. Queen Anne was the last English monarch to do it, in 1712.',
     source: 'https://www.britannica.com/science/kings-evil',
@@ -1814,7 +1814,7 @@ export const trivia: TriviaQuestion[] = [
   {
     id: 'trivia-181',
     question: 'Sterile fly larvae (maggots) are still used in modern medicine. What job do they do?',
-    options: ['Tell nurses when a wound itches', 'Stitch wounds closed', 'Eat away dead tissue in wounds', 'Taste-test hospital food'],
+    options: ['Clean out blocked blood vessels', 'Stitch wounds closed', 'Eat away dead tissue in wounds', 'Taste-test hospital food'],
     answer: 2,
     fact: 'US regulators class them as a medical device, partly because the wriggling counts as part of the treatment. Somewhere, there is a form for this.',
     source: 'https://pmc.ncbi.nlm.nih.gov/articles/PMC3976885/',
@@ -1824,7 +1824,7 @@ export const trivia: TriviaQuestion[] = [
   {
     id: 'trivia-182',
     question: 'Rubber surgical gloves were first ordered around 1890 to protect whose hands?',
-    options: ['A surgeon with cold hands', 'A visiting king’s', 'A dentist with a splinter', 'A nurse’s, sore from disinfectant'],
+    options: ['A surgeon with cold hands', 'A visiting king’s', 'A pianist who needed surgery', 'A nurse’s, sore from disinfectant'],
     answer: 3,
     fact: 'The surgeon had them made for his chief operating nurse, Caroline Hampton. They married in June 1890. Most supply orders end less well.',
     source: 'https://www.sciencehistory.org/stories/magazine/the-nurse-who-introduced-gloves-to-the-operating-room/',
@@ -1834,7 +1834,7 @@ export const trivia: TriviaQuestion[] = [
   {
     id: 'trivia-183',
     question: 'Is the tongue really the strongest muscle in the body?',
-    options: ['No, that’s a myth', 'Yes, by far', 'Only in toddlers', 'Only while eating soup'],
+    options: ['No, that’s a myth', 'Yes, by far', 'Only in babies', 'Only while eating soup'],
     answer: 0,
     fact: 'The tongue is a team of eight muscles, and your jaw clenches far harder. The tongue just gets more publicity.',
     source: 'https://www.scientificamerican.com/article/fact-or-fiction-the-tongue-is-the-strongest-muscle-in-the-body/',
@@ -1854,7 +1854,7 @@ export const trivia: TriviaQuestion[] = [
   {
     id: 'trivia-185',
     question: 'The “useless” appendix may have a job after all. According to a 2007 theory, what is it?',
-    options: ['Storing spare stomach acid', 'Sheltering good gut bacteria', 'Helping you whistle', 'Detecting lies'],
+    options: ['Storing spare stomach acid', 'Sheltering good gut bacteria', 'Helping digest raw meat', 'Detecting lies'],
     answer: 1,
     fact: 'After a bad stomach bug flushes the gut, the appendix may restock it with friendly bacteria. Removing it has no obvious downside, which hasn’t helped its case.',
     source: 'https://corporate.dukehealth.org/news/appendix-isnt-useless-all-its-safe-house-bacteria',
@@ -1874,7 +1874,7 @@ export const trivia: TriviaQuestion[] = [
   {
     id: 'trivia-187',
     question: 'Ötzi the Iceman, a 5,300-year-old mummy, has 61 tattoos. Where are most of them?',
-    options: ['Spelling out his name', 'Across his forehead', 'On his tongue', 'Over his joints and lower back'],
+    options: ['Spelling out his name', 'Around his neck and shoulders', 'On his face and neck', 'Over his joints and lower back'],
     answer: 3,
     fact: 'Several sit on traditional acupuncture points, so they may have been an early pain treatment. Even 5,300 years ago, knees were a problem.',
     source: 'https://www.smithsonianmag.com/smart-news/61-tattoos-otzi-5300-year-old-iceman-180954035/',
@@ -1914,7 +1914,7 @@ export const trivia: TriviaQuestion[] = [
   {
     id: 'trivia-191',
     question: 'Why do astronauts try not to burp in space?',
-    options: ['Burps bring up liquid too', 'Burps set off smoke alarms', 'Burps echo for hours', 'Burps push the station off course'],
+    options: ['Burps bring up liquid too', 'Burps fog up the helmet visor', 'Burps can make you dizzy', 'Burps push the station off course'],
     answer: 0,
     fact: 'With no gravity to separate gas from stomach contents, space burps are often “wet burps.” Astronauts mostly keep it in.',
     source: 'https://howthingsfly.si.edu/ask-an-explainer/i-heard-astronauts-cannot-burp-space-it-true',
@@ -1934,7 +1934,7 @@ export const trivia: TriviaQuestion[] = [
   {
     id: 'trivia-193',
     question: 'Medieval doctors used a “urine wheel” chart to diagnose patients by matching what?',
-    options: ['The colour of their urine', 'How loudly they sneezed', 'Their shoe size', 'The shape of their earwax'],
+    options: ['The colour of their urine', 'The colour of their tongue', 'The speed of their pulse', 'The shape of their earwax'],
     answer: 0,
     fact: 'Doctors judged colour, cloudiness and sediment against the four humours. It was, in effect, a paint chart with consequences.',
     source: 'https://history.rcp.ac.uk/blog/urine-wheel',
@@ -1944,7 +1944,7 @@ export const trivia: TriviaQuestion[] = [
   {
     id: 'trivia-194',
     question: 'What actually makes the “lub-dub” sound of a heartbeat?',
-    options: ['Blood sloshing in your veins', 'Heart valves snapping shut', 'Your ribs drumming', 'Tiny hiccups in your lungs'],
+    options: ['Blood sloshing in your veins', 'Heart valves snapping shut', 'Air moving in your lungs', 'Tiny hiccups in your lungs'],
     answer: 1,
     fact: '“Lub” is one pair of valves closing and “dub” is the other. That’s the whole song, about 100,000 times a day.',
     source: 'https://medlineplus.gov/ency/imagepages/19613.htm',
@@ -1954,7 +1954,7 @@ export const trivia: TriviaQuestion[] = [
   {
     id: 'trivia-195',
     question: 'For most people, what does taking vitamin C every day do about catching colds?',
-    options: ['Makes you immune', 'Makes colds last a month', 'Doesn’t stop you catching them', 'Turns you slightly orange'],
+    options: ['Makes you immune', 'Halves how many colds you get', 'Doesn’t stop you catching them', 'Turns you slightly orange'],
     answer: 2,
     fact: 'Regular use might make colds slightly shorter or milder. Starting once you’re already sniffling doesn’t seem to help, which has not slowed sales.',
     source: 'https://ods.od.nih.gov/factsheets/vitaminc-consumer/',
@@ -1974,7 +1974,7 @@ export const trivia: TriviaQuestion[] = [
   {
     id: 'trivia-197',
     question: 'After the Battle of Waterloo in 1815, dentures called “Waterloo teeth” were made using what?',
-    options: ['Melted-down cannonballs', 'Carved cheese rind', 'Real teeth from fallen soldiers', 'Horse hooves'],
+    options: ['Melted-down musket balls', 'Carved cheese rind', 'Real teeth from fallen soldiers', 'Polished cow and horse bones'],
     answer: 2,
     fact: 'Young soldiers had healthy teeth, so scavengers collected them for denture makers. Porcelain eventually ended the trade, to general relief.',
     source: 'https://museum.rcsed.ac.uk/the-collection/key-collections/key-object-page?objID=2722',

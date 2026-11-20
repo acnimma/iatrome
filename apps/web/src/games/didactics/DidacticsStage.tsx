@@ -72,7 +72,7 @@ function Question({ view, game }: { view: RoomView; game: DidacticsView }) {
         {game.lightning && <Pill tone="gold">Lightning round · double points</Pill>}
         <span className={styles.timer}>{!revealed && <TimerRing phase={game.phase} pausedAt={view.pausedAt} size={84} ticks />}</span>
       </div>
-      <motion.h2 key={game.number} className={styles.question} initial={{ y: -16, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
+      <motion.h2 key={game.number} className={styles.question} data-long={(game.question?.length ?? 0) > 140 || undefined} initial={{ y: -16, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
         {game.question}
       </motion.h2>
       <div className={styles.options}>

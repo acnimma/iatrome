@@ -206,3 +206,10 @@
     grid-template-columns: 1fr;
   }
 }
+
+.overflow {
+  margin-top: -6px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--ink-soft);
+}

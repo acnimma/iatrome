@@ -4,6 +4,7 @@ import type { RoomView, SurviveView } from '@iatrome/game/client';
 import { useRoom } from '@/realtime/use-room';
 import { AnswerCard, Choice, PhoneMessage, PhonePrompt, PhoneStack } from '@/components/controller/Phone';
 import { ReactionBar } from '@/components/room/RoomBits';
+import { StatButton } from '@/components/room/Stat';
 import { haptic } from '@/lib/haptics';
 import { LETTERS, OPTION_TONES } from './SurviveStage';
 import styles from './Survive.module.css';
@@ -37,7 +38,13 @@ export function SurviveController({ view, game }: { view: RoomView; game: Surviv
       );
     return (
       <PhoneStack>
-        <PhonePrompt label={out ? 'Ghost mode · half points' : `Question ${game.number}`} prompt={game.question ?? ''} phase={game.phase} pausedAt={view.pausedAt} />
+        <PhonePrompt
+          label={out ? 'Ghost mode · half points · 3 right in a row gets you back' : `Question ${game.number} · ${game.coffees[me]} ${game.coffees[me] === 1 ? 'coffee' : 'coffees'} left`}
+          prompt={game.question ?? ''}
+          phase={game.phase}
+          pausedAt={view.pausedAt}
+        />
+        <StatButton view={view} />
         {game.options.map((option, i) => (
           <Choice
             key={i}
@@ -62,11 +69,16 @@ export function SurviveController({ view, game }: { view: RoomView; game: Surviv
   const right = game.myAnswer !== null && game.myAnswer === game.answer;
   const lostCoffee = game.last?.lostCoffee.includes(me);
   const justOut = game.last?.clockedOut.includes(me);
+  const backIn = game.last?.revived.includes(me);
   const points = game.last?.points[me];
   return (
     <PhoneStack>
       {!playing ? (
         <PhoneMessage icon="clipboard" title={`Answer: ${LETTERS[game.answer ?? 0]}`} />
+      ) : backIn ? (
+        <PhoneMessage icon="coffee" title="Back on shift">
+          Someone found you a coffee. Try to keep this one.
+        </PhoneMessage>
       ) : justOut ? (
         <PhoneMessage icon="ghost" title="You clocked out">
           Keep answering as a ghost for half points.

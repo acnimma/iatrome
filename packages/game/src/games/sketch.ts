@@ -2,8 +2,8 @@ import { type SketchTerm, sketchTerms } from '@iatrome/content';
 import { LIMITS, SKETCH as SK } from '../constants';
 import { type DrawOp, applyDrawOp } from '../drawing';
 import { cleanText, matchGuess } from '../text';
-import type { GameResult, Phase } from '../types';
-import { type ActionOutcome, type BaseGameState, type GameContext, type GameModule, setPhase, standings, tidy } from './context';
+import type { GameResult, Highlight, Phase } from '../types';
+import { type ActionOutcome, type BaseGameState, type GameContext, type GameModule, setPhase, standings, statted, tidy } from './context';
 
 /**
  * Sketch: one player draws a secret term live; everyone races to guess.
@@ -31,6 +31,10 @@ export interface SketchState extends BaseGameState {
   /** Letter positions to reveal as hints, in order. */
   hintOrder: number[];
   drawerPoints: number;
+  /** How long the first correct guess took this turn. */
+  firstSolveMs: number | null;
+  /** Each finished turn, for the end-of-game highlights. */
+  history: { drawer: string; term: string; share: number; fastest: { playerId: string; ms: number } | null }[];
 }
 
 export type SketchAction =
@@ -80,6 +84,8 @@ export const sketch: GameModule<SketchState, SketchAction, SketchView> = {
       feed: [],
       hintOrder: [],
       drawerPoints: 0,
+      firstSolveMs: null,
+      history: [],
     };
     ctx.say('sketchIntro');
     setPhase(state, ctx, 'intro', SK.intro);
@@ -142,7 +148,13 @@ export const sketch: GameModule<SketchState, SketchAction, SketchView> = {
 
   result(state, ctx): GameResult | null {
     if (state.phase.name !== 'done') return null;
-    return { game: 'sketch', standings: standings(ctx, state.scores), highlights: [] };
+    return { game: 'sketch', standings: standings(ctx, state.scores), highlights: highlights(state, ctx) };
+  },
+
+  wakeAt(state) {
+    const { name, startedAt, endsAt } = state.phase;
+    if (name !== 'draw' || endsAt === null) return [];
+    return SK.hintsAt.map((f) => startedAt + f * (endsAt - startedAt));
   },
 
   view(state, ctx, viewer) {
@@ -166,6 +178,16 @@ export const sketch: GameModule<SketchState, SketchAction, SketchView> = {
       drawerPoints: state.drawerPoints,
       scores: state.scores,
     };
+  },
+
+  statKey(state, _ctx, playerId) {
+    if (!['choose', 'draw'].includes(state.phase.name) || !state.playerIds.includes(playerId)) return { error: 'Call it during a turn.' };
+    if (state.solved.some((s) => s.playerId === playerId)) return { error: 'Too late, you already got this one.' };
+    return `t${state.turn}`;
+  },
+
+  statRound(state) {
+    return { key: `t${state.turn}`, revealed: state.phase.name === 'reveal' };
   },
 
   bot(state, ctx, botId) {
@@ -203,6 +225,7 @@ function beginChoosing(state: SketchState, ctx: GameContext) {
   state.term = null;
   state.drawingId = null;
   state.solved = [];
+  state.firstSolveMs = null;
   state.feed = [];
   state.drawerPoints = 0;
   setPhase(state, ctx, 'choose', SK.choose, 'input');
@@ -221,7 +244,7 @@ function beginDrawing(state: SketchState, ctx: GameContext, term: SketchTerm) {
 function hintsShown(state: SketchState, ctx: GameContext) {
   if (state.phase.name !== 'draw' || !state.phase.endsAt) return 0;
   const elapsed = (ctx.now - state.phase.startedAt) / (state.phase.endsAt - state.phase.startedAt);
-  const steps = elapsed >= 0.7 ? 2 : elapsed >= 0.45 ? 1 : 0;
+  const steps = SK.hintsAt.filter((f) => elapsed >= f).length;
   return Math.min(state.hintOrder.length, Math.ceil((steps * state.hintOrder.length) / 2));
 }
 
@@ -243,11 +266,14 @@ function guess(state: SketchState, ctx: GameContext, playerId: string, raw: stri
   const outcome = matchGuess(text, [state.term.answer, ...state.term.accept]);
   if (outcome === 'correct') {
     const elapsed = (ctx.now - state.phase.startedAt) / ((state.phase.endsAt ?? ctx.now) - state.phase.startedAt || 1);
-    const points = tidy(SK.guessMax - (SK.guessMax - SK.guessMin) * Math.min(1, Math.max(0, elapsed)));
+    const round = `t${state.turn}`;
+    const points = statted(state, playerId, round, tidy(SK.guessMax - (SK.guessMax - SK.guessMin) * Math.min(1, Math.max(0, elapsed))));
+    const art = statted(state, drawer, round, tidy(points * SK.drawerShare));
+    if (!state.solved.length) state.firstSolveMs = ctx.now - state.phase.startedAt;
     state.solved.push({ playerId, points });
     state.scores[playerId] += points;
-    state.scores[drawer] += SK.drawerPerGuess;
-    state.drawerPoints += SK.drawerPerGuess;
+    state.scores[drawer] += art;
+    state.drawerPoints += art;
     state.feed.push({ playerId, kind: 'correct', text: '' });
     const guessers = ctx.connectedPlayers(state.playerIds).filter((id) => id !== drawer);
     if (guessers.every((id) => state.solved.some((s) => s.playerId === id))) reveal(state, ctx);
@@ -259,8 +285,34 @@ function guess(state: SketchState, ctx: GameContext, playerId: string, raw: stri
 }
 
 function reveal(state: SketchState, ctx: GameContext) {
-  const guessers = state.playerIds.filter((id) => id !== state.turns[state.turn] && ctx.person(id));
+  const drawer = state.turns[state.turn];
+  const guessers = state.playerIds.filter((id) => id !== drawer && ctx.person(id));
+  if (state.term) {
+    const first = state.solved[0];
+    state.history.push({
+      drawer,
+      term: state.term.answer,
+      share: guessers.length ? state.solved.length / guessers.length : 0,
+      fastest: first ? { playerId: first.playerId, ms: state.firstSolveMs ?? 0 } : null,
+    });
+  }
   if (state.solved.length === 0) ctx.say('sketchNobodyGotIt');
   else if (state.solved.length >= guessers.length) ctx.say('sketchEveryoneGotIt');
   setPhase(state, ctx, 'reveal', SK.reveal);
+}
+
+/** End-of-game awards: the fastest guess, and the artist the room could actually read. */
+function highlights(state: SketchState, ctx: GameContext): Highlight[] {
+  const out: Highlight[] = [];
+  const fastest = state.history
+    .filter((h) => h.fastest && ctx.person(h.fastest.playerId))
+    .sort((a, b) => a.fastest!.ms - b.fastest!.ms)[0];
+  if (fastest?.fastest)
+    out.push({ title: 'Fastest hands', playerId: fastest.fastest.playerId, detail: `Got “${fastest.term}” in ${Math.max(1, Math.round(fastest.fastest.ms / 1000))}s` });
+  const legible = state.history.filter((h) => ctx.person(h.drawer) && h.share > 0).sort((a, b) => b.share - a.share)[0];
+  if (legible)
+    out.push({ title: 'Legible artist', playerId: legible.drawer, detail: `${Math.round(legible.share * 100)}% got “${legible.term}”` });
+  const lost = state.history.filter((h) => ctx.person(h.drawer) && h.share === 0)[0];
+  if (lost) out.push({ title: 'Abstract period', playerId: lost.drawer, detail: `Nobody got “${lost.term}”` });
+  return out;
 }

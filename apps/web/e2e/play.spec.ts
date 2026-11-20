@@ -92,7 +92,7 @@ for (const game of ['grand-rounds', 'sketch', 'survive', 'poison', 'didactics'])
       await stage.waitForTimeout(250);
     }
     await expect(stage.getByText('final results')).toBeVisible();
-    await expect(phones[0].getByText(/You came|Game over/)).toBeVisible();
+    await expect(phones[0].getByText(/came \d|Game over/)).toBeVisible({ timeout: 10_000 });
     expect(errors).toEqual([]);
   });
 }

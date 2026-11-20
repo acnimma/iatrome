@@ -1,5 +1,6 @@
 import { hostLines as coreHostLines } from './packs/host-lines';
 import { didacticsHostLines } from './packs/host-lines-didactics';
+import { momentHostLines } from './packs/host-lines-moments';
 import { quips as quipsNormal } from './packs/quips';
 import { quipsPro } from './packs/quips-pro';
 import { playerDifferentials as playerDifferentialsNormal, playerQuips as playerQuipsNormal } from './packs/player-prompts';
@@ -29,4 +30,4 @@ export const dilemmas = [...dilemmasNormal, ...dilemmasPro];
 export const sketchTerms = [...sketchTermsNormal, ...sketchTermsPro];
 export const trivia = [...triviaNormal, ...triviaPro];
 
-export const hostLines: Record<HostEvent, string[]> = { ...coreHostLines, ...didacticsHostLines };
+export const hostLines: Record<HostEvent, string[]> = { ...coreHostLines, ...didacticsHostLines, ...momentHostLines };

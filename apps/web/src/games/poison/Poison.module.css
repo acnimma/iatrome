@@ -171,9 +171,9 @@
   gap: 8px;
   padding: 18px;
   border: var(--outline);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   background: var(--card);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--gloss), var(--shadow-md);
 }
 
 .phoneDefenceLabel {
@@ -206,9 +206,10 @@
   padding: 10px 14px;
   overflow: hidden;
   border: var(--outline);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   background: var(--card);
   font-weight: 700;
+  box-shadow: var(--gloss), var(--shadow-md);
 }
 
 .phoneSplitFill {
@@ -233,4 +234,30 @@
 
 .phoneSplitRow strong {
   position: relative;
+}
+
+.volunteer {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 12px 10px 20px;
+  border: var(--outline);
+  border-radius: var(--radius-pill);
+  background: var(--card);
+  box-shadow: var(--gloss), var(--shadow-md);
+  font-size: clamp(1rem, 1.6vw, 1.3rem);
+  font-weight: 800;
+}
+
+.converts {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  font-weight: 800;
+  color: var(--ink-soft);
+}
+
+.convinced {
+  align-self: center;
 }

@@ -5,6 +5,7 @@ import { useRoom } from '@/realtime/use-room';
 import { Avatar } from '@/components/ui/Avatar';
 import { AnswerCard, Choice, PhoneMessage, PhonePrompt, PhoneStack } from '@/components/controller/Phone';
 import { ReactionBar, usePeople } from '@/components/room/RoomBits';
+import { StatButton } from '@/components/room/Stat';
 import { haptic } from '@/lib/haptics';
 import { LETTERS, teamTone } from './teams';
 import styles from './Didactics.module.css';
@@ -47,23 +48,33 @@ export function DidacticsController({ view, game }: { view: RoomView; game: Dida
         <PhoneStack>
           {badge}
           <PhonePrompt label={game.lightning ? 'Double points' : `Question ${game.number} of ${game.total}`} prompt={game.question ?? ''} phase={game.phase} pausedAt={view.pausedAt} />
+          <StatButton view={view} label="Call your Stat: your answer counts twice" />
           {game.options.map((option, i) => (
             <Choice
               key={i}
               tone={(['blue', 'rose', 'gold', 'sky'] as const)[i]}
               picked={game.myAnswer === i}
-              dimmed={game.myAnswer !== null && game.myAnswer !== i}
+              dimmed={game.mySwitched && game.myAnswer !== i}
               onClick={() => {
-                if (game.myAnswer !== null) return;
+                if (game.myAnswer !== null && (game.mySwitched || game.myAnswer === i)) return;
                 haptic('success');
                 room.command({ type: 'pick-option', option: i });
               }}
             >
               <span className={styles.phoneLetter}>{LETTERS[i]}</span>
               <span className={styles.phoneOption}>{option}</span>
+              {game.teamPicks && game.teamPicks[i] > 0 && (
+                <span className={styles.teamCount} aria-label={`${game.teamPicks[i]} on your team`}>
+                  ×{game.teamPicks[i]}
+                </span>
+              )}
             </Choice>
           ))}
-          {game.myAnswer !== null && <p className={styles.locked}>Locked in. Waiting for everyone else.</p>}
+          {game.myAnswer !== null && (
+            <p className={styles.locked}>
+              {game.mySwitched ? 'Switched. Final answer.' : 'Locked in. That’s your team so far. You can switch once.'}
+            </p>
+          )}
         </PhoneStack>
       );
     case 'reveal': {

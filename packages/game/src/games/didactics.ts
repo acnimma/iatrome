@@ -1,7 +1,7 @@
 import { type TriviaQuestion, trivia } from '@iatrome/content';
 import { DIDACTICS as DC } from '../constants';
 import type { GameResult, Phase } from '../types';
-import { type ActionOutcome, type BaseGameState, type GameContext, type GameModule, sawtooth, setPhase, tidy } from './context';
+import { type ActionOutcome, type BaseGameState, type GameContext, type GameModule, questionTime, sawtooth, setPhase, statted, tidy } from './context';
 
 /**
  * Didactics Mode: team trivia for big groups (up to 40). Random teams; everyone
@@ -27,7 +27,8 @@ export interface DidacticsState extends BaseGameState {
   teamScores: Record<string, number>;
   questions: TriviaQuestion[];
   index: number;
-  answers: Record<string, { option: number; at: number }>;
+  /** `switched`: they changed their answer after seeing their team's split (once per question). */
+  answers: Record<string, { option: number; at: number; switched?: boolean }>;
   /** Right answers per player, for the MVP. */
   correct: Record<string, number>;
   last: { perTeam: Record<string, { right: number; of: number; points: number }> } | null;
@@ -51,6 +52,9 @@ export interface DidacticsView {
   last: DidacticsState['last'];
   myTeam: string | null;
   myAnswer: number | null;
+  mySwitched: boolean;
+  /** Your team's answers so far, per option (after you lock in). */
+  teamPicks: number[] | null;
 }
 
 const TEAM_NAMES = ['The Band-Aids', 'The Lollipops', 'The Stethoscopes', 'The Thermometers'];
@@ -92,8 +96,15 @@ export const didactics: GameModule<DidacticsState, DidacticsAction, DidacticsVie
 
   act(state, ctx, playerId, action): ActionOutcome | void {
     if (state.phase.name !== 'question') return { error: 'Too late!' };
-    if (!state.playerIds.includes(playerId) || playerId in state.answers) return;
+    if (!state.playerIds.includes(playerId)) return;
     if (!Number.isInteger(action.option) || action.option < 0 || action.option > 3) return;
+    const before = state.answers[playerId];
+    if (before) {
+      // One change of heart per question, after seeing how the team split. Speed resets.
+      if (before.switched || before.option === action.option) return;
+      state.answers[playerId] = { option: action.option, at: ctx.now, switched: true };
+      return;
+    }
     state.answers[playerId] = { option: action.option, at: ctx.now };
     didactics.settle(state, ctx);
   },
@@ -177,7 +188,18 @@ export const didactics: GameModule<DidacticsState, DidacticsAction, DidacticsVie
       last: revealed ? state.last : null,
       myTeam: me ? (state.teams.find((t) => t.members.includes(me))?.id ?? null) : null,
       myAnswer: me ? (state.answers[me]?.option ?? null) : null,
+      mySwitched: me ? Boolean(state.answers[me]?.switched) : false,
+      teamPicks: me && state.phase.name === 'question' && state.answers[me] ? teamPicks(state, me) : null,
     };
+  },
+
+  statKey(state, _ctx, playerId) {
+    if (state.phase.name !== 'question' || !state.playerIds.includes(playerId)) return { error: 'Call it while a question is up.' };
+    return `q${state.index}`;
+  },
+
+  statRound(state) {
+    return { key: `q${state.index}`, revealed: state.phase.name === 'reveal' };
   },
 
   bot(state, ctx, botId) {
@@ -193,7 +215,16 @@ const isLightning = (state: DidacticsState) => state.index >= state.questions.le
 function ask(state: DidacticsState, ctx: GameContext) {
   state.answers = {};
   state.last = null;
-  setPhase(state, ctx, 'question', DC.question, 'input');
+  const q = state.questions[state.index];
+  setPhase(state, ctx, 'question', questionTime(DC.question, q.question, q.options), 'input');
+}
+
+/** How the viewer's team has answered so far (only shown once they've locked in). */
+function teamPicks(state: DidacticsState, me: string) {
+  const team = state.teams.find((t) => t.members.includes(me));
+  const counts = [0, 0, 0, 0];
+  for (const id of team?.members ?? []) if (state.answers[id]) counts[state.answers[id].option] += 1;
+  return counts;
 }
 
 function reveal(state: DidacticsState, ctx: GameContext) {
@@ -207,14 +238,17 @@ function reveal(state: DidacticsState, ctx: GameContext) {
     if (a?.option !== q.answer) continue;
     state.correct[id] = (state.correct[id] ?? 0) + 1;
     const speed = 1 - Math.min(1, (a.at - state.phase.startedAt) / duration);
-    state.scores[id] += tidy((DC.base + DC.speedBonus * speed) * multiplier);
+    state.scores[id] += statted(state, id, `q${state.index}`, tidy((DC.base + DC.speedBonus * speed) * multiplier));
   }
 
   for (const team of state.teams) {
     // Count everyone still here; a teammate who never answers counts as a miss.
     const present = ctx.connectedPlayers(team.members);
-    const right = present.filter((id) => state.answers[id]?.option === q.answer).length;
-    const points = present.length ? tidy((DC.pool * right * multiplier) / present.length) : 0;
+    const rightIds = present.filter((id) => state.answers[id]?.option === q.answer);
+    const right = rightIds.length;
+    // A Stat makes its caller's right answer count twice for the team.
+    const counted = rightIds.reduce((n, id) => n + statted(state, id, `q${state.index}`, 1), 0);
+    const points = present.length ? tidy((DC.pool * counted * multiplier) / present.length) : 0;
     state.teamScores[team.id] += points;
     perTeam[team.id] = { right, of: present.length, points };
   }

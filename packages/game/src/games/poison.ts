@@ -1,15 +1,15 @@
 import { type Dilemma, dilemmas } from '@iatrome/content';
 import { LIMITS, POISON as PO } from '../constants';
 import { cleanText } from '../text';
-import type { GameResult, Phase } from '../types';
-import { type ActionOutcome, type BaseGameState, type GameContext, type GameModule, setPhase, standings } from './context';
+import type { GameResult, Highlight, Phase } from '../types';
+import { type ActionOutcome, type BaseGameState, type GameContext, type GameModule, setPhase, standings, statted } from './context';
 
 /**
  * Pick Your Poison: would you rather. Pick a side AND predict the majority.
  * Correct predictions score; one of the minority defends their choice on stage.
  */
 
-type PhaseName = 'intro' | 'choose' | 'reveal' | 'defend' | 'defence' | 'done';
+type PhaseName = 'intro' | 'choose' | 'reveal' | 'volunteer' | 'defend' | 'defence' | 'done';
 type Side = 'a' | 'b';
 
 export interface PoisonState extends BaseGameState {
@@ -23,12 +23,19 @@ export interface PoisonState extends BaseGameState {
   defence: string | null;
   defenceHidden: boolean;
   earned: Record<string, number>;
+  /** Majority players the defence won over. */
+  converts: string[];
+  /** For the end-of-game awards: times in the minority, and times reading the room right. */
+  minorityCount: Record<string, number>;
+  readCount: Record<string, number>;
 }
 
 export type PoisonAction =
   | { type: 'pick'; side: Side }
   | { type: 'predict'; side: Side }
-  | { type: 'defend'; text: string };
+  | { type: 'defend'; text: string }
+  | { type: 'volunteer' }
+  | { type: 'convinced' };
 
 export interface PoisonView {
   game: 'poison';
@@ -44,6 +51,8 @@ export interface PoisonView {
   done: string[];
   defender: string | null;
   defence: string | null;
+  /** Majority players the defence won over (during the defence). */
+  converts: string[];
   earned: Record<string, number>;
   mine: { side: Side | null; predict: Side | null } | null;
   scores: Record<string, number>;
@@ -68,6 +77,9 @@ export const poison: GameModule<PoisonState, PoisonAction, PoisonView> = {
       defence: null,
       defenceHidden: false,
       earned: {},
+      converts: [],
+      minorityCount: {},
+      readCount: {},
     };
     ctx.say('poisonIntro');
     setPhase(state, ctx, 'intro', PO.intro);
@@ -76,6 +88,21 @@ export const poison: GameModule<PoisonState, PoisonAction, PoisonView> = {
 
   act(state, ctx, playerId, action): ActionOutcome | void {
     if (!state.playerIds.includes(playerId)) return { error: 'Only players can pick.' };
+    if (action.type === 'volunteer') {
+      if (state.phase.name !== 'volunteer' || !inMinority(state, playerId)) return;
+      state.defender = playerId;
+      setPhase(state, ctx, 'defend', PO.defend, 'input');
+      return;
+    }
+    if (action.type === 'convinced') {
+      if (state.phase.name !== 'defence' || !state.defender || state.converts.includes(playerId)) return;
+      if (state.picks[playerId]?.side !== state.majority) return { error: 'You already agree with them.' };
+      state.converts.push(playerId);
+      const points = statted(state, state.defender, `d${state.index}`, PO.convertPoints);
+      state.scores[state.defender] += points;
+      state.earned[state.defender] = (state.earned[state.defender] ?? 0) + points;
+      return;
+    }
     if (action.type === 'defend') {
       if (state.phase.name !== 'defend' || playerId !== state.defender) return;
       const text = cleanText(action.text, LIMITS.defence);
@@ -102,15 +129,16 @@ export const poison: GameModule<PoisonState, PoisonAction, PoisonView> = {
         reveal(state, ctx);
         return;
       case 'reveal':
-        if (state.majority === 'a' || state.majority === 'b') {
-          const minority = ctx.connectedPlayers(state.playerIds).filter((id) => state.picks[id]?.side && state.picks[id]!.side !== state.majority);
-          if (minority.length) {
-            state.defender = ctx.rng.pick(minority);
-            ctx.say('poisonMinority');
-            setPhase(state, ctx, 'defend', PO.defend, 'input');
-            return;
-          }
+        // The minority may volunteer a defence. Nobody gets cold-called.
+        if (ctx.connectedPlayers(state.playerIds).some((id) => inMinority(state, id))) {
+          ctx.say('poisonMinority');
+          setPhase(state, ctx, 'volunteer', PO.volunteer, 'input');
+          return;
         }
+        next(state, ctx);
+        return;
+      case 'volunteer':
+        ctx.say('noDefender');
         next(state, ctx);
         return;
       case 'defend':
@@ -135,13 +163,13 @@ export const poison: GameModule<PoisonState, PoisonAction, PoisonView> = {
 
   result(state, ctx): GameResult | null {
     if (state.phase.name !== 'done') return null;
-    return { game: 'poison', standings: standings(ctx, state.scores), highlights: [] };
+    return { game: 'poison', standings: standings(ctx, state.scores), highlights: highlights(state, ctx) };
   },
 
   view(state, _ctx, viewer) {
     const d = state.dilemmas[state.index];
     const asking = state.phase.name !== 'intro' && state.phase.name !== 'done';
-    const revealed = ['reveal', 'defend', 'defence'].includes(state.phase.name);
+    const revealed = ['reveal', 'volunteer', 'defend', 'defence'].includes(state.phase.name);
     const sides: Record<string, Side> = {};
     for (const [id, p] of Object.entries(state.picks)) if (p.side) sides[id] = p.side;
     return {
@@ -156,11 +184,22 @@ export const poison: GameModule<PoisonState, PoisonAction, PoisonView> = {
       majority: revealed ? state.majority : null,
       done: Object.entries(state.picks).filter(([, p]) => p.side && p.predict).map(([id]) => id),
       defender: state.defender,
+      converts: state.phase.name === 'defence' ? state.converts : [],
       defence: state.phase.name === 'defence' && !state.defenceHidden ? state.defence : null,
       earned: revealed ? state.earned : {},
       mine: viewer.kind === 'stage' ? null : (state.picks[viewer.id] ?? null),
       scores: state.scores,
     };
+  },
+
+  statKey(state, _ctx, playerId) {
+    if (state.phase.name !== 'choose' || !state.playerIds.includes(playerId)) return { error: 'Call it while you’re picking.' };
+    return `d${state.index}`;
+  },
+
+  statRound(state) {
+    const live = ['choose', 'reveal', 'volunteer', 'defend', 'defence'].includes(state.phase.name);
+    return { key: live ? `d${state.index}` : null, revealed: state.phase.name !== 'choose' };
   },
 
   bot(state, ctx, botId) {
@@ -170,6 +209,14 @@ export const poison: GameModule<PoisonState, PoisonAction, PoisonView> = {
       const side = (): Side => (ctx.rng.next() < 0.5 ? 'a' : 'b');
       poison.act(state, ctx, botId, { type: 'pick', side: side() });
       poison.act(state, ctx, botId, { type: 'predict', side: side() });
+      return true;
+    }
+    if (state.phase.name === 'volunteer' && !state.defender && inMinority(state, botId)) {
+      poison.act(state, ctx, botId, { type: 'volunteer' });
+      return true;
+    }
+    if (state.phase.name === 'defence' && state.defender && state.picks[botId]?.side === state.majority && !state.converts.includes(botId) && ctx.rng.next() < 0.4) {
+      poison.act(state, ctx, botId, { type: 'convinced' });
       return true;
     }
     if (state.phase.name === 'defend' && state.defender === botId) {
@@ -187,6 +234,7 @@ function ask(state: PoisonState, ctx: GameContext) {
   state.defence = null;
   state.defenceHidden = false;
   state.earned = {};
+  state.converts = [];
   setPhase(state, ctx, 'choose', PO.choose, 'input');
 }
 
@@ -197,11 +245,14 @@ function reveal(state: PoisonState, ctx: GameContext) {
   state.majority = a === b ? 'tie' : a > b ? 'a' : 'b';
   for (const [id, p] of Object.entries(state.picks)) {
     if (!p.predict) continue;
-    const points = state.majority === 'tie' ? PO.predictPoints / 2 : p.predict === state.majority ? PO.predictPoints : 0;
+    const base = state.majority === 'tie' ? PO.predictPoints / 2 : p.predict === state.majority ? PO.predictPoints : 0;
+    const points = statted(state, id, `d${state.index}`, base);
     if (points) {
       state.scores[id] += points;
       state.earned[id] = points;
     }
+    if (p.predict === state.majority) state.readCount[id] = (state.readCount[id] ?? 0) + 1;
+    if (inMinority(state, id)) state.minorityCount[id] = (state.minorityCount[id] ?? 0) + 1;
   }
   if (sides.length > 1 && (a === 0 || b === 0)) ctx.say('poisonUnanimous');
   setPhase(state, ctx, 'reveal', PO.reveal);
@@ -209,8 +260,9 @@ function reveal(state: PoisonState, ctx: GameContext) {
 
 function showDefence(state: PoisonState, ctx: GameContext) {
   if (state.defender && state.defence) {
-    state.scores[state.defender] += PO.defendPoints;
-    state.earned[state.defender] = (state.earned[state.defender] ?? 0) + PO.defendPoints;
+    const points = statted(state, state.defender, `d${state.index}`, PO.defendPoints);
+    state.scores[state.defender] += points;
+    state.earned[state.defender] = (state.earned[state.defender] ?? 0) + points;
     setPhase(state, ctx, 'defence', PO.defence);
   } else next(state, ctx);
 }
@@ -220,4 +272,23 @@ function next(state: PoisonState, ctx: GameContext) {
     state.index += 1;
     ask(state, ctx);
   } else setPhase(state, ctx, 'done', null);
+}
+
+function inMinority(state: PoisonState, id: string) {
+  const side = state.picks[id]?.side;
+  return Boolean(side && (state.majority === 'a' || state.majority === 'b') && side !== state.majority);
+}
+
+/** End-of-game awards: who kept ending up alone, and who could read the room. */
+function highlights(state: PoisonState, ctx: GameContext): Highlight[] {
+  const top = (counts: Record<string, number>) =>
+    Object.entries(counts)
+      .filter(([id]) => ctx.person(id))
+      .sort((a, b) => b[1] - a[1])[0];
+  const out: Highlight[] = [];
+  const contrarian = top(state.minorityCount);
+  if (contrarian) out.push({ title: 'Contrarian', playerId: contrarian[0], detail: `In the minority ${contrarian[1]} of ${state.index + 1}` });
+  const reader = top(state.readCount);
+  if (reader) out.push({ title: 'Mind reader', playerId: reader[0], detail: `Called the room ${reader[1]} of ${state.index + 1}` });
+  return out;
 }

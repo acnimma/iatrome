@@ -7,7 +7,9 @@ import { Button } from '@/components/ui/Button';
 import { AnswerBox } from '@/components/ui/Field';
 import { Choice, PhoneMessage, PhonePrompt, PhoneStack } from '@/components/controller/Phone';
 import { ReactionBar, nameOf, usePeople } from '@/components/room/RoomBits';
+import { StatButton } from '@/components/room/Stat';
 import { haptic } from '@/lib/haptics';
+import { useAfter } from '@/components/ui/Later';
 import styles from './Poison.module.css';
 
 export function PoisonController({ view, game }: { view: RoomView; game: PoisonView }) {
@@ -17,6 +19,7 @@ export function PoisonController({ view, game }: { view: RoomView; game: PoisonV
   const playing = view.you?.inGame;
   const phase = game.phase.name;
   const defender = nameOf(people, game.defender);
+  const stepReady = useAfter(450, `${game.number}-${game.mine?.side ?? 'none'}`);
 
   if (phase === 'intro')
     return (
@@ -40,6 +43,8 @@ export function PoisonController({ view, game }: { view: RoomView; game: PoisonV
       { side: 'b' as const, text: game.b, tone: 'sky' as const },
     ];
     const step = mine.side ? 'predict' : 'pick';
+    // A double tap on step one shouldn't land on step two.
+    const ready = stepReady;
     if (mine.side && mine.predict) return <PhoneMessage icon="lock" title="Locked in">Waiting for everyone else…</PhoneMessage>;
     return (
       <PhoneStack>
@@ -49,10 +54,12 @@ export function PoisonController({ view, game }: { view: RoomView; game: PoisonV
           phase={game.phase}
           pausedAt={view.pausedAt}
         />
+        <StatButton view={view} />
         {options.map((o) => (
           <Choice
-            key={o.side}
-            tone={o.tone}
+            key={`${step}-${o.side}`}
+            tone={step === 'pick' ? o.tone : o.side === 'a' ? 'gold' : 'blue'}
+            disabled={!ready}
             onClick={() => {
               haptic('success');
               room.command({ type: step, side: o.side });
@@ -66,24 +73,59 @@ export function PoisonController({ view, game }: { view: RoomView; game: PoisonV
     );
   }
 
+  const mySide = game.sides?.[me] ?? null;
+  const inMinority = Boolean(mySide && (game.majority === 'a' || game.majority === 'b') && mySide !== game.majority);
+
+  if (phase === 'volunteer')
+    return inMinority ? (
+      <PhoneStack>
+        <PhoneMessage icon="mic" title="You’re in the minority">
+          Want to defend it? Nobody has to. You earn points for everyone you convince.
+        </PhoneMessage>
+        <Button tone="rose" size="xl" block onClick={() => { haptic('success'); room.command({ type: 'volunteer' }); }}>
+          Defend it
+        </Button>
+      </PhoneStack>
+    ) : (
+      <PhoneMessage icon="mic" title="Any defenders?">
+        Waiting to see if the minority wants to explain itself.
+      </PhoneMessage>
+    );
+
   if (phase === 'defend' && game.defender === me) return <Defend view={view} game={game} />;
 
-  if (phase === 'defend' || phase === 'defence')
+  if (phase === 'defend')
     return (
       <PhoneStack>
-        {phase === 'defence' && !view.screen && game.defence ? (
+        <PhoneMessage icon="mic" title={`${defender} is defending it`}>
+          They’re writing. Brace yourself.
+        </PhoneMessage>
+        <ReactionBar />
+      </PhoneStack>
+    );
+
+  if (phase === 'defence') {
+    const canConvince = playing && game.defender !== me && mySide === game.majority;
+    const convinced = game.converts.includes(me);
+    return (
+      <PhoneStack>
+        {!view.screen && game.defence ? (
           <div className={styles.phoneDefence}>
             <span className={styles.phoneDefenceLabel}>{defender}, in their defence</span>
             <blockquote>“{game.defence}”</blockquote>
           </div>
         ) : (
-          <PhoneMessage icon="mic" title={phase === 'defend' ? `${defender} is in the minority` : 'Judge them'}>
-            {phase === 'defend' ? 'They’re writing their defence.' : ''}
-          </PhoneMessage>
+          <PhoneMessage icon="mic" title={game.defender === me ? 'Your defence is up' : `${defender}’s defence is up`} />
+        )}
+        {canConvince && (
+          <Button tone={convinced ? 'card' : 'gold'} size="lg" block disabled={convinced} onClick={() => { haptic('success'); room.command({ type: 'convinced' }); }}>
+            {convinced ? 'Convinced. Noted.' : 'Convinced'}
+          </Button>
         )}
         <ReactionBar />
       </PhoneStack>
     );
+  }
 
   // Reveal
   const earned = game.earned[me];

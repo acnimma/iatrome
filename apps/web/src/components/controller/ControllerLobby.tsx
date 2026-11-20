@@ -3,7 +3,7 @@
 import { motion } from 'motion/react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { AVATARS, type GameResult, type RoomView, gameInfo } from '@iatrome/game/client';
+import { AVATARS, type GameResult, REVEAL, type RoomView, gameInfo } from '@iatrome/game/client';
 import { useRoom } from '@/realtime/use-room';
 import { Avatar, avatarTone } from '@/components/ui/Avatar';
 import { BackButton } from '@/components/ui/BackButton';
@@ -11,9 +11,11 @@ import { Icon } from '@/components/icons/Icon';
 import { rememberSession } from '@/realtime/identity';
 import { Button } from '@/components/ui/Button';
 import { Confetti } from '@/components/ui/Confetti';
+import { useAfter } from '@/components/ui/Later';
 import { Beep } from '@/components/room/Beep';
 import { JoinQr, ReactionBar, RoomCode, Scoreboard } from '@/components/room/RoomBits';
 import { SettingsDialog } from '@/components/room/SettingsDialog';
+import { MyStat } from '@/components/room/Stat';
 import { InviteButton } from '@/components/room/InviteButton';
 import { haptic } from '@/lib/haptics';
 import { PhoneMessage } from './Phone';
@@ -112,6 +114,8 @@ export function ControllerLobby({ view }: { view: RoomView }) {
           ))}
       </div>
 
+      <MyStat view={view} />
+
       {view.screen ? <InviteButton code={view.code} /> : <JoinCard code={view.code} />}
 
       {isVip && (
@@ -155,20 +159,31 @@ export function ControllerResults({ view, result }: { view: RoomView; result: Ga
   const mine = result.standings.find((s) => s.playerId === view.you?.id);
   const myTeam = result.teams?.find((t) => t.members.includes(view.you?.id ?? ''));
   const isVip = view.vip === view.you?.id;
+  // With a big screen, let the podium land before the phone gives it away.
+  const revealed = useAfter(view.screen ? REVEAL.podium : 0, result);
   const ordinal = (n: number) => `${n}${['th', 'st', 'nd', 'rd'][n % 100 > 10 && n % 100 < 14 ? 0 : n % 10] ?? 'th'}`;
+  const place = myTeam?.rank ?? mine?.rank ?? 0;
+  const headline = myTeam ? `${myTeam.name} came ${ordinal(myTeam.rank)}` : mine ? `You came ${ordinal(mine.rank)}` : 'Game over';
   return (
     <div className={styles.lobby}>
       <div className={styles.topBar}>
         <LeaveButton code={view.code} />
       </div>
-      {mine?.rank === 1 && <Confetti pieces={90} />}
-      <PhoneMessage icon={mine?.rank === 1 ? 'trophy' : mine && mine.rank <= 3 ? 'party' : 'stethoscope'} title={mine ? `You came ${ordinal(mine.rank)}!` : 'Game over!'}>
-        {mine ? `${mine.score.toLocaleString()} points` : 'Thanks for watching.'}
-      </PhoneMessage>
-      {!view.screen && result.teams && <TeamTable teams={result.teams} you={view.you?.id} />}
-      {!view.screen && <Scoreboard view={view} scores={Object.fromEntries(result.standings.map((s) => [s.playerId, s.score]))} limit={8} />}
-      {view.screen && <Beep line={view.hostLine} size={64} compact />}
-      <ReactionBar />
+      {!revealed ? (
+        <PhoneMessage icon="drum" title="Eyes up." />
+      ) : (
+        <>
+          {place === 1 && <Confetti pieces={90} />}
+          <PhoneMessage icon={place === 1 ? 'trophy' : place && place <= 3 ? 'party' : 'stethoscope'} title={headline}>
+            {myTeam ? `${myTeam.score.toLocaleString()} points as a team` : mine ? (mine.note ?? `${mine.score.toLocaleString()} points`) : 'Thanks for watching.'}
+          </PhoneMessage>
+          {!view.screen && result.teams && <TeamTable teams={result.teams} you={view.you?.id} />}
+          {!view.screen && <Scoreboard view={view} scores={Object.fromEntries(result.standings.map((s) => [s.playerId, s.score]))} limit={8} />}
+          {view.screen && <Beep line={view.hostLine} size={64} compact />}
+          <MyStat view={view} />
+          <ReactionBar />
+        </>
+      )}
       {isVip && (
         <Button tone="rose" size="lg" block onClick={() => room.command({ type: 'start' })}>
           Play again

@@ -6,6 +6,7 @@ import {
   doodles,
   hostEvents,
   hostLines,
+  namedHostEvents,
   playerDifferentials,
   playerQuips,
   quips,
@@ -127,11 +128,11 @@ describe('Beep', () => {
   it('has a deep pool of lines for every event', () => {
     for (const event of hostEvents) expect(hostLines[event]?.length ?? 0, event).toBeGreaterThanOrEqual(10);
   });
-  it('only uses {name} in winner lines', () => {
+  it('only uses {name} where a name is passed in', () => {
     for (const event of hostEvents)
       for (const line of hostLines[event]) {
         const vars = line.match(/\{(\w+)\}/g) ?? [];
-        if (event === 'winner') expect(vars.every((v) => v === '{name}'), line).toBe(true);
+        if (namedHostEvents.includes(event)) expect(vars.every((v) => v === '{name}'), line).toBe(true);
         else expect(vars, `${event}: ${line}`).toEqual([]);
       }
   });

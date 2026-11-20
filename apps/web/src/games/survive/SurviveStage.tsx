@@ -32,7 +32,7 @@ export function SurviveStage({ view, game }: { view: RoomView; game: SurviveView
         </Pill>
         {game.phase.name === 'question' && <TimerRing phase={game.phase} pausedAt={view.pausedAt} size={72} ticks />}
       </div>
-      <motion.h2 key={game.number} className={styles.question} initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
+      <motion.h2 key={game.number} className={styles.question} data-long={(game.question?.length ?? 0) > 140 || undefined} initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
         {game.question}
       </motion.h2>
       <div className={styles.options}>

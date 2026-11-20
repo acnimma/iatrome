@@ -10,8 +10,8 @@ export const dilemmas: Dilemma[] = [
   },
   {
     id: "wyr-002",
-    a: "only communicate in medical abbreviations",
-    b: "have everyone call you “the nurse,” whatever your actual job",
+    a: "have every doctor explain things to you like you’re five",
+    b: "have every doctor explain things to you like you’re a doctor",
     breadth: "universal",
   },
   {
@@ -34,8 +34,8 @@ export const dilemmas: Dilemma[] = [
   },
   {
     id: "wyr-006",
-    a: "take every exam on a typewriter",
-    b: "take every exam next to a very loud metronome",
+    a: "always be able to read what your doctor is typing about you",
+    b: "never have to watch your doctor type again",
     breadth: "universal",
   },
   {
@@ -52,8 +52,8 @@ export const dilemmas: Dilemma[] = [
   },
   {
     id: "wyr-009",
-    a: "have a third kidney",
-    b: "have a second appendix",
+    a: "have an extra finger",
+    b: "have an extra elbow",
     breadth: "universal",
   },
   {
@@ -70,8 +70,8 @@ export const dilemmas: Dilemma[] = [
   },
   {
     id: "wyr-012",
-    a: "wear a white coat with no pockets",
-    b: "wear scrubs with 40 pockets and never find anything",
+    a: "have a rude doctor who is always right",
+    b: "have a lovely doctor who is right about half the time",
     breadth: "universal",
   },
   {
@@ -130,14 +130,14 @@ export const dilemmas: Dilemma[] = [
   },
   {
     id: "wyr-022",
-    a: "have your knuckles crack every time you’re right",
-    b: "have your knees creak every time you’re wrong",
+    a: "have your doctor text you like a close friend",
+    b: "have your doctor email you like a law firm",
     breadth: "universal",
   },
   {
     id: "wyr-023",
-    a: "study only in a hospital stairwell",
-    b: "study only in a basement next to the laundry machines",
+    a: "wait two hours in a waiting room with great magazines",
+    b: "wait 20 minutes in one with no chairs and a crying baby",
     breadth: "universal",
   },
   {
@@ -256,8 +256,8 @@ export const dilemmas: Dilemma[] = [
   },
   {
     id: "wyr-043",
-    a: "have every lecture play at triple speed",
-    b: "have every lecture play at half speed",
+    a: "have your doctor think out loud for the whole appointment",
+    b: "have your doctor say nothing at all, just nod slowly",
     breadth: "universal",
   },
   {
@@ -268,14 +268,14 @@ export const dilemmas: Dilemma[] = [
   },
   {
     id: "wyr-045",
-    a: "forget your stethoscope every day",
-    b: "forget your ID badge every day",
+    a: "get every test result from a cheerful robot",
+    b: "get every test result from a doctor who sighs first",
     breadth: "universal",
   },
   {
     id: "wyr-046",
-    a: "be known as the person who always finds the vein",
-    b: "be known as the person who always finds the snacks",
+    a: "lose your voice for a week every winter",
+    b: "lose your sense of taste for a week every winter",
     breadth: "universal",
   },
   {
@@ -364,14 +364,14 @@ export const dilemmas: Dilemma[] = [
   },
   {
     id: "wyr-061",
-    a: "always get the good parking spot",
-    b: "always get the computer that actually works",
+    a: "have a nurse who sings during every shot",
+    b: "have a nurse who says “on three” and goes on two",
     breadth: "universal",
   },
   {
     id: "wyr-062",
-    a: "walk 30,000 steps every shift",
-    b: "walk 5,000 steps every shift, all of them stairs",
+    a: "have a dentist with freezing cold hands",
+    b: "have a dentist who breathes very loudly",
     breadth: "universal",
   },
   {
@@ -388,8 +388,8 @@ export const dilemmas: Dilemma[] = [
   },
   {
     id: "wyr-065",
-    a: "have a tiny Hippocrates on your shoulder giving advice",
-    b: "have a tiny Florence Nightingale holding a lamp over your notes",
+    a: "keep your childhood doctor for the rest of your life",
+    b: "see a brand-new doctor every visit, picked at random",
     breadth: "universal",
   },
   {
@@ -406,8 +406,8 @@ export const dilemmas: Dilemma[] = [
   },
   {
     id: "wyr-068",
-    a: "be a nerve with a two-metre commute",
-    b: "be the heart and never get a rest day",
+    a: "be the friend who always has a bandage",
+    b: "be the friend who always knows where the bathroom is",
     breadth: "universal",
   },
   {
@@ -436,8 +436,8 @@ export const dilemmas: Dilemma[] = [
   },
   {
     id: "wyr-073",
-    a: "retake the same exam every year forever",
-    b: "retake it just once, in a language you don’t speak",
+    a: "see the dentist every month, but it never hurts",
+    b: "see the dentist every five years, and it’s always an event",
     breadth: "universal",
   },
   {
@@ -478,14 +478,14 @@ export const dilemmas: Dilemma[] = [
   },
   {
     id: "wyr-080",
-    a: "be the student who always asks one more question",
-    b: "be the student who always gets called on",
+    a: "always sneeze in threes",
+    b: "always sneeze once, but extremely loudly",
     breadth: "universal",
   },
   {
     id: "wyr-081",
-    a: "have every lecture start at 6 a.m.",
-    b: "have every lecture end at 10 p.m.",
+    a: "have every appointment at 7 a.m.",
+    b: "have every appointment at 4:45 p.m. on a Friday",
     breadth: "universal",
   },
   {
@@ -538,8 +538,8 @@ export const dilemmas: Dilemma[] = [
   },
   {
     id: "wyr-090",
-    a: "lose your voice right before a presentation",
-    b: "lose your notes right before a presentation",
+    a: "have your mom come to every doctor appointment you have",
+    b: "have your mom phone your doctor after every appointment",
     breadth: "universal",
   },
   {
@@ -652,8 +652,8 @@ export const dilemmas: Dilemma[] = [
   },
   {
     id: "wyr-109",
-    a: "get trapped inside an anatomy textbook",
-    b: "get trapped inside a pharmacology textbook",
+    a: "get a cold that lasts one truly awful day",
+    b: "get a cold that is mildly annoying for three weeks",
     breadth: "universal",
   },
   {
@@ -772,8 +772,8 @@ export const dilemmas: Dilemma[] = [
   },
   {
     id: "wyr-129",
-    a: "have to diagnose your houseplants",
-    b: "have to take your houseplants’ blood pressure daily",
+    a: "be examined by a vet who treats you like a golden retriever",
+    b: "be examined by a doctor who treats you like a tax audit",
     breadth: "universal",
   },
   {
@@ -898,8 +898,8 @@ export const dilemmas: Dilemma[] = [
   },
   {
     id: "wyr-150",
-    a: "have X-ray vision that only shows skeletons",
-    b: "have a nose that can smell a sneeze coming",
+    a: "have X-ray vision that only works on sandwiches",
+    b: "have super hearing that only picks up stomach growls",
     breadth: "universal",
   },
   {
@@ -934,14 +934,14 @@ export const dilemmas: Dilemma[] = [
   },
   {
     id: "wyr-156",
-    a: "have medicine taste like your favorite food, which now tastes like medicine",
-    b: "have medicine taste awful, but everything else tastes better that day",
+    a: "take medicine that tastes amazing but takes twice as long to work",
+    b: "take medicine that tastes awful but works twice as fast",
     breadth: "universal",
   },
   {
     id: "wyr-157",
-    a: "see a doctor who hums the whole time",
-    b: "see a doctor with a very loud stomach",
+    a: "have a doctor who calls you “champ”",
+    b: "have a doctor who calls you by your full legal name",
     breadth: "universal",
   },
   {
@@ -960,6 +960,138 @@ export const dilemmas: Dilemma[] = [
     id: "wyr-160",
     a: "have every yawn come out as a roar",
     b: "have every burp come out as a tiny opera note",
+    breadth: "universal",
+  },
+  {
+    id: "wyr-161",
+    a: "always get sick on the first day of vacation",
+    b: "always get sick on your first day back at work",
+    breadth: "universal",
+  },
+  {
+    id: "wyr-162",
+    a: "share a hospital room with someone who snores",
+    b: "share a hospital room with someone who wants to chat all night",
+    breadth: "universal",
+  },
+  {
+    id: "wyr-163",
+    a: "know the exact date of every cold you’ll ever catch",
+    b: "never know, but every cold lasts half as long",
+    breadth: "universal",
+  },
+  {
+    id: "wyr-164",
+    a: "have a doctor who googles your symptoms in front of you",
+    b: "have a doctor who leaves the room to google them",
+    breadth: "universal",
+  },
+  {
+    id: "wyr-165",
+    a: "rip a bandage off in one second of pure agony",
+    b: "peel it off slowly over one calm, itchy hour",
+    breadth: "universal",
+  },
+  {
+    id: "wyr-166",
+    a: "spend a night in a medieval hospital",
+    b: "spend a night in a 1950s hospital where the doctors smoke",
+    breadth: "universal",
+  },
+  {
+    id: "wyr-167",
+    a: "hiccup every time you’re nervous",
+    b: "sneeze every time someone compliments you",
+    breadth: "universal",
+  },
+  {
+    id: "wyr-168",
+    a: "have your blood drawn by a vampire who is very professional",
+    b: "have it drawn by a nervous trainee who keeps apologising",
+    breadth: "universal",
+  },
+  {
+    id: "wyr-169",
+    a: "have your dentist live next door",
+    b: "have your doctor be your ex",
+    breadth: "universal",
+  },
+  {
+    id: "wyr-170",
+    a: "have your whole family in the room for every checkup",
+    b: "have a silent stranger taking notes at every checkup",
+    breadth: "universal",
+  },
+  {
+    id: "wyr-171",
+    a: "fill in a 12-page form at every doctor visit",
+    b: "skip the forms but wait an extra hour every time",
+    breadth: "universal",
+  },
+  {
+    id: "wyr-172",
+    a: "be treated by a doctor from 1950 using today’s medicine",
+    b: "be treated by a doctor from today using 1950’s medicine",
+    breadth: "universal",
+  },
+  {
+    id: "wyr-173",
+    a: "only ever sneeze while holding a hot drink",
+    b: "only ever hiccup during important phone calls",
+    breadth: "universal",
+  },
+  {
+    id: "wyr-174",
+    a: "get a get-well visit from every single coworker",
+    b: "get no visits, but a fruit basket the size of a car",
+    breadth: "universal",
+  },
+  {
+    id: "wyr-175",
+    a: "get a pharmacy that delivers by drone, sometimes to the neighbour",
+    b: "get a pharmacy that delivers by an extremely slow horse",
+    breadth: "universal",
+  },
+  {
+    id: "wyr-176",
+    a: "spend one day as your own stomach at a holiday dinner",
+    b: "spend one day as your own nose in allergy season",
+    breadth: "universal",
+  },
+  {
+    id: "wyr-177",
+    a: "get a free lollipop after every doctor visit",
+    b: "get free parking at every doctor visit",
+    breadth: "universal",
+  },
+  {
+    id: "wyr-178",
+    a: "spend a sick week at home with no tissues",
+    b: "spend a sick week at home with no TV",
+    breadth: "universal",
+  },
+  {
+    id: "wyr-179",
+    a: "get your shots from a clown",
+    b: "get your shots from a completely silent mime",
+    breadth: "universal",
+  },
+  {
+    id: "wyr-180",
+    a: "have knees that predict rain",
+    b: "have a nose that predicts snow",
+    breadth: "universal",
+  },
+  {
+    id: "wyr-181",
+    a: "have the hospital bed that folds you in half at random",
+    b: "have the bed that never moves and creaks when you breathe",
+    breadth: "universal",
+  },
+  {
+    id: "wyr-182",
+    a: "explain every symptom to your doctor as a movie trailer",
+    b: "explain every symptom to your doctor as a weather forecast",
     breadth: "universal",
   },
 ];

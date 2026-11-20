@@ -38,7 +38,14 @@ export const GRAND_ROUNDS = {
   pool: 1_000,
   winBonus: 100,
   consensusBonus: 250,
-  multipliers: [1, 2, 3] as const,
+  /** The finale is worth as much as round two, so it decides the game, like Quiplash's last round. */
+  multipliers: [1, 2, 4] as const,
+  /** People watching (not in the game) vote as one block worth this share of the result. */
+  audienceWeight: 1 / 3,
+  /** With a single voter, the winner's share is capped so one person can't swing a full pool. */
+  soloVoteCap: 0.65,
+  /** Beep nags when this much writing time is left. */
+  nagAt: 20_000,
 } as const;
 
 export const SKETCH = {
@@ -48,11 +55,13 @@ export const SKETCH = {
   choose: 12_000,
   draw: 80_000,
   reveal: 5_500,
-  scores: 6_000,
   /** Points for a correct guess scale from max → min with elapsed time. */
   guessMax: 500,
   guessMin: 100,
-  drawerPerGuess: 75,
+  /** The artist earns this share of every correct guess, so drawing clearly pays as well as guessing. */
+  drawerShare: 0.5,
+  /** Hint letters appear at these points of the drawing time. */
+  hintsAt: [0.45, 0.7],
 } as const;
 
 export const SURVIVE = {
@@ -68,7 +77,12 @@ export const SURVIVE = {
   speedBonus: 100,
   /** Clocked-out players keep answering for a share of the points. */
   ghostFactor: 0.5,
+  /** This many right in a row as a ghost puts you back on shift with one coffee (once a game). */
+  ghostRevive: 3,
 } as const;
+
+/** Long questions (Pro vignettes) get extra reading time: per character past `free`, capped. */
+export const READING = { free: 120, perChar: 45, max: 20_000 } as const;
 
 export const POISON = {
   minPlayers: 3,
@@ -76,11 +90,16 @@ export const POISON = {
   intro: 4_500,
   choose: 20_000,
   reveal: 5_500,
-  defend: 20_000,
-  defence: 6_500,
+  /** The minority gets a moment to volunteer a defence. Nobody is forced to. */
+  volunteer: 6_000,
+  defend: 15_000,
+  /** The majority reads the defence and can tap "Convinced". */
+  defence: 9_000,
   rounds: 8,
   predictPoints: 100,
   defendPoints: 50,
+  /** Per person the defence convinced. */
+  convertPoints: 50,
 } as const;
 
 export const DIDACTICS = {
@@ -103,10 +122,23 @@ export const DIDACTICS = {
   speedBonus: 100,
 } as const;
 
-/** Final standings screen. */
-export const PODIUM = 9_000;
+/** Reveal choreography the server times Beep's lines (and phones) around, in ms. */
+export const REVEAL = {
+  /** The stage's matchup results: voters land, then the authors flip over. */
+  results: 2_400,
+  /** The podium climbs 3rd, 2nd, then 1st. */
+  podium: 3_600,
+} as const;
 
 export const EXTENDED_TIMERS_FACTOR = 1.5;
 
 /** Quick reactions players can fling at the stage. */
 export const REACTIONS = ['react-laugh', 'react-fire', 'react-clap', 'react-gasp', 'react-cringe', 'react-heart'] as const;
+
+/** Stats: carried from one game to the next, each doubles one round. */
+export const STAT = {
+  /** How many top finishers earn one, by group size (index = players). Small groups give fewer, so it still means something. */
+  top: (players: number) => (players >= 6 ? 3 : players >= 4 ? 2 : 1),
+  /** From this many players, last place gets one too. */
+  mercyFrom: 5,
+};

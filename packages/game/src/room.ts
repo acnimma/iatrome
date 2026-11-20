@@ -1,5 +1,5 @@
 import { type HostEvent, hostLines } from '@iatrome/content';
-import { EXTENDED_TIMERS_FACTOR, ROOM } from './constants';
+import { EXTENDED_TIMERS_FACTOR, REVEAL, ROOM, STAT } from './constants';
 import type { ActionOutcome, GameContext, Viewer } from './games/context';
 import { type GameAction, type GameView, games } from './games/registry';
 import { createRng } from './rng';
@@ -12,11 +12,12 @@ import {
   type Person,
   type RoomSettings,
   type RoomState,
+  type StatGrant,
   defaultSettings,
 } from './types';
 
 /**
- * The room: lobby, people, moderation and the current game. Server-authoritative , 
+ * The room: lobby, people, moderation and the current game. Server-authoritative:
  * the realtime server calls these functions, persists the state and broadcasts views.
  * Everything takes `now` explicitly so the engine is deterministic and testable.
  */
@@ -212,10 +213,37 @@ function startGame(room: RoomState, now: number): string | void {
   room.result = null;
   room.pausedAt = null;
   room.stage = 'playing';
-  room.game = module.start(
+  const game = module.start(
     ctx,
     ready.slice(0, module.maxPlayers).map((p) => p.id),
   );
+  const stats = room.stats ?? {};
+  game.stat = { ready: game.playerIds.filter((id: string) => stats[id]), used: {} };
+  room.game = game;
+}
+
+/** Spend a Stat on the current round (or, in Grand Rounds, on one of your prompts). */
+function callStat(room: RoomState, person: Person, target: string | undefined, now: number): ActionOutcome {
+  const game = room.game!;
+  if (!game.stat?.ready.includes(person.id)) return { error: 'You don’t have a Stat to call.' };
+  const key = games[game.game].statKey(game, context(room, now), person.id, target);
+  if (typeof key !== 'string') return key;
+  game.stat.ready = game.stat.ready.filter((id) => id !== person.id);
+  game.stat.used[person.id] = key;
+  delete room.stats?.[person.id];
+  say(room, now, 'statCalled', { name: person.name });
+  return { notice: 'stat' };
+}
+
+/** Who carries a Stat into the next game: the top finishers, plus last place in bigger groups. */
+function grantStats(result: GameResult): Record<string, StatGrant> {
+  // Team games rank whole teams together, so individual points decide here.
+  const order = result.teams ? [...result.standings].sort((a, b) => b.score - a.score) : result.standings;
+  const grants: Record<string, StatGrant> = {};
+  for (const s of order.slice(0, STAT.top(order.length))) grants[s.playerId] = 'top';
+  const last = order.at(-1);
+  if (order.length >= STAT.mercyFrom && last && !grants[last.playerId]) grants[last.playerId] = 'mercy';
+  return grants;
 }
 
 function resume(room: RoomState, now: number) {
@@ -239,16 +267,18 @@ function checkFinished(room: RoomState, now: number) {
   const result = games[room.game.game].result(room.game, context(room, now));
   if (!result) return;
   room.result = result;
+  room.stats = grantStats(result);
   room.stage = 'over';
   room.game = null;
   room.drawings = {};
-  const top = result.standings[0];
-  if (top) say(room, now, 'winner', { name: top.name });
+  // Team games crown the team. Beep waits for the podium to climb to first place.
+  const winner = result.teams?.[0]?.name ?? result.standings[0]?.name;
+  if (winner) say(room, now, 'winner', { name: winner }, REVEAL.podium);
 }
 
 // ── Player actions ───────────────────────────────────────────────────────────
 
-export type PlayerCommand = GameAction | { type: 'start' } | { type: 'leave' } | { type: 'avatar'; avatar: number };
+export type PlayerCommand = GameAction | { type: 'start' } | { type: 'leave' } | { type: 'avatar'; avatar: number } | { type: 'stat'; target?: string };
 
 export function playerCommand(room: RoomState, personId: string, cmd: PlayerCommand, now: number): ActionOutcome | void {
   const person = room.people.find((p) => p.id === personId);
@@ -271,6 +301,7 @@ export function playerCommand(room: RoomState, personId: string, cmd: PlayerComm
     return err ? { error: err } : undefined;
   }
   if (!room.game || room.pausedAt !== null) return { error: room.pausedAt ? 'The game is paused.' : 'No game running.' };
+  if (cmd.type === 'stat') return callStat(room, person, cmd.target, now);
   const outcome = games[room.game.game].act(room.game, context(room, now), personId, cmd);
   checkFinished(room, now);
   return outcome;
@@ -287,6 +318,7 @@ export function nextWake(room: RoomState, now: number): number | null {
   if (room.pausedAt !== null || !room.game) return null;
   const times: number[] = [];
   if (room.game.phase.endsAt !== null) times.push(room.game.phase.endsAt);
+  for (const t of games[room.game.game].wakeAt?.(room.game) ?? []) if (t > now) times.push(t);
   for (const p of room.people)
     if (!p.connected && p.disconnectedAt !== null && p.disconnectedAt + ROOM.reconnectGrace > now)
       times.push(p.disconnectedAt + ROOM.reconnectGrace);
@@ -313,6 +345,8 @@ export function advance(room: RoomState, now: number): boolean {
     const module = games[game.game];
     const ctx = context(room, now);
     let acted = false;
+
+    if (module.tick?.(game, ctx)) acted = true;
 
     const bots = room.people.filter((p) => p.isBot && game.playerIds.includes(p.id));
     bots.forEach((bot, i) => {
@@ -344,7 +378,7 @@ function context(room: RoomState, now: number): GameContext {
         const p = room.people.find((x) => x.id === id);
         return Boolean(p && (p.connected || (p.disconnectedAt !== null && now - p.disconnectedAt < ROOM.reconnectGrace)));
       }),
-    say: (event, vars) => say(room, now, event, vars),
+    say: (event, vars, delay) => say(room, now, event, vars, delay),
     scale: (ms, kind = 'show') =>
       Math.round(ms * room.settings.speed * (kind === 'input' && room.settings.extendedTimers ? EXTENDED_TIMERS_FACTOR : 1)),
     draw: (pool, count) => {
@@ -370,7 +404,7 @@ function context(room: RoomState, now: number): GameContext {
   };
 }
 
-function say(room: RoomState, now: number, event: HostEvent, vars: Record<string, string> = {}) {
+function say(room: RoomState, now: number, event: HostEvent, vars: Record<string, string> = {}, delay?: number) {
   const lines = hostLines[event];
   if (!lines?.length) return;
   const rng = createRng(room.rng);
@@ -378,7 +412,7 @@ function say(room: RoomState, now: number, event: HostEvent, vars: Record<string
   const line = rng.pick(fresh.length ? fresh : lines);
   room.recentLines = [...room.recentLines.slice(-15), line];
   const text = line.replace(/\{(\w+)\}/g, (_, k: string) => vars[k] ?? '');
-  room.hostLine = { event, text, at: now } satisfies HostLine;
+  room.hostLine = { event, text, at: now, ...(delay ? { delay } : {}) } satisfies HostLine;
 }
 
 // ── Settings ─────────────────────────────────────────────────────────────────
@@ -406,6 +440,20 @@ export interface PersonView {
   inGame: boolean;
 }
 
+/** Stats as one viewer sees them. Whose Stat rode on a round is only shown once its results are up. */
+export interface StatView {
+  /** Earned in the last game for the next one (lobby and results). */
+  holders: { id: string; grant: StatGrant }[];
+  /** You hold one you can still call this game. */
+  ready: boolean;
+  /** The round you spent yours on (Grand Rounds: a matchup id). */
+  used: string | null;
+  /** Your Stat is on the round in play. */
+  onThis: boolean;
+  /** Players whose Stat rode on the round whose results are showing. */
+  calls: string[];
+}
+
 export interface RoomView {
   code: string;
   stage: RoomState['stage'];
@@ -421,6 +469,7 @@ export interface RoomView {
   game: GameView | null;
   result: GameResult | null;
   serverNow: number;
+  stat: StatView;
   /** A big screen (the stage) is connected. Without one, phones show everything themselves. */
   screen: boolean;
 }
@@ -452,7 +501,23 @@ export function viewFor(room: RoomState, viewer: Viewer, now: number, screen = f
     game: room.game ? games[room.game.game].view(room.game, ctx, viewer) : null,
     result: room.result,
     serverNow: now,
+    stat: statView(room, me?.id ?? null),
     screen,
+  };
+}
+
+function statView(room: RoomState, you: string | null): StatView {
+  const holders = Object.entries(room.stats ?? {}).map(([id, grant]) => ({ id, grant }));
+  const game = room.game;
+  if (!game?.stat) return { holders, ready: false, used: null, onThis: false, calls: [] };
+  const round = games[game.game].statRound(game);
+  const used = you ? (game.stat.used[you] ?? null) : null;
+  return {
+    holders,
+    ready: Boolean(you && game.stat.ready.includes(you)),
+    used,
+    onThis: used !== null && used === round.key,
+    calls: round.revealed ? Object.keys(game.stat.used).filter((id) => game.stat!.used[id] === round.key) : [],
   };
 }
 

@@ -25,6 +25,7 @@ const playerCommand = z.discriminatedUnion('type', [
   z.object({ type: z.literal('start') }),
   z.object({ type: z.literal('leave') }),
   z.object({ type: z.literal('avatar'), avatar: z.number().int().min(0).max(63) }),
+  z.object({ type: z.literal('stat'), target: id.optional() }),
   // Grand Rounds
   z.object({ type: z.literal('answer'), matchupId: id, text: text(LIMITS.quip), final: z.boolean() }),
   z.object({ type: z.literal('list'), matchupId: id, items: z.array(text(LIMITS.differentialItem)).max(3), final: z.boolean() }),
@@ -41,6 +42,8 @@ const playerCommand = z.discriminatedUnion('type', [
   z.object({ type: z.literal('pick'), side: ab }),
   z.object({ type: z.literal('predict'), side: ab }),
   z.object({ type: z.literal('defend'), text: text(LIMITS.defence) }),
+  z.object({ type: z.literal('volunteer') }),
+  z.object({ type: z.literal('convinced') }),
 ]);
 
 const settings = z

@@ -53,6 +53,8 @@ export interface Standing {
   avatar: number;
   score: number;
   rank: number;
+  /** Shown under the name instead of points when points aren't what ranked them (e.g. "Lasted 9 of 20"). */
+  note?: string;
 }
 
 export interface Highlight {
@@ -77,10 +79,15 @@ export interface GameResult {
   highlights: Highlight[];
 }
 
+/** A Stat for finishing near the top, or a sympathy one for finishing last. */
+export type StatGrant = 'top' | 'mercy';
+
 export interface HostLine {
   event: HostEvent;
   text: string;
   at: number;
+  /** Hold the line this long (ms) so Beep doesn't spoil a reveal that's still animating. */
+  delay?: number;
 }
 
 export interface RoomState {
@@ -100,6 +107,8 @@ export interface RoomState {
   hostLine: HostLine | null;
   recentLines: string[];
   usedContent: string[];
+  /** Stats earned in the last finished game, to spend in the next: why each holder got one. */
+  stats?: Record<string, StatGrant>;
   /** Drawings, kept apart from game state because they're large. */
   drawings: Record<string, Drawing>;
 }

@@ -1,0 +1,129 @@
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 10px 1px;
+  border: var(--outline);
+  border-radius: var(--radius-pill);
+  background: var(--rose-kiss);
+  box-shadow: var(--gloss);
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: 0.95em;
+  letter-spacing: 0.03em;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.call {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  align-self: center;
+  min-height: 48px;
+  padding: 8px 18px 8px 10px;
+  border: var(--outline);
+  border-radius: var(--radius-pill);
+  background: var(--card);
+  box-shadow: var(--gloss), var(--shadow-md);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.onThis {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.inline {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.inline:empty {
+  display: none;
+}
+
+.floating {
+  position: fixed;
+  top: clamp(80px, 12vh, 120px);
+  right: clamp(16px, 3vw, 40px);
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+  pointer-events: none;
+}
+
+.stamp {
+  padding: 6px 16px 4px;
+  border: 3px solid var(--rose-kiss);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--rose-kiss) 10%, var(--card));
+  color: var(--rose-kiss);
+  font-family: var(--font-display);
+  font-size: clamp(1rem, 2vw, 1.6rem);
+  letter-spacing: 0.03em;
+  box-shadow: var(--gloss), var(--shadow-md);
+}
+
+.holders {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.holdersTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 800;
+  color: var(--ink-soft);
+}
+
+.holders ul {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.holders li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 800;
+}
+
+.holders em {
+  font-size: 0.8rem;
+  font-style: normal;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+
+.mine {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  width: 100%;
+  padding: 14px 16px;
+  border: var(--outline);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--rose-kiss) 8%, var(--card));
+  font-size: 0.92rem;
+  font-weight: 600;
+  line-height: 1.4;
+  box-shadow: var(--gloss), var(--shadow-md);
+}

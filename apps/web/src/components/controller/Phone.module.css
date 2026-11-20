@@ -130,9 +130,9 @@
   margin-bottom: 12px;
   padding: 10px 14px 10px 10px;
   border: var(--outline);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   background: var(--card);
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--gloss), var(--shadow-md);
   font-size: 0.95rem;
   font-weight: 700;
   line-height: 1.35;
@@ -149,8 +149,9 @@
   gap: 8px;
   padding: 14px 16px;
   border: var(--outline);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   background: color-mix(in srgb, var(--cool-sky) 14%, var(--card));
+  box-shadow: var(--gloss), var(--shadow-md);
 }
 
 .answerText {
@@ -177,4 +178,11 @@
   font-size: 0.92rem;
   font-weight: 600;
   color: var(--ink-soft);
+}
+
+/* Case-stem length prompts (Pro vignettes). */
+.promptText p[data-long] {
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.4;
 }

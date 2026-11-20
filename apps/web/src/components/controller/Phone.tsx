@@ -3,7 +3,7 @@
 import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 import type { HostLine, Phase } from '@iatrome/game/client';
-import { BeepFace } from '@/components/room/Beep';
+import { BeepFace, useHostLine } from '@/components/room/Beep';
 import { Icon } from '@/components/icons/Icon';
 import type { IconName } from '@/components/icons/icons';
 import { TimerRing } from '@/components/ui/TimerRing';
@@ -31,7 +31,7 @@ export function PhonePrompt({ label, prompt, phase, pausedAt }: { label?: string
     <div className={styles.prompt}>
       <div className={styles.promptText}>
         {label && <span className={styles.label}>{label}</span>}
-        <p>{prompt}</p>
+        <p data-long={prompt.length > 140 || undefined}>{prompt}</p>
       </div>
       {phase && <TimerRing phase={phase} pausedAt={pausedAt ?? null} size={52} />}
     </div>
@@ -77,13 +77,7 @@ export function Choice({
 
 /** Beep's latest line, for rooms with no big screen. Slides in, says its piece, leaves. */
 export function BeepBanner({ line }: { line: HostLine | null }) {
-  const [shown, setShown] = useState<HostLine | null>(null);
-  useEffect(() => {
-    if (!line || Date.now() - line.at > 8_000) return;
-    setShown(line);
-    const t = setTimeout(() => setShown(null), 6_500);
-    return () => clearTimeout(t);
-  }, [line]);
+  const shown = useHostLine(line, 6_500);
   return (
     <AnimatePresence initial={false}>
       {shown && (

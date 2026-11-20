@@ -10,6 +10,7 @@ import { Avatar } from '@/components/ui/Avatar';
 import { BackButton } from '@/components/ui/BackButton';
 import { Button } from '@/components/ui/Button';
 import { SettingsDialog } from '@/components/room/SettingsDialog';
+import { StatHolders } from '@/components/room/Stat';
 import { InviteButton } from '@/components/room/InviteButton';
 import { JoinQr, Pill, RoomCode } from '@/components/room/RoomBits';
 import { unlockAudio } from '@/lib/sound';
@@ -93,6 +94,11 @@ export function StageLobby({ view, hideCode }: { view: RoomView; hideCode: boole
           </span>
           {audience.length > 0 && <Pill>+{audience.length} next game</Pill>}
         </div>
+        {players.length > info.max && (
+          <p className={styles.overflow}>
+            {info.title} seats {info.max}. {view.settings.game === 'grand-rounds' ? `The other ${players.length - info.max} vote.` : `The other ${players.length - info.max} play the next game.`}
+          </p>
+        )}
 
         <ul className={styles.players} style={{ '--bubble': `${bubble}px` } as React.CSSProperties}>
           <AnimatePresence>
@@ -122,6 +128,8 @@ export function StageLobby({ view, hideCode }: { view: RoomView; hideCode: boole
             <li key={`empty-${i}`} className={styles.empty} aria-hidden />
           ))}
         </ul>
+
+        <StatHolders view={view} />
 
         <div className={styles.actions}>
           <Button

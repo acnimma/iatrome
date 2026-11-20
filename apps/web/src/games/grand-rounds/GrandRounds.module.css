@@ -162,6 +162,7 @@
   flex-direction: column;
   gap: 10px;
   margin-top: auto;
+  box-shadow: var(--gloss), var(--shadow-md);
 }
 
 .voters {
@@ -370,7 +371,7 @@
 
 .revealWon {
   background: color-mix(in srgb, var(--royal-gold) 28%, var(--card));
-  box-shadow: 0 0 0 3px var(--royal-gold), var(--shadow-sm);
+  box-shadow: 0 0 0 3px var(--royal-gold), var(--gloss), var(--shadow-md);
 }
 
 .revealBody {

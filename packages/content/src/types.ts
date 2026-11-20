@@ -97,6 +97,13 @@ export const hostEvents = [
   'didacticsIntro', // Didactics Mode (team trivia) begins
   'didacticsLightning', // the double-points lightning round is next
   'didacticsStumped', // no team got the question right
+  'statCalled', // a player spent their Stat (double points on one round); {name} is the player
+  'writeNag', // twenty seconds of writing left
+  'leadChange', // a new leader on the scoreboard; {name} is the new leader
+  'oneVote', // a single person decided a matchup
+  'noVotes', // nobody voted on a matchup
+  'ghostRevive', // Survive the Shift: a ghost earned their way back on shift
+  'noDefender', // Pick Your Poison: nobody in the minority volunteered to defend it
 ] as const;
 
 export type HostEvent = (typeof hostEvents)[number];
@@ -104,5 +111,11 @@ export type HostEvent = (typeof hostEvents)[number];
 /** Didactics Mode lines live in their own pack. */
 export type DidacticsHostEvent = 'didacticsIntro' | 'didacticsLightning' | 'didacticsStumped';
 
-/** The main host-lines pack covers every event except Didactics Mode's. */
-export type HostLines = Record<Exclude<HostEvent, DidacticsHostEvent>, string[]>;
+/** Smaller moments across games (Stats, nags, lead changes, odd votes) have their own pack too. */
+export type MomentHostEvent = 'statCalled' | 'writeNag' | 'leadChange' | 'oneVote' | 'noVotes' | 'ghostRevive' | 'noDefender';
+
+/** Events whose lines take the player's {name}. */
+export const namedHostEvents: readonly HostEvent[] = ['winner', 'statCalled', 'leadChange'];
+
+/** The main host-lines pack covers every event except Didactics Mode's and the smaller moments. */
+export type HostLines = Record<Exclude<HostEvent, DidacticsHostEvent | MomentHostEvent>, string[]>;
