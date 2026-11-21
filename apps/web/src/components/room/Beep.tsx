@@ -30,16 +30,9 @@ export function Beep({
 
   return (
     <div className={`${styles.host} ${compact ? styles.compact : ''}`}>
-      <motion.div
-        key={visible?.at ?? 'idle'}
-        className={styles.body}
-        initial={{ scaleY: 0.88, scaleX: 1.08, y: 6 }}
-        animate={{ scaleY: 1, scaleX: 1, y: 0 }}
-        transition={{ type: 'spring', stiffness: 500, damping: 12 }}
-        style={{ width: size }}
-      >
+      <div className={styles.body} style={{ width: size }}>
         <BeepFace talking={Boolean(visible)} bpm={bpm} />
-      </motion.div>
+      </div>
       <AnimatePresence mode="wait">
         {visible && (
           <motion.p
@@ -59,7 +52,7 @@ export function Beep({
 }
 
 /** Beep: the original light-blue robot with a screen for a face. `bpm` is accepted for callers; the look stays calm. */
-export function BeepFace({ talking = false }: { talking?: boolean; bpm?: number }) {
+export function BeepFace(_props: { talking?: boolean; bpm?: number }) {
   return (
     <svg viewBox="0 0 120 100" className={styles.svg} aria-label="Beep, the robot host">
       <defs>
@@ -84,7 +77,7 @@ export function BeepFace({ talking = false }: { talking?: boolean; bpm?: number 
       </g>
       <ellipse cx="38" cy="60" rx="5" ry="3" fill="#cc4e73" opacity="0.35" />
       <ellipse cx="82" cy="60" rx="5" ry="3" fill="#cc4e73" opacity="0.35" />
-      <path className={talking ? styles.talk : undefined} d="M52 61 q8 8 16 0" fill="none" stroke="#1f2a4d" strokeWidth="3.5" strokeLinecap="round" />
+      <path d="M52 61 q8 8 16 0" fill="none" stroke="#1f2a4d" strokeWidth="3.5" strokeLinecap="round" />
       {/* button */}
       <circle cx="60" cy="86" r="4" fill="#ccb64a" stroke="#1f2a4d" strokeWidth="2" />
     </svg>

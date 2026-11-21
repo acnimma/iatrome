@@ -72,11 +72,11 @@ export function GamePicker({ value, onChange, compact, tiles }: { value: GameId;
 
 const MODES = [
   { id: 'normal', title: 'Normal', blurb: 'Anyone can play. No medical degree required.' },
-  { id: 'pro', title: 'Pro', blurb: 'Jargon, board-style questions and inside jokes. For people in healthcare.' },
+  { id: 'pro', title: 'Pro', blurb: 'Jargon, board-style, and inside jokes. For those in healthcare.' },
 ] as const satisfies readonly { id: ContentMode; title: string; blurb: string }[];
 
 const SCREENS = [
-  { id: 'big', title: 'Big screen', blurb: 'Open this page on the TV, laptop or video call everyone can see.' },
+  { id: 'big', title: 'Big screen', blurb: 'Open this on a TV, laptop or video call.' },
   { id: 'phones', title: 'Just phones', blurb: 'No TV needed. Everyone plays on their own phone.' },
 ] as const;
 

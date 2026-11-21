@@ -9,7 +9,6 @@
   flex: none;
   transform-origin: 50% 100%;
   filter: drop-shadow(0 10px 14px rgb(31 42 77 / 0.25));
-  animation: bob 3.4s ease-in-out infinite;
 }
 
 .svg {
@@ -22,13 +21,6 @@
   transform-box: fill-box;
   transform-origin: 50% 50%;
   animation: blink 4.6s infinite;
-}
-
-/* Talking: the mouth opens and closes. */
-.talk {
-  transform-box: fill-box;
-  transform-origin: 50% 0;
-  animation: talk 0.22s ease-in-out infinite alternate;
 }
 
 .bubble {
@@ -57,12 +49,6 @@
   font-size: 0.95rem;
 }
 
-@keyframes bob {
-  50% {
-    transform: translateY(-5px) rotate(-2deg);
-  }
-}
-
 @keyframes blink {
   0%,
   94%,
@@ -74,15 +60,8 @@
   }
 }
 
-@keyframes talk {
-  to {
-    transform: scaleY(1.9);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .talk,
-  .body {
+  .eyes {
     animation: none;
   }
 }

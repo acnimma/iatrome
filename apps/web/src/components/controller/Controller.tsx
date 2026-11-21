@@ -190,7 +190,6 @@ function NoRoom({ code }: { code: string }) {
     <EdgePage
       eyebrow={`Room ${code}`}
       title="No room by that code"
-      line="Either there’s a typo, or everyone left and the room was discharged after 30 minutes. Try the code again."
       joinForm
     />
   );

@@ -22,7 +22,7 @@ export function EdgePage({
   eyebrow: string;
   title: string;
   /** What Beep says. */
-  line: React.ReactNode;
+  line?: React.ReactNode;
   bpm?: number;
   /** Offer the room-code boxes too (a mistyped short link is usually a room code). */
   joinForm?: boolean;
@@ -39,7 +39,7 @@ export function EdgePage({
         </div>
         <span className={styles.eyebrow}>{eyebrow}</span>
         <h1 className={styles.title}>{title}</h1>
-        <p className={styles.line}>{line}</p>
+        {line && <p className={styles.line}>{line}</p>}
       </div>
       {joinForm && <JoinCodeForm />}
       <div className={styles.actions}>
