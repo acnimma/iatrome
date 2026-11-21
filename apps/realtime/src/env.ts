@@ -12,6 +12,8 @@ export interface Env {
   /** Cloudflare's global rate limiters (see wrangler.jsonc). Absent in some local setups. */
   CREATE_LIMITER?: RateLimit;
   CONNECT_LIMITER?: RateLimit;
-  /** When set (a secret), creating a room needs a passed Cloudflare Turnstile check. */
-  TURNSTILE_SECRET?: string;
+  /** Most rooms that can be open at once, across everyone. */
+  MAX_ROOMS?: string;
+  /** Most rooms that can be created per day (UTC), across everyone. */
+  MAX_ROOMS_PER_DAY?: string;
 }

@@ -23,6 +23,7 @@ import {
 import { type Connection, type ConnectionContext, Server } from 'partyserver';
 import { hashPassword, safeEqual } from './crypto';
 import type { Env } from './env';
+import { releaseSlot } from './registry';
 
 /** What we remember about each socket (survives hibernation; max 2 KB). */
 /** `host` on a person: the phone that created a phones-only room, allowed to run host commands. */
@@ -243,9 +244,11 @@ export class Room extends Server<Env> {
     const connected = [...this.getConnections()].length;
     const lastSeen = Math.max(this.room.createdAt, ...this.room.people.map((p) => p.disconnectedAt ?? 0));
     if (connected === 0 && now - lastSeen >= ROOM.emptyRoomTtl - 1000) {
+      const code = this.room.code;
       await this.ctx.storage.deleteAll();
       this.room = null;
       this.auth = null;
+      await releaseSlot(this.env, code);
       return;
     }
     advance(this.room, now);
@@ -395,9 +398,11 @@ export class Room extends Server<Env> {
       this.send(conn, { t: 'removed', reason: 'closed' });
       conn.close(4410, 'Room closed');
     }
+    const code = this.room?.code;
     this.room = null;
     this.auth = null;
     await this.ctx.storage.deleteAll();
+    if (code) await releaseSlot(this.env, code);
   }
 
   private removeConnections(personId: string, reason: 'kicked' | 'banned') {

@@ -13,7 +13,6 @@ import { TextInput } from '@/components/ui/Field';
 import { CROWD_LABEL, GamePicker, ModePicker, type ScreenChoice, ScreenPicker, TimeToggle } from '@/components/room/GameSettings';
 import { unlockAudio } from '@/lib/sound';
 import { track } from '@vercel/analytics';
-import { useTurnstile } from './Turnstile';
 import styles from './HostSetup.module.css';
 
 /** Pick a game, set a password if you like, and open a room. */
@@ -30,7 +29,6 @@ export function HostSetup() {
   }, []);
   const [busy, setBusy] = useState(false);
   const nameRef = useRef<HTMLInputElement>(null);
-  const human = useTurnstile();
   const [error, setError] = useState<string | null>(null);
 
   const create = async () => {
@@ -46,9 +44,9 @@ export function HostSetup() {
       const res = await fetch(realtimeHttpUrl('/api/rooms'), {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ settings, password: password.trim() || undefined, turnstile: await human.getToken() }),
+        body: JSON.stringify({ settings, password: password.trim() || undefined }),
       });
-      if (res.status === 403) throw new Error('Couldn’t confirm you’re a person. Refresh the page and try again.');
+      if (res.status === 503) throw new Error('The hospital is full right now. Try again in a few minutes.');
       if (res.status === 429) throw new Error('You’ve opened a lot of rooms. Wait a few minutes and try again.');
       if (!res.ok) throw new Error('Couldn’t open a room. Try again in a moment.');
       const { code, hostToken } = (await res.json()) as CreateRoomResponse;
@@ -126,7 +124,6 @@ export function HostSetup() {
               {error}
             </p>
           )}
-          {human.element}
           <div className={styles.createBar}>
             <Button size="xl" className={styles.create} onClick={create} waiting={busy}>
               {busy ? 'Opening the room' : 'Create room'}

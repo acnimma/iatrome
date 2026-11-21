@@ -17,11 +17,6 @@ export function realtimeTarget(): { host: string; secure: boolean } {
   return { host: `${window.location.hostname}:8787`, secure: window.location.protocol === 'https:' };
 }
 
-/** Cloudflare Turnstile site key (public), when room creation is protected. */
-export function turnstileSiteKey(): string | undefined {
-  return process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || undefined;
-}
-
 export function realtimeHttpUrl(path: string): string {
   const { host, secure } = realtimeTarget();
   return `${secure ? 'https' : 'http'}://${host}${path}`;

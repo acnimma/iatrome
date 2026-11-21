@@ -21,6 +21,9 @@
   "vars": {
     // Production: the site's origins. Preview deployments on Vercel are covered by the wildcard.
     "ALLOWED_ORIGINS": "https://iatrome.com,https://www.iatrome.com,https://*.vercel.app",
+    // Hard caps across everyone: rooms open at once, and rooms created per day (UTC).
+    "MAX_ROOMS": "25",
+    "MAX_ROOMS_PER_DAY": "300",
     "DEV_MODE": "false"
   },
   "observability": { "enabled": true }

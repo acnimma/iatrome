@@ -3,6 +3,7 @@ import { getServerByName, routePartykitRequest } from 'partyserver';
 import { randomToken } from './crypto';
 import type { Env } from './env';
 import { Limiter } from './limiter';
+import { claimSlot, releaseSlot } from './registry';
 import { type InitRequest, Room } from './room-server';
 
 export { Limiter, Room };
@@ -34,7 +35,7 @@ export default {
       if (!allowed) return new Response('Forbidden', { status: 403 });
       if ((await overLimit(env.CREATE_LIMITER, `create:${ip}`)) || !(await allow(env, ip, 'create')))
         return cors(json({ error: 'rate-limited' }, 429), origin, allowed);
-      return cors(await createRoom(request, env, rawIp ?? 'local'), origin, allowed);
+      return cors(await createRoom(request, env), origin, allowed);
     }
 
     const response = await routePartykitRequest(request, env, {
@@ -54,7 +55,7 @@ export default {
 /** Room settings and a password are tiny; anything bigger is not from our site. */
 const MAX_CREATE_BODY = 4_096;
 
-async function createRoom(request: Request, env: Env, ip: string): Promise<Response> {
+async function createRoom(request: Request, env: Env): Promise<Response> {
   if (Number(request.headers.get('content-length') ?? 0) > MAX_CREATE_BODY) return json({ error: 'too-large' }, 413);
   const raw = await request.text().catch(() => '');
   if (raw.length > MAX_CREATE_BODY) return json({ error: 'too-large' }, 413);
@@ -64,12 +65,11 @@ async function createRoom(request: Request, env: Env, ip: string): Promise<Respo
   } catch {
     return json({ error: 'bad-request' }, 400);
   }
-  if (env.TURNSTILE_SECRET && !(await passedTurnstile(env.TURNSTILE_SECRET, body.turnstile, ip)))
-    return json({ error: 'challenge' }, 403);
   const password = typeof body.password === 'string' ? body.password.trim().slice(0, ROOM.maxPasswordLength) : '';
   for (let attempt = 0; attempt < 6; attempt++) {
     const code = generateCode(secureRandom);
     const hostToken = randomToken(24);
+    if (!(await claimSlot(env, code))) return json({ error: 'busy' }, 503);
     const stub = await getServerByName(env.Room, code);
     const init: InitRequest = { code, hostToken, password: password || undefined, settings: body.settings };
     const res = await stub.fetch(
@@ -80,7 +80,9 @@ async function createRoom(request: Request, env: Env, ip: string): Promise<Respo
       }),
     );
     if (res.ok) return json({ code, hostToken } satisfies CreateRoomResponse);
-    if (res.status !== 409) break; // 409 = code already taken, try another
+    // 409 = code already taken, try another (and the slot belongs to the room that has it).
+    if (res.status !== 409) await releaseSlot(env, code);
+    if (res.status !== 409) break;
   }
   return json({ error: 'Could not create a room. Try again.' }, 503);
 }
@@ -117,22 +119,6 @@ async function overLimit(limiter: RateLimit | undefined, key: string): Promise<b
   if (!limiter) return false;
   try {
     return !(await limiter.limit({ key })).success;
-  } catch {
-    return false;
-  }
-}
-
-/** Checks a Turnstile token with Cloudflare (the "are you a person" check on room creation). */
-async function passedTurnstile(secret: string, token: unknown, ip: string): Promise<boolean> {
-  if (typeof token !== 'string' || !token || token.length > 4_096) return false;
-  const form = new FormData();
-  form.append('secret', secret);
-  form.append('response', token);
-  if (ip !== 'local') form.append('remoteip', ip);
-  try {
-    const res = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', { method: 'POST', body: form });
-    const result = (await res.json()) as { success?: boolean };
-    return result.success === true;
   } catch {
     return false;
   }

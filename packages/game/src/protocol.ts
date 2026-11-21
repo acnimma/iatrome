@@ -121,8 +121,6 @@ export type ServerMessage =
 export interface CreateRoomRequest {
   settings?: Partial<import('./types').RoomSettings>;
   password?: string;
-  /** Cloudflare Turnstile token, when the server requires one. */
-  turnstile?: string;
 }
 
 export interface CreateRoomResponse {

@@ -55,7 +55,7 @@ What's already in place:
 
 | Threat | Protection |
 |---|---|
-| Scripts mass-creating rooms | Strict per-address limit (10 rooms / 10 min, IPv6 counted per /64) in a `Limiter` Durable Object, plus Cloudflare's rate-limit binding; optional Turnstile (below) |
+| Scripts mass-creating rooms | Strict per-address limit (10 rooms / 10 min, IPv6 counted per /64) in a `Limiter` Durable Object, plus Cloudflare's rate-limit binding; a global cap on open rooms and rooms per day (below) |
 | Code guessing / socket spam | 60 connections / min per address; at most 6 not-yet-joined sockets per address per room |
 | Message floods | Per-socket token bucket (80 burst, 40/s) and 1.5 MB / 10 s; repeat offenders are disconnected |
 | Filling a room so nobody can join | 70 sockets per room; idle not-yet-joined sockets are dropped oldest-first instead of locking players out |
@@ -64,15 +64,9 @@ What's already in place:
 | Clickjacking etc. on the site | Security headers in `apps/web/next.config.ts` |
 | A surprise bill | The Workers Free plan has hard daily limits: abuse can at worst pause the game for the day, never charge you |
 
-### Turn on Turnstile (recommended, 2 minutes)
+### Global room caps
 
-Turnstile is Cloudflare's invisible "are you a person" check. With it on, scripts can't create rooms at all.
-
-1. Cloudflare dashboard → **Turnstile → Add widget**: name `iatrome`, hostnames `iatrome.com` and `www.iatrome.com` (add `localhost` for testing), widget mode **Managed**.
-2. Copy the **site key** into Vercel as `NEXT_PUBLIC_TURNSTILE_SITE_KEY` (Production) and redeploy the site.
-3. Store the **secret key** on the game server: `npx wrangler secret put TURNSTILE_SECRET` (from `apps/realtime`).
-
-Do step 2 before step 3: once the secret is set, room creation requires a token.
+The game server refuses new rooms once **25 are open at once** or **300 have been created today (UTC)**, whoever is asking. Players see "The hospital is full right now". Slots free when a room closes or empties, and lapse on their own after 6 hours as a safety net. Change `MAX_ROOMS` and `MAX_ROOMS_PER_DAY` in `apps/realtime/wrangler.jsonc` to raise or lower them.
 
 ### Extra hardening in the Cloudflare and Vercel dashboards (optional)
 
