@@ -38,7 +38,7 @@ export const gameInfo: Record<PlayableGameId, GameInfo> = {
     max: POISON.maxPlayers,
   },
   didactics: {
-    title: 'Didactics Mode',
+    title: 'Didactics',
     tagline: 'Team trivia for the whole crowd',
     howTo: 'Random teams. Everyone answers on their phone. Your team scores when you get it right.',
     minutes: 12,

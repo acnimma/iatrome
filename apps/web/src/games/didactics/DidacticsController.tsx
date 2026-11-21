@@ -43,7 +43,7 @@ export function DidacticsController({ view, game }: { view: RoomView; game: Dida
   switch (game.phase.name) {
     case 'intro':
       return (
-        <PhoneMessage icon="game-didactics" title="Didactics Mode">
+        <PhoneMessage icon="game-didactics" title="Didactics">
           {game.solo
             ? 'Everyone for themselves. Streaks and the fastest right answer earn bonus points.'
             : 'You’ll be put on a team. Answer on your phone, then huddle: you see your team’s split and can switch once.'}

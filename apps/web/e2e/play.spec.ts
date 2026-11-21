@@ -134,7 +134,7 @@ test('phones only: host from a phone, play with no big screen', async ({ browser
   host.on('pageerror', (e) => errors.push(e.message));
   await host.goto('/host');
   await expect(host.getByRole('radio', { name: 'Off' })).toHaveAttribute('aria-checked', 'true');
-  await host.getByRole('radio', { name: /Didactics Mode/ }).click();
+  await host.getByRole('radio', { name: /Didactics/ }).click();
   await host.getByRole('switch', { name: /Teams/ }).click();
   // The host types their name in setup and walks straight into the lobby.
   await host.getByLabel('Your name').fill('Ana');

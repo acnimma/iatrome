@@ -204,7 +204,7 @@ describe('trivia pacing', () => {
   });
 });
 
-describe('Didactics Mode', () => {
+describe('Didactics', () => {
   it('splits players into balanced random teams', () => {
     for (const [n, teams] of [[4, 2], [7, 2], [11, 2], [12, 3], [16, 3], [40, 8]] as const) {
       const { room, clock } = setup(n, { game: 'didactics' });

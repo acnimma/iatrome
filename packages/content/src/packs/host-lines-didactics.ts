@@ -1,4 +1,4 @@
-// Original content written for iatrome. Beep's lines for Didactics Mode (team trivia).
+// Original content written for iatrome. Beep's lines for Didactics (team trivia).
 import type { DidacticsHostEvent } from '../types';
 
 export const didacticsHostLines: Record<DidacticsHostEvent, string[]> = {

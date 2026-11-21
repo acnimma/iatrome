@@ -33,9 +33,9 @@ const playerCommand = z.discriminatedUnion('type', [
   z.object({ type: z.literal('choose'), index: z.number().int().min(0).max(2) }),
   z.object({ type: z.literal('guess'), text: text(LIMITS.guess) }),
   z.object({ type: z.literal('draw'), op: drawOp }),
-  // Didactics Mode and the tie-breaker
+  // Didactics and the tie-breaker
   z.object({ type: z.literal('pick-option'), option: z.number().int().min(0).max(3) }),
-  // Didactics Mode: rename your team while teams are revealed
+  // Didactics: rename your team while teams are revealed
   z.object({ type: z.literal('name-team'), name: text(40) }),
   // Pick Your Poison
   z.object({ type: z.literal('pick'), side: ab }),

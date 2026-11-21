@@ -34,7 +34,7 @@ function until(room: RoomState, clock: { now: number }, phase: string) {
   return state(room);
 }
 
-describe('Didactics Mode', () => {
+describe('Didactics', () => {
   it('makes teams of four to six, up to eight, balanced', () => {
     for (let n = 4; n <= 40; n++) {
       const count = teamCount(n);

@@ -109,7 +109,7 @@ export function TeamsToggle({ settings, onChange }: { settings: RoomSettings; on
   return (
     <Toggle
       label="Teams"
-      hint={available ? 'Off, everyone plays for themselves.' : 'Only for Didactics Mode.'}
+      hint={available ? 'Off, everyone plays for themselves.' : 'Only for Didactics.'}
       checked={settings.teams}
       disabled={!available}
       onChange={(teams) => onChange({ teams })}

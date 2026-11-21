@@ -5,7 +5,7 @@ import type { GameResult, Highlight, Phase } from '../types';
 import { type ActionOutcome, type BaseGameState, type GameContext, type GameModule, sawtooth, setPhase, statted, tidy } from './context';
 
 /**
- * Didactics Mode: team trivia for big groups (up to 40). Random teams of about five;
+ * Didactics: team trivia for big groups (up to 40). Random teams of about five;
  * everyone answers on their phone; a team scores by the share of its members who got it
  * right, so team sizes stay fair. After each answer window, a short huddle shows each team
  * its own split and everyone may switch once. Then a lightning round (short clock, double

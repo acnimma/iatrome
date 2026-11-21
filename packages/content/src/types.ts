@@ -78,7 +78,7 @@ export const hostEvents = [
   'poisonIntro', // Pick Your Poison begins
   'poisonUnanimous', // everyone picked the same side
   'poisonMinority', // calling out the minority before their defence
-  'didacticsIntro', // Didactics Mode (team trivia) begins
+  'didacticsIntro', // Didactics (team trivia) begins
   'didacticsLightning', // the double-points lightning round is next
   'didacticsStumped', // no team got the question right
   'statCalled', // a player spent their Stat (double points on one round); {name} is the player
@@ -108,7 +108,7 @@ export const hostEvents = [
 
 export type HostEvent = (typeof hostEvents)[number];
 
-/** Didactics Mode lines live in their own pack. */
+/** Didactics lines live in their own pack. */
 export type DidacticsHostEvent = 'didacticsIntro' | 'didacticsLightning' | 'didacticsStumped';
 
 /** Smaller moments across games (Stats, nags, lead changes, odd votes) have their own pack too. */
@@ -151,5 +151,5 @@ export type ShowHostEvent =
   | 'didacticsHuddle'
   | 'didacticsWager';
 
-/** The main host-lines pack covers every event except Didactics Mode's and the smaller moments. */
+/** The main host-lines pack covers every event except Didactics's and the smaller moments. */
 export type HostLines = Record<Exclude<HostEvent, DidacticsHostEvent | MomentHostEvent | ShowHostEvent>, string[]>;

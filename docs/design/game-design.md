@@ -20,7 +20,7 @@ Research behind these decisions: `docs/research/reports/`.
 | Home | `/` | Enter a room code, or go host. |
 | Host setup | `/host` | Pick a game, optional password, options → creates a room. |
 | Stage | `/host/CODE` | The show. Only the browser that created the room can run it. Host controls live in a tucked-away dock. |
-| Controller | `/play/CODE` (short link `/CODE`) | Each phone: write, draw, vote, guess, react. Late joiners are dealt into the next game (or straight onto a team in Didactics Mode). |
+| Controller | `/play/CODE` (short link `/CODE`) | Each phone: write, draw, vote, guess, react. Late joiners are dealt into the next game (or straight onto a team in Didactics). |
 
 ## Beep
 
@@ -44,7 +44,7 @@ Scoring per matchup: a 1,000-point pool split by vote share, +100 to the winner,
 
 The drawer picks one of three terms (easy/medium/hard) and draws live: strokes stream to every phone and the stage. Guessers race: 500 → 100 points by speed; the artist earns 75 per correct guess. Letter hints unlock at 45% and 70% of the time. “So close!” for near misses.
 
-### Didactics Mode (2–40, ~12 min)
+### Didactics (2–40, ~12 min)
 
 Trivia for big groups, built for a family party. By default players are split into random teams (at least two, about five a team; teams can rename themselves). A **Teams** setting turns that off, and everyone plays for themselves. Players get 30 seconds to answer (45 with More time). Streaks (right again and again) and the fastest right answer earn bonus points. Everyone answers each question on their phone; a team scores by the share of its members who got it right (1,000 × share), so small teams aren’t punished. Standings every three questions; the last three are a double-points lightning round. Late arrivals join the smallest team mid-game. Team podium plus an MVP.
 

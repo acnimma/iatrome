@@ -35,7 +35,7 @@ export function DidacticsStage({ view, game }: { view: RoomView; game: Didactics
     return (
       <IntroCard
         eyebrow="Up next"
-        title="Didactics Mode"
+        title="Didactics"
         body={
           game.solo
             ? 'Everyone for themselves. Answer on your phone or laptop. Streaks and the fastest right answer earn bonus points.'
