@@ -1,6 +1,7 @@
 // Pro mode: original content written for iatrome.
 // House style: short, classic frames (5 to 10 words), one sentence, no setup.
 // Innocent on paper, with room for a rowdy room to go somewhere filthy in one move.
+// Every prompt should also leave a gallows-humor room an easy bleak answer, without the prompt saying anything dark.
 import type { QuipPrompt } from '../types';
 
 export const quipsPro: QuipPrompt[] = [
@@ -9,7 +10,7 @@ export const quipsPro: QuipPrompt[] = [
   { id: 'quip-p003', text: 'The worst time for your pager to go off', breadth: 'clinical', curbside: ['Mid-rectal exam', 'Halfway into a Foley'] },
   { id: 'quip-p004', text: 'Something you should never say while placing a Foley', breadth: 'clinical', curbside: ['“Okay, wiggle less”', '“That was my last kit”'] },
   { id: 'quip-p006', text: 'A more honest name for the bowel regimen', breadth: 'clinical', curbside: ['The Eviction Notice', 'Operation Clean Slate'] },
-  { id: 'quip-p007', text: 'Why GI fellows are so calm', breadth: 'clinical', curbside: ['Nothing surprises them anymore', 'They’ve seen everyone’s inside'] },
+  { id: 'quip-p007', text: 'Something to put in your will after intern year', breadth: 'clinical', curbside: ['My unused vacation days', 'My pager, to my enemy'] },
   { id: 'quip-p008', text: 'Something you never want to hear in the endoscopy suite', breadth: 'clinical', curbside: ['“Whose scope is this?”', '“Reverse. Reverse!”'] },
   { id: 'quip-p009', text: 'Something you never say during your first speculum exam', breadth: 'clinical', curbside: ['“Which way does it go?”', '“Is it supposed to click?”'] },
   { id: 'quip-p018', text: 'What the scrub tech is thinking when the surgeon says “hmm”', breadth: 'clinical', curbside: ['“Count’s about to be off”', '“Here we go”'] },
@@ -23,23 +24,23 @@ export const quipsPro: QuipPrompt[] = [
   { id: 'quip-p024', text: 'What the attending’s “hmm” really means', breadth: 'clinical', curbside: ['“Present it again”', '“I also don’t know”'] },
   { id: 'quip-p025', text: 'The least helpful consult note', breadth: 'clinical', curbside: ['“Will follow.”', '“Recommend clinical correlation.”'] },
   { id: 'quip-p026', text: 'The most terrifying pimp question', breadth: 'clinical', curbside: ['“Why?”', '“And then what?”'] },
-  { id: 'quip-p027', text: 'A good sign the attending is in a good mood', breadth: 'clinical', curbside: ['Said a full sentence', 'Bought coffee for everyone'] },
+  { id: 'quip-p027', text: 'The real reason the family room has no windows', breadth: 'clinical', curbside: ['So nobody sees the snacks', 'Fewer witnesses'] },
   { id: 'quip-p028', text: 'A bad sign the attending is in a bad mood', breadth: 'clinical', curbside: ['Wants to pre-round on pre-rounds', 'Said “interesting” twice'] },
   { id: 'quip-p029', text: 'What every attending says about their own residency', breadth: 'clinical', curbside: ['“We worked 120 hours. Uphill.”', '“We had courage instead of computers”'] },
-  { id: 'quip-p030', text: 'Why interns carry three pens', breadth: 'clinical', curbside: ['Two will be stolen', 'One per attending'] },
+  { id: 'quip-p030', text: 'A bad thing to say right after calling the code', breadth: 'clinical', curbside: ['“Okay, who ordered lunch?”', '“Great teamwork, everyone. Truly.”'] },
   { id: 'quip-p031', text: 'The first sign an intern hasn’t slept', breadth: 'clinical', curbside: ['Paged themselves', 'Charted on the vending machine'] },
   { id: 'quip-p032', text: 'What nurses secretly call the new interns', breadth: 'clinical', curbside: ['The Ducklings', 'Order Typos'] },
   { id: 'quip-p033', text: 'The hardest thing about being an intern', breadth: 'clinical', curbside: ['Knowing which pager is yours', 'Everything, but quickly'] },
   { id: 'quip-p034', text: 'The worst way to wake a sleeping resident', breadth: 'clinical', curbside: ['A page that says “never mind”', 'Gently, with a question'] },
   { id: 'quip-p035', text: 'What the call room is really for', breadth: 'clinical', curbside: ['Eleven-minute naps', 'Hiding the good pillow'] },
   { id: 'quip-p036', text: 'Something you’ll only see in a hospital at 4 a.m.', breadth: 'clinical', curbside: ['A resident eating cereal from a cup', 'Two attendings arguing in socks'] },
-  { id: 'quip-p037', text: 'A rejected name for the night float rotation', breadth: 'clinical', curbside: ['The Abyss', 'Vampire Elective'] },
-  { id: 'quip-p038', text: 'A more honest name for rounding', breadth: 'clinical', curbside: ['The Long Walk', 'Group Standing'] },
+  { id: 'quip-p037', text: 'Your epitaph, as written by the EHR', breadth: 'clinical', curbside: ['“Copied forward”', '“See previous note”'] },
+  { id: 'quip-p038', text: 'What the morgue staff talk about at lunch', breadth: 'clinical', curbside: ['Which surgeon sends the most', 'Your handwriting, mostly'] },
   { id: 'quip-p039', text: 'A red flag on a residency program’s website', breadth: 'clinical', curbside: ['Every photo is from 2007', '“Wellness Wednesday,” 6 a.m., mandatory'] },
   { id: 'quip-p040', text: 'The worst thing to hear during your residency interview', breadth: 'clinical', curbside: ['“So, tell us about the gap”', '“Our last resident left. Ask why.”'] },
   { id: 'quip-p041', text: 'The real meaning of “we’re a family here”', breadth: 'clinical', curbside: ['Unpaid overtime', 'Someone will yell at Thanksgiving'] },
   { id: 'quip-p042', text: 'A rejected board exam question', breadth: 'clinical', curbside: ['“Name the attending’s dog”', '“Where is the spleen, emotionally?”'] },
-  { id: 'quip-p043', text: 'A useless mnemonic for remembering anything', breadth: 'clinical', curbside: ['Twelve letters, nine silent', 'One that needs its own mnemonic'] },
+  { id: 'quip-p043', text: 'A bad thing to hear from the pathologist', breadth: 'clinical', curbside: ['“Funny you should ask”', '“Did anyone else look at this?”'] },
   { id: 'quip-p044', text: 'A terrible name for a residency program', breadth: 'clinical', curbside: ['Q2 Memorial', 'Saint Duty Hours'] },
 
   // Pages and nights
@@ -57,7 +58,7 @@ export const quipsPro: QuipPrompt[] = [
   { id: 'quip-p056', text: 'A secret code nurses should have', breadth: 'clinical', curbside: ['Code Pizza: free food on 4', 'Code Chatty: send help'] },
   { id: 'quip-p057', text: 'The first rule of a new nursing unit', breadth: 'clinical', curbside: ['Don’t touch the charge nurse’s chair', 'Label your yogurt'] },
   { id: 'quip-p058', text: 'Something nursing school should have taught you', breadth: 'clinical', curbside: ['How to find a working thermometer', 'Saying “no” to a family of eleven'] },
-  { id: 'quip-p059', text: 'The real reason nobody can find the good scissors', breadth: 'clinical', curbside: ['Night shift has them', 'Locked in the charge nurse’s soul'] },
+  { id: 'quip-p059', text: 'An honest answer to “What are his chances?”', breadth: 'clinical', curbside: ['“Better than the parking”', '“Have you met our chaplain?”'] },
 
   // The EHR and the machine
   { id: 'quip-p060', text: 'A best-practice alert that should actually exist', breadth: 'clinical', curbside: ['“You haven’t eaten since Tuesday”', '“This page is a ‘quick question’”'] },
@@ -74,11 +75,11 @@ export const quipsPro: QuipPrompt[] = [
   { id: 'quip-p069', text: 'The real reason surgeons and anesthesia fight', breadth: 'clinical', curbside: ['The thermostat', 'Who’s driving the table'] },
   { id: 'quip-p070', text: 'The real reason surgeons don’t eat lunch', breadth: 'clinical', curbside: ['Lunch is for internists', 'They forgot food exists'] },
   { id: 'quip-p071', text: 'The biggest lie on the OR schedule', breadth: 'clinical', curbside: ['“Two hours, tops”', '“Quick one”'] },
-  { id: 'quip-p072', text: 'What “7:30 start” means in the OR', breadth: 'clinical', curbside: ['9:15, if anesthesia’s happy', 'Whenever ortho finds the drill'] },
+  { id: 'quip-p072', text: 'The real reason the morgue is always in the basement', breadth: 'clinical', curbside: ['Gravity', 'Nobody complains about the view'] },
   { id: 'quip-p073', text: 'Something you shouldn’t say while scrubbed in', breadth: 'clinical', curbside: ['“My nose itches”', '“Hold on, I touched it”'] },
   { id: 'quip-p074', text: 'A bad thing to hear from the scrub tech', breadth: 'clinical', curbside: ['“Is this yours?”', '“Which one? This one?”'] },
   { id: 'quip-p075', text: 'A bad sight in the OR at 2 a.m.', breadth: 'clinical', curbside: ['The ortho attending, smiling', 'A surgeon with a new idea'] },
-  { id: 'quip-p076', text: 'The real reason surgeons wear clogs', breadth: 'clinical', curbside: ['To be heard coming', 'Easy to kick off'] },
+  { id: 'quip-p076', text: 'The incident report you never want to file', breadth: 'clinical', curbside: ['“Re: the cake, again”', '“Specimen was eaten”'] },
   { id: 'quip-p077', text: 'What ortho brings to the potluck', breadth: 'clinical', curbside: ['Protein bars, unopened', 'A cordless drill'] },
   { id: 'quip-p078', text: 'Something you should never say to a surgeon', breadth: 'clinical', curbside: ['“How long will this take?”', '“Anesthesia’s in charge now”'] },
 
@@ -92,8 +93,8 @@ export const quipsPro: QuipPrompt[] = [
   { id: 'quip-p085', text: 'The lab is calling at 2 a.m. because ____', breadth: 'clinical', curbside: ['your critical value has a friend', 'they lost the tube'] },
   { id: 'quip-p086', text: 'What the lab thinks when your sample is hemolyzed', breadth: 'clinical', curbside: ['“Draw it again. Gently.”', '“Again? Seriously?”'] },
   { id: 'quip-p087', text: 'The worst thing to hear from radiology', breadth: 'clinical', curbside: ['“Incidental finding. Have fun.”', '“Can’t rule it out.”'] },
-  { id: 'quip-p088', text: 'A rejected name for the radiology reading room', breadth: 'clinical', curbside: ['The Cave', 'The Dark Room of Maybe'] },
-  { id: 'quip-p089', text: 'A specialty for doctors who never want to talk', breadth: 'clinical', curbside: ['Pathology, but quieter', 'Radiology with blackout curtains'] },
+  { id: 'quip-p088', text: 'Your own vital signs after a week of nights', breadth: 'clinical', curbside: ['Pulse: caffeinated', 'BP: yes'] },
+  { id: 'quip-p089', text: 'Your malpractice lawyer’s least comforting sentence', breadth: 'clinical', curbside: ['“So, about your chart”', '“Do you own the house?”'] },
   { id: 'quip-p090', text: 'The real reason dermatologists are so relaxed', breadth: 'clinical', curbside: ['No pagers. Ever.', 'Lunch is a whole hour'] },
   { id: 'quip-p091', text: 'Something the respiratory therapist is tired of hearing', breadth: 'clinical', curbside: ['“Just a quick neb”', '“Can you grab a gas real fast?”'] },
   { id: 'quip-p092', text: 'What EMS mutters while waiting on the wall', breadth: 'clinical', curbside: ['“Should’ve gone to the other hospital”', '“Wall time is my cardio”'] },
@@ -105,7 +106,7 @@ export const quipsPro: QuipPrompt[] = [
   // Administration and the system
   { id: 'quip-p099', text: 'A more honest discharge instruction', breadth: 'clinical', curbside: ['Follow up with a PCP you don’t have', 'Return if worse, after the weekend'] },
   { id: 'quip-p100', text: 'A mandatory training module nobody needs', breadth: 'clinical', curbside: ['Hand Washing 4: The Reckoning', 'Elevator Safety, 90 minutes'] },
-  { id: 'quip-p101', text: 'Why every module is always due yesterday', breadth: 'clinical', curbside: ['Compliance needs friends', 'Someone has to click “next” 400 times'] },
+  { id: 'quip-p101', text: 'What the night nurse knows that the family doesn’t', breadth: 'clinical', curbside: ['Grandpa flirts after midnight', 'Whose visits he fakes sleeping through'] },
   { id: 'quip-p102', text: 'The worst thing a hospital administrator can say', breadth: 'clinical', curbside: ['“Let’s form a committee”', '“We’re excited to announce...”'] },
   { id: 'quip-p103', text: 'A better name for the hospital wellness program', breadth: 'clinical', curbside: ['Pizza Instead of Staffing', 'Mandatory Yoga'] },
   { id: 'quip-p104', text: 'What the morning huddle actually accomplishes', breadth: 'clinical', curbside: ['Fewer chairs', 'Confirming we’re short-staffed'] },
@@ -118,7 +119,7 @@ export const quipsPro: QuipPrompt[] = [
   { id: 'quip-p111', text: 'A rejected name for the crash cart', breadth: 'clinical', curbside: ['The Panic Wagon', 'Code Caddy'] },
   { id: 'quip-p112', text: 'A more honest research paper title', breadth: 'clinical', curbside: ['We Tried: P = 0.06', 'Our Ten Patients Were Fine'] },
   { id: 'quip-p113', text: 'What “further studies are needed” really means', breadth: 'clinical', curbside: ['We want more grants', 'We have no idea'] },
-  { id: 'quip-p114', text: 'What actually makes journal club run long', breadth: 'clinical', curbside: ['One guy and his questions', 'The pizza is late'] },
+  { id: 'quip-p114', text: 'The worst time for the chaplain to page you', breadth: 'clinical', curbside: ['During my lunch', 'For me, specifically'] },
   { id: 'quip-p115', text: 'An app every resident needs', breadth: 'clinical', curbside: ['Find My Pager', 'Uber for Lunch, to the OR'] },
   { id: 'quip-p116', text: 'A new scrub color and what it means', breadth: 'clinical', curbside: ['Neon orange: has a quick question', 'Black: do not page'] },
   // Staff life: sign-out, break rooms, administration
@@ -134,4 +135,21 @@ export const quipsPro: QuipPrompt[] = [
   { id: 'quip-p017', text: 'The attending asked a question and the only answer was ____', breadth: 'clinical', curbside: ['“Bananas?”', 'a long, brave silence'] },
   { id: 'quip-p096', text: 'Your first attending paycheck goes straight to ____', breadth: 'clinical', curbside: ['the loans, then the loans', 'a very nice stethoscope'] },
   { id: 'quip-p098', text: 'The dental assistant’s secret hand signal for ____', breadth: 'clinical', curbside: ['“the dentist is humming again”', '“we’re running long”'] },
+  // The bleak end of the job
+  { id: 'quip-p117', text: 'What the palliative team does at the holiday party', breadth: 'clinical', curbside: ['Very gentle karaoke', 'Talks everyone out of the buffet'] },
+  { id: 'quip-p118', text: 'The real agenda at M&M', breadth: 'clinical', curbside: ['Blaming the intern, gently', 'Blaming the intern, thoroughly'] },
+  { id: 'quip-p119', text: 'Something every clinician wants at their own bedside', breadth: 'clinical', curbside: ['A nurse, not an intern', 'Someone who read the chart'] },
+  { id: 'quip-p120', text: 'The funeral home across the street’s billboard', breadth: 'clinical', curbside: ['“We Validate Parking”', '“Closer Than You Think”'] },
+  { id: 'quip-p121', text: 'Something you’ve learned not to say in the elevator', breadth: 'clinical', curbside: ['“Well, that one’s done”', 'Room numbers'] },
+  { id: 'quip-p122', text: 'What the coroner says about your charting', breadth: 'clinical', curbside: ['“Who taught you to write?”', '“Cute”'] },
+  { id: 'quip-p123', text: 'Your retirement party, as planned by the hospital', breadth: 'clinical', curbside: ['A sheet cake and a module', 'Cake from the morgue fridge'] },
+  { id: 'quip-p124', text: 'What a nurse’s headstone should say', breadth: 'clinical', curbside: ['“Finally sat down”', '“Off at seven, for real”'] },
+  // Everyday symptoms, clinician edition: real management or wildly unhinged
+  { id: 'quip-p125', text: 'The real first-line treatment for a sprained ankle', breadth: 'clinical', curbside: ['Rest, ice, and a stern look', 'An X-ray nobody needed'] },
+  { id: 'quip-p126', text: 'An off-label cure for the common cold', breadth: 'clinical', curbside: ['A week off', 'Hot toddy, max dose'] },
+  { id: 'quip-p127', text: 'What you’d actually prescribe for a cough at 3 a.m.', breadth: 'clinical', curbside: ['Honey and a nap', 'Whatever ends the page'] },
+  { id: 'quip-p128', text: 'The evidence-based cure for hiccups', breadth: 'clinical', curbside: ['A rectal exam, apparently', 'A surprise consult from surgery'] },
+  { id: 'quip-p129', text: 'The most aggressive workup for a headache', breadth: 'clinical', curbside: ['MRI, MRA, and a lumbar puncture', 'Neurology, neurosurgery and a priest'] },
+  { id: 'quip-p130', text: 'What urgent care really does for a sore throat', breadth: 'clinical', curbside: ['A swab and a vibe', 'Antibiotics, emotionally'] },
+  { id: 'quip-p131', text: 'The discharge instructions for a stubbed toe', breadth: 'clinical', curbside: ['“Return if toe falls off”', '“Avoid furniture”'] },
 ];

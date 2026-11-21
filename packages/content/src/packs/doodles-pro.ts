@@ -37,8 +37,8 @@ export const doodlesPro: DoodlePrompt[] = [
   { id: 'doodle-p030', text: 'Your favorite surgical instrument, as a pet', breadth: 'clinical' },
   { id: 'doodle-p031', text: 'The sharps container’s inner life', breadth: 'clinical' },
   { id: 'doodle-p032', text: 'Your unit’s potluck table at 2 a.m.', breadth: 'clinical' },
-  { id: 'doodle-p033', text: 'Where all the good pens go', breadth: 'clinical' },
-  { id: 'doodle-p034', text: 'The ideal call room, according to you', breadth: 'clinical' },
+  { id: 'doodle-p033', text: 'What the pathologist found', breadth: 'clinical' },
+  { id: 'doodle-p034', text: 'The morgue’s break room', breadth: 'clinical' },
   { id: 'doodle-p035', text: 'Your signout list, as a landscape', breadth: 'clinical' },
   // Scenes with a twist: still leave room to invent.
   { id: 'doodle-p036', text: 'A pager on fire', breadth: 'clinical' },
@@ -59,5 +59,7 @@ export const doodlesPro: DoodlePrompt[] = [
   { id: 'doodle-p051', text: 'A Foley bag following its patient like a puppy', breadth: 'clinical' },
   { id: 'doodle-p052', text: 'A surgeon and an anesthesiologist fighting over the thermostat', breadth: 'clinical' },
   { id: 'doodle-p053', text: 'An ABG syringe sprinting to the lab', breadth: 'clinical' },
-  { id: 'doodle-p054', text: 'A white coat ceremony for a dog', breadth: 'clinical' },
+  { id: 'doodle-p054', text: 'Your own code, run by your interns', breadth: 'clinical' },
+  { id: 'doodle-p055', text: 'M&M conference, drawn as a courtroom', breadth: 'clinical' },
+  { id: 'doodle-p056', text: 'The chaplain’s busiest day of the year', breadth: 'clinical' },
 ];

@@ -1,17 +1,14 @@
 'use client';
 
 import { AnimatePresence, motion } from 'motion/react';
-import { useEffect, useId, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { HostLine } from '@iatrome/game/client';
 import { beepTalk } from '@/lib/sound';
 import styles from './Beep.module.css';
 
 const SHOW_MS = 7_000;
 
-/**
- * Beep: the host. A cute TV-headed robot with opinions. `bpm` is the show's tension (the stage
- * raises it while people write, vote and wait for a reveal): Beep's antenna blinks along to it.
- */
+/** Beep: the host. A cheerful little light-blue robot with a screen for a face, and opinions. */
 export function Beep({
   line,
   size = 132,
@@ -61,62 +58,35 @@ export function Beep({
   );
 }
 
-/**
- * Beep: a little TV-headed robot. Rabbit-ear antennas, a cream screen with a face on it,
- * rosy cheeks, stubby arms. The antenna bulb blinks faster as the show gets tense (`bpm`).
- */
-export function BeepFace({ talking = false, bpm = 72 }: { talking?: boolean; bpm?: number }) {
-  const id = useId().replace(/:/g, '');
-  const rate = Math.max(40, Math.min(180, Math.round(bpm)));
+/** Beep: the original light-blue robot with a screen for a face. `bpm` is accepted for callers; the look stays calm. */
+export function BeepFace({ talking = false }: { talking?: boolean; bpm?: number }) {
   return (
-    <svg viewBox="0 0 140 132" className={styles.svg} role="img" aria-label="Beep, the TV robot host">
+    <svg viewBox="0 0 120 100" className={styles.svg} aria-label="Beep, the robot host">
       <defs>
-        <linearGradient id={`${id}-body`} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#7aaed3" />
+        <linearGradient id="beep-body" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#6c9fc8" />
           <stop offset="1" stopColor="#3f78a6" />
         </linearGradient>
-        <radialGradient id={`${id}-screen`} cx="40%" cy="30%" r="80%">
-          <stop offset="0" stopColor="#fffdf6" />
-          <stop offset="1" stopColor="#e9e3d6" />
-        </radialGradient>
       </defs>
-
-      {/* rabbit-ear antennas, with a bulb that blinks with the tension */}
-      <path d="M58 28 L44 6" stroke="#1f2a4d" strokeWidth="4" strokeLinecap="round" />
-      <path d="M82 28 L98 8" stroke="#1f2a4d" strokeWidth="4" strokeLinecap="round" />
-      <circle cx="44" cy="6" r="5" fill="#cc4e73" stroke="#1f2a4d" strokeWidth="2.5" />
-      <circle cx="98" cy="8" r="5" fill="#ccb64a" stroke="#1f2a4d" strokeWidth="2.5" className={styles.bulb} style={{ animationDuration: `${(60 / rate) * 2}s` }} />
-
-      {/* stubby arms, waving a little when Beep talks */}
-      <g className={talking ? styles.wave : undefined}>
-        <path d="M14 78 q-12 -2 -10 -16" fill="none" stroke="#1f2a4d" strokeWidth="5" strokeLinecap="round" />
-        <circle cx="4" cy="61" r="5" fill="#7aaed3" stroke="#1f2a4d" strokeWidth="2.5" />
-      </g>
-      <path d="M126 78 q12 2 11 14" fill="none" stroke="#1f2a4d" strokeWidth="5" strokeLinecap="round" />
-      <circle cx="137" cy="93" r="5" fill="#7aaed3" stroke="#1f2a4d" strokeWidth="2.5" />
-
-      {/* little feet */}
-      <rect x="42" y="114" width="20" height="12" rx="6" fill="#1f2a4d" />
-      <rect x="78" y="114" width="20" height="12" rx="6" fill="#1f2a4d" />
-
-      {/* the TV body */}
-      <rect x="12" y="26" width="116" height="92" rx="28" fill={`url(#${id}-body)`} stroke="#1f2a4d" strokeWidth="3.5" />
-      <path d="M30 34 h64" stroke="rgb(255 255 255 / 0.5)" strokeWidth="5" strokeLinecap="round" />
-      {/* knobs */}
-      <circle cx="112" cy="92" r="5" fill="#ccb64a" stroke="#1f2a4d" strokeWidth="2" />
-      <circle cx="112" cy="106" r="3.5" fill="#cc4e73" stroke="#1f2a4d" strokeWidth="2" />
-
-      {/* the screen, and the face on it */}
-      <rect x="24" y="40" width="80" height="64" rx="18" fill={`url(#${id}-screen)`} stroke="#1f2a4d" strokeWidth="3" />
+      {/* antenna */}
+      <rect x="86" y="2" width="12" height="20" rx="6" fill="#1f2a4d" />
+      {/* belt clip */}
+      <rect x="4" y="36" width="10" height="30" rx="5" fill="#1f2a4d" />
+      {/* body */}
+      <rect x="10" y="14" width="100" height="80" rx="26" fill="url(#beep-body)" stroke="#1f2a4d" strokeWidth="3" />
+      <path d="M24 22 h56" stroke="rgb(255 255 255 / 0.45)" strokeWidth="5" strokeLinecap="round" />
+      {/* screen */}
+      <rect x="22" y="30" width="76" height="46" rx="14" fill="#eef3e8" stroke="#1f2a4d" strokeWidth="3" />
+      {/* face */}
       <g className={styles.eyes}>
-        <ellipse cx="50" cy="66" rx="5.5" ry="7" fill="#1f2a4d" />
-        <ellipse cx="78" cy="66" rx="5.5" ry="7" fill="#1f2a4d" />
-        <circle cx="52" cy="63" r="1.8" fill="#fff" />
-        <circle cx="80" cy="63" r="1.8" fill="#fff" />
+        <ellipse cx="46" cy="49" rx="5" ry="6.5" fill="#1f2a4d" />
+        <ellipse cx="74" cy="49" rx="5" ry="6.5" fill="#1f2a4d" />
       </g>
-      <ellipse cx="40" cy="80" rx="6" ry="3.5" fill="#cc4e73" opacity="0.35" />
-      <ellipse cx="88" cy="80" rx="6" ry="3.5" fill="#cc4e73" opacity="0.35" />
-      <path className={talking ? styles.talk : undefined} d="M56 80 q8 9 16 0" fill="none" stroke="#1f2a4d" strokeWidth="3.5" strokeLinecap="round" />
+      <ellipse cx="38" cy="60" rx="5" ry="3" fill="#cc4e73" opacity="0.35" />
+      <ellipse cx="82" cy="60" rx="5" ry="3" fill="#cc4e73" opacity="0.35" />
+      <path className={talking ? styles.talk : undefined} d="M52 61 q8 8 16 0" fill="none" stroke="#1f2a4d" strokeWidth="3.5" strokeLinecap="round" />
+      {/* button */}
+      <circle cx="60" cy="86" r="4" fill="#ccb64a" stroke="#1f2a4d" strokeWidth="2" />
     </svg>
   );
 }

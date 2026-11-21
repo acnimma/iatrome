@@ -31,18 +31,6 @@
   animation: talk 0.22s ease-in-out infinite alternate;
 }
 
-/* The tension bulb on the right antenna. */
-.bulb {
-  animation: bulb 1s steps(2, jump-none) infinite;
-}
-
-/* A little wave while talking. */
-.wave {
-  transform-box: view-box;
-  transform-origin: 14px 78px;
-  animation: wave 0.5s ease-in-out infinite alternate;
-}
-
 .bubble {
   position: relative;
   max-width: min(440px, 40vw);
@@ -92,22 +80,8 @@
   }
 }
 
-@keyframes bulb {
-  50% {
-    fill: #fff6c8;
-  }
-}
-
-@keyframes wave {
-  to {
-    transform: rotate(-14deg);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   .talk,
-  .bulb,
-  .wave,
   .body {
     animation: none;
   }
