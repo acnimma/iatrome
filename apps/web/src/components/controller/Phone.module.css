@@ -228,3 +228,29 @@
 .choiceGrid .choice[data-long] {
   font-size: 0.9rem;
 }
+
+/* Beep's two-second "sound on" nudge, above everything. */
+.soundHintWrap {
+  position: fixed;
+  top: max(10px, env(safe-area-inset-top));
+  left: 0;
+  right: 0;
+  z-index: 70;
+  display: flex;
+  justify-content: center;
+  padding: 0 16px;
+  pointer-events: none;
+}
+
+.soundHint {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 18px 8px 10px;
+  border: var(--outline);
+  border-radius: var(--radius-pill);
+  background: var(--card);
+  box-shadow: var(--gloss), var(--shadow-md);
+  font-size: 0.95rem;
+  font-weight: 700;
+}

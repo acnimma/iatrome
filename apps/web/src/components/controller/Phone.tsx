@@ -41,7 +41,7 @@ export function PhonePrompt({ label, prompt, phase, pausedAt }: { label?: string
           {prompt}
         </p>
       </div>
-      {phase && <TimerRing phase={phase} pausedAt={pausedAt ?? null} size={52} />}
+      {phase && <TimerRing phase={phase} pausedAt={pausedAt ?? null} size={52} ticks />}
     </div>
   );
 }
@@ -104,6 +104,30 @@ export function Choice({
     >
       {children}
     </motion.button>
+  );
+}
+
+/** A quick nudge from Beep, a couple of seconds long, to turn the sound on. */
+export function SoundHint({ show }: { show: boolean }) {
+  return (
+    <div className={styles.soundHintWrap} aria-live="polite">
+      <AnimatePresence>
+        {show && (
+          <motion.div
+            className={styles.soundHint}
+            initial={{ y: -40, opacity: 0, scale: 0.9 }}
+            animate={{ y: 0, opacity: 1, scale: 1 }}
+            exit={{ y: -30, opacity: 0 }}
+            transition={{ type: 'spring', stiffness: 420, damping: 24 }}
+          >
+            <span className={styles.beepFace}>
+              <BeepFace talking />
+            </span>
+            <p>Turn the sound on. It’s funnier.</p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 }
 

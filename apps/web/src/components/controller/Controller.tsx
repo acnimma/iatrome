@@ -17,8 +17,8 @@ import { DidacticsController } from '@/games/didactics/DidacticsController';
 import { EdgePage } from '@/components/home/EdgePage';
 import { JoinForm } from './JoinForm';
 import { ReactionLayer } from '@/components/room/RoomBits';
-import { play } from '@/lib/sound';
-import { BeepBanner, PhoneMessage } from './Phone';
+import { play, unlockAudio } from '@/lib/sound';
+import { BeepBanner, PhoneMessage, SoundHint } from './Phone';
 import { HostMenu, useIsHost } from './PhoneHost';
 import { StatCalls, StatOnThis } from '@/components/room/Stat';
 import { ControllerLobby, ControllerResults } from './ControllerLobby';
@@ -36,7 +36,7 @@ export function Controller({ code }: { code: string }) {
   if (!client) return null;
   return (
     <RoomContext.Provider value={client}>
-      <div className={styles.phone}>
+      <div className={styles.phone} onPointerDown={unlockAudio}>
         <PhoneScreen code={code} snap={snap} />
         <FeedbackToast feedback={snap.feedback} />
       </div>
@@ -78,7 +78,48 @@ function Stalled() {
   );
 }
 
+/** Sound on the phone, same as the laptop: someone joins, a round opens, the answers land. */
+function usePhoneSounds(view: RoomView) {
+  const people = useRef(view.people.length);
+  const seen = useRef('');
+  useEffect(() => {
+    if (view.people.length > people.current) play('pop');
+    people.current = view.people.length;
+  }, [view.people.length]);
+  useEffect(() => {
+    const name = view.game?.phase.name ?? '';
+    const key = `${view.stage}:${view.game?.game ?? ''}:${name}`;
+    if (seen.current && key !== seen.current && view.stage === 'playing') {
+      if (['reveal', 'results', 'verdict'].includes(name)) play('reveal');
+      else if (['question', 'write', 'choose', 'draw'].includes(name)) play('whoosh');
+    }
+    seen.current = key;
+  }, [view.stage, view.game]);
+}
+
+/** Beep's "turn the sound on" nudge: once per visit, gone after two seconds. */
+function useSoundHint() {
+  const [show, setShow] = useState(() => {
+    try {
+      return !sessionStorage.getItem('iatrome:sound-hint');
+    } catch {
+      return false;
+    }
+  });
+  useEffect(() => {
+    if (!show) return;
+    try {
+      sessionStorage.setItem('iatrome:sound-hint', '1');
+    } catch {}
+    const t = setTimeout(() => setShow(false), 2000);
+    return () => clearTimeout(t);
+  }, [show]);
+  return show;
+}
+
 function InRoom({ view, reconnecting }: { view: RoomView; reconnecting: boolean }) {
+  usePhoneSounds(view);
+  const soundHint = useSoundHint();
   const me = view.people.find((p) => p.id === view.you?.id);
   const watching = view.stage === 'playing' && !view.you?.inGame;
   // Grand Rounds lets everyone vote, seated or not; other games park watchers until the next one.
@@ -99,6 +140,7 @@ function InRoom({ view, reconnecting }: { view: RoomView; reconnecting: boolean 
   return (
     <>
       <ReactionLayer />
+      <SoundHint show={soundHint} />
       <header className={styles.header}>
         {me && <Avatar avatar={me.avatar} size={36} />}
         <span className={styles.me}>{me?.name}</span>

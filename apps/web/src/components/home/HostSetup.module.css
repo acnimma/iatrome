@@ -41,7 +41,9 @@
 }
 
 .sub {
-  max-width: 52ch;
+  /* One line when it fits; when it can't, two even lines instead of a long line and a stray word. */
+  max-width: none;
+  text-wrap: balance;
   margin-top: 6px;
   font-weight: 500;
   color: var(--ink-soft);

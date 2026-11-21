@@ -39,7 +39,7 @@ export function SketchController({ view, game }: { view: RoomView; game: SketchV
         <PhoneStack>
           <div className={styles.phoneHead}>
             <h2 className={styles.phoneTitle}>Pick something to draw</h2>
-            <TimerRing phase={game.phase} pausedAt={view.pausedAt} size={52} />
+            <TimerRing phase={game.phase} pausedAt={view.pausedAt} size={52} ticks />
           </div>
           {game.multiplier > 1 && <p className={styles.stretch}>Final stretch: everything pays double</p>}
           <StatButton view={view} label="Call your Stat on your turn ×2" />
@@ -131,7 +131,7 @@ function Drawer({ view, game }: { view: RoomView; game: SketchView }) {
           <span className={styles.label}>Draw this. No letters!</span>
           <h2 className={styles.term}>{game.term}</h2>
         </div>
-        <TimerRing phase={game.phase} pausedAt={view.pausedAt} size={52} />
+        <TimerRing phase={game.phase} pausedAt={view.pausedAt} size={52} ticks />
       </div>
       <DrawPad onOp={(op) => room.command({ type: 'draw', op })} />
       <div className={styles.ticker} aria-label="What they’re guessing" aria-live="polite">
@@ -194,7 +194,7 @@ function Guesser({ view, game }: { view: RoomView; game: SketchView }) {
     <div className={styles.phoneDraw}>
       <div className={styles.phoneHead}>
         <Mask mask={game.mask} size="phone" />
-        <TimerRing phase={game.phase} pausedAt={view.pausedAt} size={52} />
+        <TimerRing phase={game.phase} pausedAt={view.pausedAt} size={52} ticks />
       </div>
       <div className={styles.phoneCanvas}>
         <DrawingView drawing={drawing} label="The drawing" />
