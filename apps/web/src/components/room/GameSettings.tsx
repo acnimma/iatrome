@@ -105,7 +105,16 @@ export function ModePicker({ value, onChange }: { value: ContentMode; onChange: 
 
 /** Team trivia only: play in teams, or everyone for themselves. */
 export function TeamsToggle({ settings, onChange }: { settings: RoomSettings; onChange: (patch: Partial<RoomSettings>) => void }) {
-  return <Toggle label="Teams" hint="Off, everyone plays for themselves." checked={settings.teams} onChange={(teams) => onChange({ teams })} />;
+  const available = settings.game === 'didactics';
+  return (
+    <Toggle
+      label="Teams"
+      hint={available ? 'Off, everyone plays for themselves.' : 'Only for Didactics Mode.'}
+      checked={settings.teams}
+      disabled={!available}
+      onChange={(teams) => onChange({ teams })}
+    />
+  );
 }
 
 export function TimeToggle({ settings, onChange }: { settings: RoomSettings; onChange: (patch: Partial<RoomSettings>) => void }) {

@@ -7,12 +7,14 @@ interface Props {
   label: string;
   hint?: string;
   checked: boolean;
+  /** Shown but greyed out and inert: the option exists, it just doesn't apply right now. */
+  disabled?: boolean;
   onChange: (checked: boolean) => void;
 }
 
-export function Toggle({ label, hint, checked, onChange }: Props) {
+export function Toggle({ label, hint, checked, disabled, onChange }: Props) {
   return (
-    <button type="button" role="switch" aria-checked={checked} className={styles.row} onClick={() => onChange(!checked)}>
+    <button type="button" role="switch" aria-checked={checked} aria-disabled={disabled || undefined} disabled={disabled} className={styles.row} onClick={() => onChange(!checked)}>
       <span className={styles.text}>
         <span className={styles.label}>{label}</span>
         {hint && <span className={styles.hint}>{hint}</span>}

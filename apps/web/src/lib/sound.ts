@@ -3,7 +3,7 @@
  * Browsers only allow audio after a user gesture; call `unlockAudio()` from a click.
  */
 
-export type Sfx = 'pop' | 'tick' | 'whoosh' | 'reveal' | 'vote' | 'win' | 'consensus' | 'buzz' | 'drumroll' | 'lose' | 'correct' | 'beat' | 'pathognomonic' | 'lockin' | 'applause' | 'cheer' | 'boing' | 'start' | 'ding' | 'wrong' | 'switch' | 'chime' | 'coin';
+export type Sfx = 'pop' | 'tick' | 'whoosh' | 'reveal' | 'vote' | 'win' | 'consensus' | 'buzz' | 'drumroll' | 'lose' | 'correct' | 'beat' | 'pathognomonic' | 'lockin' | 'applause' | 'cheer' | 'boing' | 'start' | 'ding' | 'wrong' | 'switch' | 'chime' | 'coin' | 'pulse' | 'bong';
 
 const MUTE_KEY = 'iatrome:muted';
 let audio: AudioContext | null = null;
@@ -84,6 +84,20 @@ function noise(start: number, duration: number, opts: { from?: number; to?: numb
   src.start(t);
 }
 
+/** A struck bell: a fundamental plus inharmonic overtones that die away faster, so it rings and shimmers. */
+function bell(f: number, start: number, decay: number, gain: number) {
+  for (const [ratio, level, life] of [
+    [1, 1, 1],
+    [2.01, 0.45, 0.7],
+    [2.76, 0.35, 0.5],
+    [5.4, 0.15, 0.25],
+  ] as const)
+    tone(f * ratio, start, decay * life, { gain: gain * level });
+}
+
+/** The rising monitor blips of the final countdown: a pentatonic climb, one step per second. */
+const COUNTDOWN_SCALE = [1046.5, 1174.7, 1318.5, 1568, 1760, 2093, 2349.3, 2637, 3136, 3520];
+
 const C5 = 523.25;
 const E5 = 659.25;
 const G5 = 783.99;
@@ -93,6 +107,28 @@ const C6 = 1046.5;
 export function play(sfx: Sfx, pitch = 0) {
   if (isMuted() || !context()) return;
   switch (sfx) {
+    case 'pulse': {
+      // The iatrome countdown: a heartbeat (lub-dub) under rising monitor blips. `pitch` is the seconds left,
+      // so the climb never stops and the last five seconds double up, then triple, like a racing pulse.
+      const secs = Math.max(1, Math.min(10, Math.round(pitch)));
+      const f = COUNTDOWN_SCALE[10 - secs];
+      tone(78, 0, 0.2, { slide: 0.5, gain: 0.34 });
+      tone(66, 0.17, 0.17, { slide: 0.5, gain: 0.24 });
+      tone(f, 0.02, 0.09, { gain: 0.12 });
+      tone(f * 2, 0.02, 0.05, { gain: 0.04 });
+      if (secs <= 5) tone(f * 1.5, 0.5, 0.07, { gain: 0.1 });
+      if (secs <= 3) {
+        tone(f * 1.25, 0.25, 0.06, { gain: 0.09 });
+        tone(f * 1.5, 0.75, 0.06, { gain: 0.11 });
+      }
+      return;
+    }
+    case 'bong':
+      // The hospital page: two soft bells, a falling "bing, bong" that rings out over the room.
+      bell(783.99, 0, 1.6, 0.26);
+      bell(587.33, 0.55, 2.4, 0.3);
+      tone(146.8, 0.55, 1.2, { gain: 0.07 });
+      return;
     case 'boing': {
       // A rubbery spring: a quick climb that settles, higher for later emoji.
       const base = 300 * 2 ** (pitch / 8);

@@ -80,29 +80,15 @@ export function HostSetup() {
         <GamePicker tiles value={settings.game} onChange={(game) => setSettings((s) => ({ ...s, game }))} />
 
         <div className={styles.settings}>
-          <section className={styles.setting}>
+          <section className={`${styles.setting} ${styles.screen}`}>
             <h2 className={styles.label}>Shared screen</h2>
             <ScreenPicker value={screen} onChange={setScreen} />
-            {screen === 'phones' && (
-              <div className={styles.hostName}>
-                <TextInput
-                  ref={nameRef}
-                  label="Your name"
-                  hint="You host from your own device and play too."
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  maxLength={ROOM.maxNameLength}
-                  placeholder="Dr. Nickname"
-                  autoCapitalize="words"
-                />
-              </div>
-            )}
           </section>
-          <section className={styles.setting}>
+          <section className={`${styles.setting} ${styles.crowd}`}>
             <h2 className={styles.label}>{CROWD_LABEL}</h2>
             <ModePicker value={settings.mode} onChange={(mode) => setSettings((s) => ({ ...s, mode }))} />
           </section>
-          <section className={styles.setting}>
+          <section className={`${styles.setting} ${styles.password}`}>
             <h2 className={styles.label}>Password</h2>
             <TextInput
               aria-label="Room password (optional)"
@@ -113,13 +99,32 @@ export function HostSetup() {
               placeholder="e.g. scrubs"
             />
           </section>
+          {/* Always here, greyed out until it applies, so choosing a game or a screen never moves the page. */}
+          <section className={`${styles.setting} ${styles.name}`}>
+            <h2 className={styles.label}>Your name</h2>
+            <TextInput
+              ref={nameRef}
+              aria-label="Your name"
+              hint={screen === 'phones' ? 'You host from your own device and play too.' : 'Only when the shared screen is off.'}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              maxLength={ROOM.maxNameLength}
+              placeholder="Dr. Nickname"
+              autoCapitalize="words"
+              disabled={screen !== 'phones'}
+            />
+          </section>
+          <section className={`${styles.setting} ${styles.time}`}>
+            <h2 className={styles.label}>Timers</h2>
+            <TimeToggle settings={settings} onChange={(patch) => setSettings((s) => ({ ...s, ...patch }))} />
+          </section>
+          <section className={`${styles.setting} ${styles.teams}`}>
+            <h2 className={styles.label}>Team trivia</h2>
+            <TeamsToggle settings={settings} onChange={(patch) => setSettings((s) => ({ ...s, ...patch }))} />
+          </section>
         </div>
 
         <div className={styles.go}>
-          <div className={styles.time}>
-            <TimeToggle settings={settings} onChange={(patch) => setSettings((s) => ({ ...s, ...patch }))} />
-            {settings.game === 'didactics' && <TeamsToggle settings={settings} onChange={(patch) => setSettings((s) => ({ ...s, ...patch }))} />}
-          </div>
           {error && (
             <p className={styles.error} role="alert">
               {error}

@@ -76,15 +76,16 @@ export function TimerRing({ phase, pausedAt, size = 64, ticks = false }: Props) 
           if (secs <= 5 && secs > 0) {
             if (!calm) count.current?.animate([{ transform: 'scale(1.45)' }, { transform: 'scale(1)' }], { duration: 420, easing: 'cubic-bezier(0.34, 1.56, 0.64, 1)' });
             if (secs <= 3) haptic('tap');
-            if (ticks) play('tick');
           }
+          // The last ten seconds sound like a pulse getting faster, ending in the hospital bong.
+          if (secs <= 10 && secs > 0 && ticks) play('pulse', secs);
           if (secs === 0) {
             if (!calm)
               wrap.current?.animate(
                 [{ transform: 'scale(1)' }, { transform: 'scale(1.25, 0.8)' }, { transform: 'scale(0.92, 1.1)' }, { transform: 'scale(1)' }],
                 { duration: 520, easing: 'ease-out' },
               );
-            if (ticks) play('buzz');
+            if (ticks) play('bong');
           }
         }
       }

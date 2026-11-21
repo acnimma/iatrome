@@ -74,3 +74,10 @@
 .low {
   color: var(--rose-kiss);
 }
+
+/* Greyed out, still in its place: it applies in another mode. */
+.input:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  background: color-mix(in srgb, var(--card) 70%, #e6dfd4);
+}

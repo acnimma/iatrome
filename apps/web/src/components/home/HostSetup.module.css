@@ -60,6 +60,13 @@
   min-width: 0;
 }
 
+.screen { grid-area: screen; order: 1; }
+.name { grid-area: name; order: 2; }
+.crowd { grid-area: crowd; order: 3; }
+.password { grid-area: password; order: 4; }
+.time { grid-area: time; order: 5; }
+.teams { grid-area: teams; order: 6; }
+
 .label {
   font-size: 0.95rem;
   font-weight: 800;
@@ -97,21 +104,24 @@
     height: 38px;
   }
 
+  /* Two fixed rows of three, always the same: nothing appears or disappears, so nothing moves. */
   .settings {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 28px;
+    grid-template-areas:
+      'screen crowd password'
+      'name time teams';
+    gap: 24px 36px;
+  }
+
+  .settings > * {
+    order: 0;
   }
 
   .go {
     flex-direction: row;
     align-items: center;
     gap: 28px;
-  }
-
-  .time {
-    flex: 1;
-    max-width: 360px;
   }
 
   .error {
@@ -153,4 +163,9 @@
   .create {
     width: min(560px, 100%);
   }
+}
+
+/* Inputs hold their height whether the hint is one line or two, so rows line up across the grid. */
+.setting :global(label) > span:last-child {
+  min-height: 2.6em;
 }

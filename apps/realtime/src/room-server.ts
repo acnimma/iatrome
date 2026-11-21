@@ -218,7 +218,7 @@ export class Room extends Server<Env> {
           this.relayDrawOp(conn, msg.cmd.op);
           return;
         }
-        if (msg.cmd.type === 'doodle' || msg.cmd.type === 'draw') this.markDrawingsDirty();
+        if (msg.cmd.type === 'draw') this.markDrawingsDirty();
         await this.commit(now);
         return;
       }
