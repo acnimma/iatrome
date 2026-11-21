@@ -41,6 +41,8 @@ Project settings (already done if the site is live):
 
 Ads show on the big screen only, never during a timer: in the lobby, on every third fun fact once it has settled, and after the podium finishes. A visitor must accept cookies first, and one tap on × hides ads for the visit.
 
+The ad frame picks the banner that fits the screen (728x90 on laptops and TVs, 468x60 on tablets, 320x100 on phones) and reserves its space before the ad loads, so nothing shifts. Create the units in AdSense as fixed-size display ads in those sizes, and turn **Auto ads off** for the site: they place units wherever they like, including next to buttons.
+
 Redeploy after adding them (they’re baked in at build time).
 
 ## 3. Domain → Namecheap DNS

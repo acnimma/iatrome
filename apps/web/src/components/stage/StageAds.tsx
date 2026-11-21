@@ -27,6 +27,9 @@ export function StageAds({ view }: { view: RoomView }) {
     }
   });
   const [showing, setShowing] = useState<AdPlacement | null>(null);
+  // A phone-sized window is a controller, not a screen to share: no floating ad over it.
+  const [wide, setWide] = useState(false);
+  useEffect(() => setWide(window.matchMedia('(min-width: 640px)').matches), []);
   const facts = useRef(new Set<string>());
 
   const game = view.game;
@@ -50,11 +53,11 @@ export function StageAds({ view }: { view: RoomView }) {
 
   useEffect(() => {
     setShowing(null);
-    if (!placement || !allowed || dismissed) return;
+    if (!placement || !allowed || dismissed || !wide) return;
     const t = setTimeout(() => setShowing(placement), delay);
     return () => clearTimeout(t);
     // The key changes when the moment does: a new fact, the lobby, the podium.
-  }, [key, allowed, dismissed, view.paused]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [key, allowed, dismissed, wide, view.paused]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!showing || dismissed) return null;
   return (
