@@ -11,7 +11,6 @@ import { CountUp, nameOf, usePeople } from '@/components/room/RoomBits';
 import { teamTone } from '@/games/didactics/teams';
 import { StatHolders } from '@/components/room/Stat';
 import { jelly } from '@/components/ui/jelly';
-import { AdSlot } from '@/components/ads/AdSlot';
 import styles from './Podium.module.css';
 import { Icon } from '@/components/icons/Icon';
 
@@ -127,7 +126,6 @@ export function Podium({ view, result }: { view: RoomView; result: GameResult })
           Pick another game
         </Button>
       </motion.div>
-      <AdSlot placement="game-over" />
     </div>
   );
 }
@@ -294,7 +292,6 @@ function TeamPodium({ view, result }: { view: RoomView; result: GameResult }) {
           Pick another game
         </Button>
       </motion.div>
-      <AdSlot placement="game-over" />
     </div>
   );
 }

@@ -8,12 +8,14 @@ import { RoomContext, useRoom, useRoomConnection, useSnapshot } from '@/realtime
 import { Button } from '@/components/ui/Button';
 import { Beep } from '@/components/room/Beep';
 import { ReactionLayer, RoomCode } from '@/components/room/RoomBits';
+import { adsEnabled } from '@/lib/consent';
 import { type Mood, audioLocked, isMuted, play, setMuted, startMusic, stopMusic, unlockAudio } from '@/lib/sound';
 import { GrandRoundsStage } from '@/games/grand-rounds/GrandRoundsStage';
 import { SketchStage } from '@/games/sketch/SketchStage';
 import { TiebreakStage } from '@/games/tiebreak/TiebreakStage';
 import { PoisonStage } from '@/games/poison/PoisonStage';
 import { DidacticsStage } from '@/games/didactics/DidacticsStage';
+import { StageAds } from './StageAds';
 import { StageLobby } from './StageLobby';
 import { HostControls } from './HostControls';
 import { Podium } from './Podium';
@@ -27,11 +29,13 @@ export interface StagePrefs {
 
 /** The stage is laid out for this screen and scaled to fit whatever it's really on, like a TV show. */
 const DESIGN = { width: 1440, height: 900 };
+/** Matches --ad-band in globals.css: the empty strip left along the bottom when ads are on. */
+const AD_BAND = 128;
 
 function useStageZoom() {
   const [zoom, setZoom] = useState(1);
   useEffect(() => {
-    const fit = () => setZoom(Math.min(2.2, Math.max(0.6, Math.min(innerWidth / DESIGN.width, innerHeight / DESIGN.height))));
+    const fit = () => setZoom(Math.min(2.2, Math.max(0.6, Math.min(innerWidth / DESIGN.width, (innerHeight - (adsEnabled() ? AD_BAND : 0)) / DESIGN.height))));
     fit();
     addEventListener('resize', fit);
     return () => removeEventListener('resize', fit);
@@ -66,6 +70,8 @@ export function Stage({ code }: { code: string }) {
         {snap.status === 'reconnecting' && <div className={styles.banner}>Reconnecting…</div>}
         {snap.feedback?.error && <Toast key={snap.feedback.at} text={snap.feedback.error} />}
       </div>
+      {/* Outside the scaled stage, so the ad is real pixels and never moves the layout. */}
+      <StageAds view={snap.view} />
     </RoomContext.Provider>
   );
 }

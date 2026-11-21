@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/Button';
 import { TextInput } from '@/components/ui/Field';
 import { CROWD_LABEL, GamePicker, ModePicker, type ScreenChoice, ScreenPicker, TeamsToggle, TimeToggle } from '@/components/room/GameSettings';
 import { unlockAudio } from '@/lib/sound';
+import { AdSlot } from '@/components/ads/AdSlot';
 import { track } from '@vercel/analytics';
 import styles from './HostSetup.module.css';
 
@@ -148,6 +149,8 @@ export function HostSetup() {
             </div>
           </section>
         </div>
+        {/* Quiet room for an ad below the cards: nothing renders (and nothing is reserved) while ads are off. */}
+        <AdSlot placement="home" />
       </motion.div>
     </main>
   );

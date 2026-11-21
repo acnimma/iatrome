@@ -3,7 +3,7 @@
   zoom: var(--z, 1);
   position: relative;
   width: calc(100vw / var(--z, 1));
-  min-height: calc(100dvh / var(--z, 1));
+  min-height: calc((100dvh - var(--ad-band, 0px)) / var(--z, 1));
   display: flex;
   flex-direction: column;
   overflow: hidden;

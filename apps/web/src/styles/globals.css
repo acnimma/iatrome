@@ -125,3 +125,16 @@ span {
     transition-duration: 0.01ms !important;
   }
 }
+
+/*
+ * Room for the ad banner. Zero unless ads are switched on (the body then carries data-ads), in which case
+ * the big screen scales to leave this band empty along the bottom, so a banner always has clear space
+ * of its own and never lands on anything.
+ */
+:root {
+  --ad-band: 0px;
+}
+
+body[data-ads] {
+  --ad-band: 128px;
+}

@@ -1,0 +1,21 @@
+/* A quiet round button in the bottom-right corner, never in the way of a banner (those sit centered). */
+.support {
+  position: fixed;
+  right: max(14px, env(safe-area-inset-right));
+  bottom: max(14px, env(safe-area-inset-bottom));
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  padding: 0;
+  border-radius: 50%;
+  text-decoration: none;
+}
+
+/* The host page has its Create room bar along the bottom on phones: sit above it. */
+@media (max-width: 899px) {
+  .support[data-lift] {
+    bottom: calc(96px + env(safe-area-inset-bottom));
+  }
+}

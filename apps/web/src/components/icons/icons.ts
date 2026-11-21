@@ -559,6 +559,13 @@ export const ICONS = {
       gloss('M10 22V18Q10 13 15 13H24'),
   ),
 
+  mail: icon(
+    `<rect x="6" y="13" width="52" height="38" rx="9" fill="${CARD}"/>` +
+      `<path d="M9 19 32 37 55 19" stroke-width="3.5"/>` +
+      `<circle cx="49" cy="17" r="6" fill="${ROSE}"/>` +
+      gloss('M11 21V20Q11 18 13 18H20'),
+  ),
+
   list: icon(
     `<rect x="7" y="6" width="50" height="52" rx="9" fill="${CARD}"/>` +
       `<circle cx="18" cy="19" r="5" fill="${GOLD}"/><circle cx="18" cy="32" r="5" fill="${ROSE}"/><circle cx="18" cy="45" r="5" fill="${SKY}"/>` +

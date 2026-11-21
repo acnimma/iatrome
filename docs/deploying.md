@@ -35,6 +35,11 @@ Project settings (already done if the site is live):
 |---|---|
 | `NEXT_PUBLIC_REALTIME_HOST` | `iatrome-realtime.<your-subdomain>.workers.dev` (no `https://`) |
 | `NEXT_PUBLIC_SITE_URL` | `https://iatrome.com` |
+| `NEXT_PUBLIC_ADS_ENABLED` | `true` to turn ads on (off by default; nothing loads without it) |
+| `NEXT_PUBLIC_ADSENSE_CLIENT` | Your AdSense publisher id, `ca-pub-…` |
+| `NEXT_PUBLIC_ADSENSE_SLOT_HOME`, `_LOBBY`, `_FUN_FACT`, `_GAME_OVER` | One 728x90 ad unit id per placement |
+
+Ads show on the big screen only, never during a timer: in the lobby, on every third fun fact once it has settled, and after the podium finishes. A visitor must accept cookies first, and one tap on × hides ads for the visit.
 
 Redeploy after adding them (they’re baked in at build time).
 

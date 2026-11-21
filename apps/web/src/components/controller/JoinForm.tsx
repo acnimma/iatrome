@@ -151,7 +151,6 @@ export function JoinForm({ code, snap }: { code: string; snap: Snapshot }) {
       <Button size="xl" block type="submit" waiting={joining}>
         {joining ? 'Joining' : 'Join game'}
       </Button>
-      <p className={styles.fine}>Leave real patients out of it. Nobody here signed a consent form.</p>
     </motion.form>
   );
 }

@@ -3,6 +3,9 @@ import { Inter } from 'next/font/google';
 import localFont from 'next/font/local';
 import { Analytics } from '@vercel/analytics/next';
 import { SpeedInsights } from '@vercel/speed-insights/next';
+import { AdScript } from '@/components/ads/AdScript';
+import { SupportButton } from '@/components/ui/SupportButton';
+import { adsEnabled } from '@/lib/consent';
 import { ConsentBanner } from '@/components/ads/ConsentBanner';
 import '@/styles/globals.css';
 
@@ -39,9 +42,11 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${inter.variable} ${dogbangy.variable}`}>
-      <body>
+      <body data-ads={adsEnabled() ? 'on' : undefined}>
         {children}
+        <SupportButton />
         <ConsentBanner />
+        <AdScript />
         {/* Cookieless: counts visits and page speed without identifying anyone. */}
         <Analytics />
         <SpeedInsights />
