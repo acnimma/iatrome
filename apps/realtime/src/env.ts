@@ -5,7 +5,7 @@ export interface Env {
   Room: DurableObjectNamespace<Room>;
   /** One strict rate limiter per client address. */
   Limiter: DurableObjectNamespace<Limiter>;
-  /** Comma-separated origins allowed to use the server. Supports `*` wildcards, e.g. `https://*-iatrome.iatrome-realtime.workers.dev`. */
+  /** Comma-separated origins allowed to use the server. Supports `*` wildcards, e.g. `https://*.example.com`. */
   ALLOWED_ORIGINS: string;
   /** "true" enables the speed setting (local development only). */
   DEV_MODE: string;
