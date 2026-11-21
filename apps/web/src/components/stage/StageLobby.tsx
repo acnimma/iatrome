@@ -50,7 +50,7 @@ export function StageLobby({ view, hideCode }: { view: RoomView; hideCode: boole
           </Button>
         </div>
         <img src="/brand/wordmark.svg" alt="iatrome" className={styles.wordmark} />
-        <p className={styles.lead}>Grab your phone and go to</p>
+        <p className={styles.lead}>Grab a phone or laptop and go to</p>
         <p className={styles.site}>{site}</p>
         <RoomCode code={view.code} hidden={hideCode} />
         <div className={styles.qrRow}>
