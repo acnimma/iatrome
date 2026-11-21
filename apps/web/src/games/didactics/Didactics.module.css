@@ -296,6 +296,11 @@
   font-weight: 800;
   color: var(--ink-soft);
   text-align: center;
+  /* One line, always: the copy is short, and this keeps a narrow phone from wrapping it. */
+  font-size: clamp(0.8rem, 4vw, 1rem);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 @media (max-width: 900px) {

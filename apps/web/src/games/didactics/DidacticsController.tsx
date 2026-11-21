@@ -86,14 +86,14 @@ export function DidacticsController({ view, game }: { view: RoomView; game: Dida
           <p className={styles.locked}>
             {huddle
               ? game.myAnswer === null
-                ? 'You missed the clock. Answer now, no speed bonus.'
+                ? 'Time’s up. Answer now, no bonus.'
                 : game.mySwitched
                   ? 'Switched. Final answer.'
-                  : 'That’s your team’s split. Argue, then switch once if they talk you into it.'
+                  : 'Your team’s split. Switch once.'
               : game.myAnswer !== null
                 ? game.lightning
-                  ? 'Locked in. No huddle in the lightning round.'
-                  : 'Locked in. Huddle once everyone’s answered.'
+                  ? 'Locked in. No huddle now.'
+                  : 'Locked in. Huddle next.'
                 : ''}
           </p>
         </PhoneStack>
