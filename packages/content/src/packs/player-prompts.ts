@@ -1,6 +1,6 @@
 // Original prompts written for iatrome. {player} is replaced with a player’s name.
 // Affectionate roasts only: habits, quirks and choices. Never looks, identity or real health.
-import type { DifferentialPrompt, QuipPrompt } from '../types';
+import type { QuipPrompt } from '../types';
 
 export const playerQuips: QuipPrompt[] = [
   { id: 'pq-001', text: '{player}’s hospital nickname', breadth: 'universal', curbside: ['The Wanderer', 'Mr. Button Presser'] },
@@ -89,32 +89,4 @@ export const playerQuips: QuipPrompt[] = [
   { id: 'pq-084', text: 'What {player} would do if the gown fell open', breadth: 'universal', curbside: ['Keep walking, proudly', 'Wave'] },
   { id: 'pq-085', text: '{player}’s secret talent with a specimen cup', breadth: 'universal', curbside: ['Perfect aim', 'Fills it to the line, every time'] },
   { id: 'pq-086', text: 'How {player} reacts if the doctor says “oops”', breadth: 'universal', curbside: ['“Same”', '“Is it fixable or funny?”'] },
-];
-
-// The finale: everyone lists three. The third should be the punchline.
-export const playerDifferentials: DifferentialPrompt[] = [
-  { id: 'pd-001', text: 'Three things in {player}’s pockets right now', breadth: 'universal', beep: ['Receipts', 'Fourteen pens, none theirs', 'Someone else’s keys'] },
-  { id: 'pd-002', text: 'Three things {player} is “allergic” to', breadth: 'universal', beep: ['Mornings', 'Group projects', 'The phrase “quick question”'] },
-  { id: 'pd-003', text: 'Three signs {player} is about to call in sick', breadth: 'universal', beep: ['Says “I never get sick”', 'Buys one orange', 'Rehearses a cough'] },
-  { id: 'pd-004', text: '{player}’s three souvenirs from a hospital room', breadth: 'universal', beep: ['Graham crackers', 'The grippy socks', 'The bed that goes up'] },
-  { id: 'pd-005', text: 'Three reasons {player} is in the ER at 3 a.m.', breadth: 'universal', beep: ['An avocado, with confidence', 'Tried to fix it themselves', 'Lost a bet to a couch'] },
-  { id: 'pd-006', text: 'Three things the nurses whisper about {player}', breadth: 'universal', beep: ['Labels everything', 'Asked for the Wi-Fi first', 'Brought donuts. Can stay.'] },
-  { id: 'pd-007', text: 'Three lines from {player}’s discharge instructions', breadth: 'universal', beep: ['Rest', 'Hydrate', 'Stop telling the nurses your theories'] },
-  { id: 'pd-008', text: 'What {player} says before admitting they need a doctor, in three steps', breadth: 'universal', beep: ['“It’s nothing”', '“It’s a little something”', '“Okay. Drive faster.”'] },
-  { id: 'pd-009', text: 'Before the ambulance arrives, {player} hides these three things', breadth: 'universal', beep: ['The dishes', 'The browser history', 'The lawn gnome, for legal reasons'] },
-  { id: 'pd-010', text: 'Three items in {player}’s homemade first aid kit', breadth: 'universal', beep: ['A spoon', 'Glitter bandages', 'A lemon, for reasons'] },
-  { id: 'pd-011', text: 'Three questions {player} asks the pharmacist', breadth: 'universal', beep: ['“Can I crush it into pudding?”', '“Is the generic as good?”', '“Got a bag with handles?”'] },
-  { id: 'pd-012', text: 'Three internet diagnoses {player} is sure about', breadth: 'universal', beep: ['Their own knee', 'The neighbor’s dog', 'A ghost'] },
-  { id: 'pd-013', text: 'As hospital CEO, {player} would ban these three things', breadth: 'universal', beep: ['Fax machines', 'Meetings about meetings', 'Anything before 7 a.m.'] },
-  { id: 'pd-014', text: 'The three things in {player}’s hospital overnight bag', breadth: 'universal', beep: ['Four pillows', 'A label maker', 'Snacks, as bribes'] },
-  { id: 'pd-015', text: 'Three warning labels for {player}', breadth: 'universal', beep: ['May overshare', 'Do not feed after midnight', 'Will narrate'] },
-  { id: 'pd-016', text: 'Three things {player}’s family finds while they’re in the hospital', breadth: 'universal', beep: ['A drawer of ketchup packets', 'Eleven half-done puzzles', 'A second freezer, padlocked'] },
-  { id: 'pd-017', text: 'Three side effects of hanging out with {player}', breadth: 'universal', beep: ['Snacks', 'Lateness', 'Fun facts, nonstop'] },
-  { id: 'pd-018', text: 'Waking up from surgery, {player}’s first three sentences', breadth: 'universal', beep: ['“Did I win?”', '“Where are my shoes?”', '“Don’t tell my mother”'] },
-  { id: 'pd-019', text: 'Three home remedies {player} swears by', breadth: 'universal', beep: ['Soup', 'Spite', 'A long nap on the floor'] },
-  { id: 'pd-020', text: 'Three notes in {player}’s chart', breadth: 'universal', beep: ['“Talks a lot”', '“Brought snacks, didn’t share”', '“Asked to keep the gown”'] },
-  { id: 'pd-021', text: '{player}’s three requests if the surgery runs long', breadth: 'universal', beep: ['Someone feed the cat', 'Someone tape the game', 'Someone clear my search history'] },
-  { id: 'pd-022', text: 'Three ways {player} would be a terrible surgeon', breadth: 'universal', beep: ['Narrates', 'Snacks mid-case', 'Asks the patient for advice'] },
-  { id: 'pd-023', text: '{player}’s three comments during a physical', breadth: 'universal', beep: ['“Ticklish”', '“Is that a compliment?”', '“Same time next year?”'] },
-  { id: 'pd-024', text: 'Three demands {player} makes as a hospital patient', breadth: 'universal', beep: ['A better pillow', 'The Wi-Fi password, in writing', 'Pudding, on a schedule'] },
 ];

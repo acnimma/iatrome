@@ -1,8 +1,7 @@
-import { type HostEvent, curbsideGeneric, differentials, doodles, playerDifferentials, playerQuips, quips } from '@iatrome/content';
+import { type HostEvent, curbsideGeneric, playerQuips, quips } from '@iatrome/content';
 import { GRAND_ROUNDS as GR, LIMITS } from '../../constants';
 import { cleanText, sameAnswer } from '../../text';
-import type { Drawing, GameResult, Highlight, Phase } from '../../types';
-import { validDrawing } from '../../drawing';
+import type { GameResult, Highlight, Phase } from '../../types';
 import {
   type ActionOutcome,
   type BaseGameState,
@@ -13,20 +12,18 @@ import {
   standings,
   statted,
 } from '../context';
-import { BEEP, mixedKinds, ring, spreadOrder } from './assign';
+import { BEEP, ring, spreadOrder } from './assign';
 import { type Side, scoreFinale, scoreForfeit, scoreVotes } from './scoring';
 import { duelReadTiming, duelRevealTiming, finaleRevealTiming } from './timing';
 
 // ── State ────────────────────────────────────────────────────────────────────
 
-export type MatchupKind = 'quip' | 'doodle' | 'differential';
+export type MatchupKind = 'quip';
 type PhaseName = 'intro' | 'write' | 'present' | 'vote' | 'results' | 'scores' | 'done';
 
 interface Entry {
   playerId: string;
   text: string | null;
-  items: string[] | null;
-  drawingId: string | null;
   curbside: boolean;
   /** Locked in (pressed submit). Drafts count if the timer runs out. */
   final: boolean;
@@ -45,12 +42,14 @@ export interface MatchupResult {
 
 /**
  * Rounds 1–2 are duels: two players, one prompt, everyone else votes.
- * The finale is one prompt for everybody (plus Beep), and everyone votes for a favourite
+ * The finale is one open-ended quip for everybody (plus Beep), and everyone votes for a favourite
  * that isn't theirs, like Quiplash's last round.
  */
 interface Matchup {
   id: string;
   kind: MatchupKind;
+  /** Everybody answers this one (the last round). */
+  finale: boolean;
   prompt: string;
   curbside: [string, string] | null;
   playerIds: string[];
@@ -80,8 +79,6 @@ export interface GrandRoundsState extends BaseGameState {
 
 export type GrandRoundsAction =
   | { type: 'answer'; matchupId: string; text: string; final: boolean }
-  | { type: 'list'; matchupId: string; items: string[]; final: boolean }
-  | { type: 'doodle'; matchupId: string; drawing: Drawing; final: boolean }
   | { type: 'curbside'; matchupId: string }
   | { type: 'vote'; side: number }
   /** Finale: take back your votes and place them again. */
@@ -91,8 +88,6 @@ export type GrandRoundsAction =
 
 export interface EntryView {
   text: string | null;
-  items: string[] | null;
-  drawingId: string | null;
   hidden: boolean;
   /** Revealed with the results. */
   author: string | null;
@@ -317,59 +312,44 @@ function startRound(state: GrandRoundsState, ctx: GameContext) {
   };
 
   if (state.round < 2) {
-    const kinds: MatchupKind[] =
-      state.round === 1 ? mixedKinds(order.length) : order.map(() => 'quip');
-    const quipCount = kinds.filter((k) => k === 'quip').length;
+    const quipCount = order.length;
     const personal = insideJokes ? ctx.draw(playerQuips, Math.round(quipCount * PERSONAL_SHARE)) : [];
     const quipPool = ctx.rng.shuffle([...personal, ...ctx.draw(quips, quipCount - personal.length)]);
-    const doodlePool = ctx.draw(doodles, kinds.filter((k) => k === 'doodle').length);
     state.matchups = spreadOrder(
-      ring(order).map((pair, i) => {
-        if (kinds[i] === 'doodle') return newMatchup(ctx, 'doodle', doodlePool.pop()!.text, null, pair);
+      ring(order).map((pair) => {
         let q = quipPool.pop()!;
         let text = q.text.includes('{player}') ? personalize(q.text, pair) : q.text;
         if (text === null) {
           q = ctx.draw(quips, 1)[0];
           text = q.text;
         }
-        return newMatchup(ctx, 'quip', text, q.curbside, pair);
+        return newMatchup(ctx, text, q.curbside, pair, false);
       }),
     );
   } else {
     // The finale: one prompt for everybody, and everybody votes.
-    const personal = insideJokes && ctx.rng.int(10) < PERSONAL_SHARE * 10 ? ctx.draw(playerDifferentials, 1) : [];
-    let p = personal[0] ?? ctx.draw(differentials, 1)[0];
-    let text = p.text.includes('{player}') ? p.text.replace('{player}', () => ctx.person(ctx.rng.pick(order))!.name) : p.text;
-    if (!text) {
-      p = ctx.draw(differentials, 1)[0];
-      text = p.text;
-    }
-    state.matchups = [newMatchup(ctx, 'differential', text, null, order)];
+    const personal = insideJokes && ctx.rng.int(10) < PERSONAL_SHARE * 10 ? ctx.draw(playerQuips, 1) : [];
+    const q = personal[0] ?? ctx.draw(quips, 1)[0];
+    const text = q.text.includes('{player}') ? q.text.replace('{player}', () => ctx.person(ctx.rng.pick(order))!.name) : q.text;
+    state.matchups = [newMatchup(ctx, text, q.curbside, order, true)];
   }
 
   ctx.say(state.round === 0 ? 'roundOneIntro' : state.round === 1 ? 'roundTwoIntro' : 'finalIntro');
   setPhase(state, ctx, 'intro', GR.intro);
 }
 
-function newMatchup(
-  ctx: GameContext,
-  kind: MatchupKind,
-  prompt: string,
-  curbside: [string, string] | null,
-  playerIds: string[],
-): Matchup {
+function newMatchup(ctx: GameContext, prompt: string, curbside: [string, string] | null, playerIds: string[], finale: boolean): Matchup {
   const entry = (playerId: string): Entry => ({
     playerId,
     text: null,
-    items: null,
-    drawingId: null,
     curbside: false,
     final: false,
     hidden: false,
   });
   return {
     id: ctx.rng.id(8),
-    kind,
+    kind: 'quip',
+    finale,
     prompt,
     curbside,
     playerIds,
@@ -381,8 +361,7 @@ function newMatchup(
 }
 
 function writeDuration(state: GrandRoundsState, ctx: GameContext) {
-  if (state.round === 2) return GR.writeDifferential;
-  return state.round === 1 ? GR.writeMixed : GR.writeQuips;
+  return state.round === 2 ? GR.writeFinale : GR.writeQuips;
 }
 
 // ── Writing ──────────────────────────────────────────────────────────────────
@@ -390,7 +369,6 @@ function writeDuration(state: GrandRoundsState, ctx: GameContext) {
 function write(matchup: Matchup, entry: Entry, ctx: GameContext, action: GrandRoundsAction): ActionOutcome | void {
   switch (action.type) {
     case 'answer': {
-      if (matchup.kind !== 'quip') return { error: 'Wrong kind of answer.' };
       const text = cleanText(action.text, LIMITS.quip);
       if (action.final && !text) return { error: 'Write something first!' };
       entry.text = text || null;
@@ -398,25 +376,7 @@ function write(matchup: Matchup, entry: Entry, ctx: GameContext, action: GrandRo
       entry.final = action.final;
       return;
     }
-    case 'list': {
-      if (matchup.kind !== 'differential') return { error: 'Wrong kind of answer.' };
-      const items = action.items.slice(0, 3).map((s) => cleanText(String(s), LIMITS.differentialItem));
-      if (action.final && items.filter(Boolean).length < 3) return { error: 'Your differential needs all three!' };
-      entry.items = items.some(Boolean) ? items : null;
-      entry.final = action.final;
-      return;
-    }
-    case 'doodle': {
-      if (matchup.kind !== 'doodle') return { error: 'Wrong kind of answer.' };
-      if (!validDrawing(action.drawing)) return { error: 'That drawing didn’t come through. Try again.' };
-      if (action.final && action.drawing.strokes.length === 0) return { error: 'Draw something first!' };
-      entry.drawingId ??= ctx.rng.id(10);
-      ctx.room.drawings[entry.drawingId] = action.drawing;
-      entry.final = action.final;
-      return;
-    }
     case 'curbside': {
-      if (matchup.kind !== 'quip') return { error: 'No curbside consults on this one.' };
       entry.text = matchup.curbside ? ctx.rng.pick(matchup.curbside) : ctx.rng.pick(curbsideGeneric);
       entry.curbside = true;
       entry.final = true;
@@ -426,7 +386,7 @@ function write(matchup: Matchup, entry: Entry, ctx: GameContext, action: GrandRo
 }
 
 function hasContent(entry: Entry) {
-  return Boolean(entry.text || entry.items?.some(Boolean) || entry.drawingId);
+  return Boolean(entry.text);
 }
 
 /** Who still owes an answer (connected players only: we don't wait for dropouts). */
@@ -452,8 +412,8 @@ function tasks(state: GrandRoundsState, playerId: string): TaskView[] {
         kind: m.kind,
         prompt: m.prompt,
         done: e.final,
-        draft: m.kind === 'differential' ? e.items : m.kind === 'quip' ? e.text : null,
-        canCurbside: m.kind === 'quip',
+        draft: e.text,
+        canCurbside: true,
       };
     });
 }
@@ -467,11 +427,11 @@ function beginPresent(state: GrandRoundsState, ctx: GameContext, index: number) 
   for (const e of m.entries) e.final = e.final || hasContent(e);
   if (isFinale(m)) {
     const lists = m.entries.filter((e) => hasContent(e)).length;
-    setPhase(state, ctx, 'present', GR.present.differential + lists * GR.presentPerList);
+    setPhase(state, ctx, 'present', GR.present.finale + lists * GR.presentPerList);
     return;
   }
   const [a, b] = m.entries;
-  setPhase(state, ctx, 'present', duelReadTiming(m.prompt, a.text, b.text, m.kind === 'doodle' ? 'doodle' : 'quip').total);
+  setPhase(state, ctx, 'present', duelReadTiming(m.prompt, a.text, b.text).total);
 }
 
 function live(m: Matchup, ctx: GameContext, side: number) {
@@ -482,16 +442,13 @@ function live(m: Matchup, ctx: GameContext, side: number) {
 
 const liveCount = (m: Matchup, ctx: GameContext) => m.entries.filter((_, i) => live(m, ctx, i)).length;
 
-/** The finale is everybody's answer to one prompt (the only differential round). */
-const isFinale = (m: Matchup) => m.kind === 'differential';
+/** The finale is everybody's answer to one prompt. */
+const isFinale = (m: Matchup) => m.finale;
 
 function isDuplicate(m: Matchup) {
   if (isFinale(m)) return false;
   const [a, b] = m.entries;
-  if (m.kind === 'quip') return Boolean(a.text && b.text && sameAnswer(a.text, b.text));
-  if (m.kind === 'differential' && a.items && b.items)
-    return a.items.every((item, i) => sameAnswer(item, b.items![i] ?? ''));
-  return false;
+  return Boolean(a.text && b.text && sameAnswer(a.text, b.text));
 }
 
 /**
@@ -608,7 +565,7 @@ function finishFinale(state: GrandRoundsState, ctx: GameContext, m: Matchup) {
   const alive = liveCount(m, ctx);
   const result: MatchupResult = { outcome: alive ? 'vote' : 'empty', playerVotes, ...score };
   const w = score.winner;
-  const punchline = w === null ? null : (m.entries[w].items?.filter(Boolean).at(-1) ?? null);
+  const punchline = w === null ? null : m.entries[w].text;
   if (!alive) say('forfeit');
   else if (!playerVotes.length) say('noVotes');
   else if (w === null) say('tie');
@@ -641,8 +598,6 @@ function matchupView(state: GrandRoundsState, ctx: GameContext, m: Matchup, view
     const hide = e.hidden || (e.playerId !== BEEP && !ctx.person(e.playerId));
     return {
       text: hide ? null : e.text,
-      items: hide ? null : e.items,
-      drawingId: hide ? null : e.drawingId,
       hidden: hide,
       author: revealed ? e.playerId : null,
       curbside: revealed && e.curbside,
@@ -703,7 +658,7 @@ function highlights(state: GrandRoundsState, ctx: GameContext): Highlight[] {
     .sort((x, y) => y.result.shares[y.result.winner!] - x.result.shares[x.result.winner!] || y.round - x.round)[0];
   if (best) {
     const e = best.entries[best.result.winner!];
-    const line = e.text ?? e.items?.join(' · ') ?? `their doodle of “${best.prompt}”`;
+    const line = e.text ?? '';
     out.push({ title: 'Line of the night', playerId: e.playerId === BEEP ? null : e.playerId, detail: line });
   }
 

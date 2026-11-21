@@ -12,7 +12,6 @@ const side = z.union([z.literal(0), z.literal(1)]);
 const ab = z.enum(['a', 'b']);
 const points = z.array(z.number().int().min(0).max(1000)).max(LIMITS.drawing.maxPoints * 2);
 const stroke = z.object({ c: z.number().int().min(0).max(15), w: z.number().int().min(0).max(5), p: points });
-const drawing = z.object({ strokes: z.array(stroke).max(LIMITS.drawing.maxStrokes) });
 
 const drawOp = z.discriminatedUnion('op', [
   z.object({ op: z.literal('begin'), c: z.number().int().min(0).max(15), w: z.number().int().min(0).max(5), p: points }),
@@ -28,8 +27,6 @@ const playerCommand = z.discriminatedUnion('type', [
   z.object({ type: z.literal('stat'), target: id.optional() }),
   // Grand Rounds
   z.object({ type: z.literal('answer'), matchupId: id, text: text(LIMITS.quip), final: z.boolean() }),
-  z.object({ type: z.literal('list'), matchupId: id, items: z.array(text(LIMITS.differentialItem)).max(3), final: z.boolean() }),
-  z.object({ type: z.literal('doodle'), matchupId: id, drawing, final: z.boolean() }),
   z.object({ type: z.literal('curbside'), matchupId: id }),
   z.object({ type: z.literal('vote'), side }),
   // Sketch

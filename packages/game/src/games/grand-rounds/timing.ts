@@ -8,12 +8,11 @@ import { GRAND_ROUNDS as GR } from '../../constants';
 const words = (s: string | null | undefined) => (s ? s.trim().split(/\s+/).length : 0);
 
 /** A duel read aloud: prompt, beat, answer A, beat, answer B, beat. */
-export function duelReadTiming(prompt: string, a: string | null, b: string | null, kind: 'quip' | 'doodle') {
+export function duelReadTiming(prompt: string, a: string | null, b: string | null) {
   const per = GR.readMsPerWord;
-  // Doodles have no words to read: give each drawing a moment to be looked at instead.
   const aAt = GR.readLeadIn + words(prompt) * per + GR.readGap;
-  const bAt = aAt + (kind === 'doodle' ? 2_200 : Math.max(1, words(a)) * per) + GR.readGap;
-  const end = bAt + (kind === 'doodle' ? 2_600 : Math.max(1, words(b)) * per) + GR.readGap;
+  const bAt = aAt + Math.max(1, words(a)) * per + GR.readGap;
+  const end = bAt + Math.max(1, words(b)) * per + GR.readGap;
   return { aAt, bAt, total: Math.min(GR.presentMax, end) };
 }
 

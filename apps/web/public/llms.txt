@@ -15,7 +15,7 @@ The name comes from the Greek *iatros*, physician. The humor is dry: questionabl
 
 ## Games
 
-- **Grand Rounds** (3–8 players): anonymous head-to-head comedy. Two players answer the same prompt, everyone else votes, authors are revealed after. Round two adds drawing duels; the finale has everyone list three answers, revealed one line at a time.
+- **Grand Rounds** (3–8 players): anonymous head-to-head comedy. Two players answer the same prompt, everyone else votes, authors are revealed after. Round two is more head-to-head quips at double points; the finale is one prompt that everyone answers, with the whole room voting.
 - **Didactics Mode** (2–40 players): trivia for big groups and family gatherings, in random teams or everyone for themselves. Everyone answers on their phone or laptop; streaks and the fastest right answer earn bonus points. Late arrivals join the smallest team.
 - **Sketch** (3–10 players): one person draws a word live on their phone, everyone else races to guess it.
 - **Pick Your Poison** (3–20 players): would you rather, plus guessing what the room picked. Whoever ends up in the minority has to defend themselves to the room.

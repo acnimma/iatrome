@@ -16,7 +16,6 @@ export const ROOM = {
 
 export const LIMITS = {
   quip: 60,
-  differentialItem: 40,
   guess: 40,
   defence: 80,
   drawing: { maxStrokes: 400, maxPoints: 12_000 },
@@ -28,10 +27,11 @@ export const GRAND_ROUNDS = {
   minPlayers: 3,
   maxPlayers: 8,
   intro: 4_500,
-  writeQuips: 90_000,
-  writeMixed: 120_000,
-  writeDifferential: 75_000,
-  present: { quip: 4_000, doodle: 6_500, differential: 7_500 },
+  /** Each quip round: about a minute, or until everyone has submitted. */
+  writeQuips: 60_000,
+  /** The finale: one open-ended quip for everybody. */
+  writeFinale: 60_000,
+  present: { quip: 4_000, finale: 7_500 },
   /** The finale reveals every list one after another: this long per list, on top of the base. */
   presentPerList: 2_600,
   /**

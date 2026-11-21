@@ -30,11 +30,7 @@ function actFor(room: RoomState, id: string, now: number, i: number) {
   switch (g.game) {
     case 'grand-rounds':
       for (const t of g.tasks.filter((t) => !t.done)) {
-        if (t.kind === 'quip') playerCommand(room, id, { type: 'answer', matchupId: t.matchupId, text: `answer ${i} ${t.matchupId}`, final: true }, now);
-        if (t.kind === 'differential')
-          playerCommand(room, id, { type: 'list', matchupId: t.matchupId, items: ['one', 'two', `three ${i}`], final: true }, now);
-        if (t.kind === 'doodle')
-          playerCommand(room, id, { type: 'doodle', matchupId: t.matchupId, drawing: { strokes: [{ c: 0, w: 1, p: [10, 10, 500, 500] }] }, final: true }, now);
+        playerCommand(room, id, { type: 'answer', matchupId: t.matchupId, text: `answer ${i} ${t.matchupId}`, final: true }, now);
       }
       if (g.matchup?.canVote && g.matchup.myVote === null) playerCommand(room, id, { type: 'vote', side: (i % 2) as 0 | 1 }, now);
       return;
@@ -457,6 +453,20 @@ describe('the secret tie-breaker', () => {
     expect(room.stage).toBe('over');
     expect(room.result!.standings.every((s) => s.rank === 1)).toBe(true);
     expect(room.result!.highlights.some((h) => h.title === 'Sudden Death')).toBe(false);
+  });
+
+  it('works in every game mode, not just trivia', () => {
+    for (const game of ['grand-rounds', 'sketch', 'poison', 'didactics'] as GameId[]) {
+      const { room, ids, clock } = setup(4, { game });
+      hostCommand(room, { type: 'start' }, clock.now);
+      // Force a finished game with everyone level on a real score.
+      const g = room.game as unknown as { phase: { name: string; startedAt: number; endsAt: number | null }; scores: Record<string, number>; teamScores?: Record<string, number> };
+      g.phase = { name: 'done', startedAt: clock.now, endsAt: null };
+      for (const id of ids) g.scores[id] = 500;
+      for (const id of Object.keys(g.teamScores ?? {})) g.teamScores![id] = 500;
+      advance(room, clock.now + 1);
+      expect(room.game?.game, `${game} ties go to sudden death`).toBe('tiebreak');
+    }
   });
 
   it('never fires when nobody scored, or when there is one clear leader', () => {

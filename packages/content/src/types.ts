@@ -22,21 +22,6 @@ export interface QuipPrompt {
   curbside: [string, string];
 }
 
-/** Grand Rounds round 2: draw it. Must be drawable in ~60 s with a finger. */
-export interface DoodlePrompt {
-  id: string;
-  text: string;
-  breadth: Breadth;
-}
-
-/** Grand Rounds finale: players list three answers. `beep` is a ready-made list for a player who gets stuck. */
-export interface DifferentialPrompt {
-  id: string;
-  text: string;
-  breadth: Breadth;
-  beep: [string, string, string];
-}
-
 /** Sketch: a term to draw. `accept` lists alternative correct guesses. */
 export interface SketchTerm {
   id: string;
@@ -73,8 +58,8 @@ export const hostEvents = [
   'lobbyWaiting', // waiting for players to join
   'gameStart', // any game begins
   'roundOneIntro', // Grand Rounds round 1
-  'roundTwoIntro', // Grand Rounds round 2 (quips + doodles, double points)
-  'finalIntro', // Grand Rounds: the Differential (triple points)
+  'roundTwoIntro', // Grand Rounds round 2 (quips, double points)
+  'finalIntro', // Grand Rounds: the final quip, everyone answers (triple points)
   'consensus', // every voter picked the same answer
   'duplicate', // both players wrote the same answer
   'blowout', // one answer won by a lot (not unanimous)

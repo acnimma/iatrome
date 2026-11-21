@@ -6,7 +6,7 @@ Two content modes: **Normal** works for anyone (grandparents included, no medica
 
 | Game | Players | What happens |
 |---|---|---|
-| **Grand Rounds** | 3–8 | Anonymous head-to-head quips, doodles and a three-line “differential” finale. The room votes. |
+| **Grand Rounds** | 3–8 | Anonymous head-to-head quips, then a finale where everyone answers one prompt. The room votes. |
 | **Sketch** | 3–10 | One player draws live, everyone races to guess. |
 | **Pick Your Poison** | 3–20 | Would-you-rather, plus predicting the room. The minority defends itself. |
 | **Didactics Mode** | 2–40 | Trivia for big parties, in teams or everyone for themselves. Streaks and the fastest right answer earn bonus points. |

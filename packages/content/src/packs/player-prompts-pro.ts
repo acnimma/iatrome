@@ -1,6 +1,6 @@
 // Pro mode: original content written for iatrome.
 // {player} is replaced with a player’s name. Affectionate roasts of clinical habits only.
-import type { DifferentialPrompt, QuipPrompt } from '../types';
+import type { QuipPrompt } from '../types';
 
 export const playerQuipsPro: QuipPrompt[] = [
   { id: 'pq-p001', text: '{player}’s pager ringtone', breadth: 'clinical', curbside: ['An air horn', 'Their mom saying “call me”'] },
@@ -59,23 +59,4 @@ export const playerQuipsPro: QuipPrompt[] = [
   { id: 'pq-p055', text: 'A patient satisfaction comment about {player}', breadth: 'clinical', curbside: ['“Nice. Typed a lot.”', '“Interesting shoes”'] },
   { id: 'pq-p056', text: '{player}’s face after an inferior alveolar block', breadth: 'clinical', curbside: ['Half asleep, half smiling', 'Drooling with dignity'] },
   { id: 'pq-p057', text: 'What {player} writes on their own medical history form', breadth: 'clinical', curbside: ['“See previous form”', '“Allergies: mornings”'] },
-];
-
-export const playerDifferentialsPro: DifferentialPrompt[] = [
-  { id: 'pd-p001', text: 'Three pages {player} sends before 6 a.m.', breadth: 'clinical', beep: ['“Just FYI”', '“Never mind”', '“Okay, actually”'] },
-  { id: 'pd-p002', text: 'Three things hidden in {player}’s locker', breadth: 'clinical', beep: ['Two granola bars', 'A phone charger, coiled with love', 'Someone else’s stethoscope'] },
-  { id: 'pd-p003', text: 'Three red flags in {player}’s residency application', breadth: 'clinical', beep: ['Hobbies: “napping, competitively”', 'A letter of rec from their mom', 'A personal statement in rhyme'] },
-  { id: 'pd-p004', text: 'Three calm-sounding phrases {player} uses at sign-out', breadth: 'clinical', beep: ['“Super stable”', '“Nothing pending”', '“I believe in you. Bye.”'] },
-  { id: 'pd-p005', text: 'Three notes on {player}’s OR preference card', breadth: 'clinical', beep: ['Music: loud, bad', 'Gloves: “small, actually”', 'Snack: pre-opened, on the stool'] },
-  { id: 'pd-p006', text: 'At their own M&M, {player} says these three things', breadth: 'clinical', beep: ['“In my defense”', '“The EHR did it”', '“I’d do it again”'] },
-  { id: 'pd-p007', text: 'Three rejected titles for {player}’s grand rounds talk', breadth: 'clinical', beep: ['Potassium: My Journey', 'Am I Sure? A Retrospective', 'Ten Years of Copy-Forward'] },
-  { id: 'pd-p008', text: 'While scrubbing in, {player} mutters these three things', breadth: 'clinical', beep: ['“Fingers, thumbs, I remember this”', '“Do not touch your mask”', '“Itch. Oh no. Itch.”'] },
-  { id: 'pd-p009', text: 'As program director, {player} would change three things', breadth: 'clinical', beep: ['Nap Fridays', 'Rounds capped at 20 minutes', 'Scrubs that fit'] },
-  { id: 'pd-p010', text: '{player}’s first three radio calls on an EMS shift', breadth: 'clinical', beep: ['“Copy. What’s copy?”', '“ETA: we got lost”', '“Can we stop for snacks?”'] },
-  { id: 'pd-p011', text: 'Three things {player} does to avoid a procedure', breadth: 'clinical', beep: ['Pages the senior “for teaching”', 'Watches four videos', 'Asks the nurse, who already did it'] },
-  { id: 'pd-p012', text: 'Right before a procedure goes sideways, {player} says three things', breadth: 'clinical', beep: ['“Easy one”', '“Hold this”', '“Can someone page my senior? Calmly.”'] },
-  { id: 'pd-p013', text: 'Three excuses {player} gives for a late note', breadth: 'clinical', beep: ['“The EHR ate it”', '“I was being thorough”', '“What note?”'] },
-  { id: 'pd-p015', text: 'Three dot phrases {player} uses daily', breadth: 'clinical', beep: ['.stable', '.seeabove', '.callmeifworse'] },
-  { id: 'pd-p016', text: 'Three ways {player} survives long rounds', breadth: 'clinical', beep: ['Unlocks knees on a timer', 'Snacks in the white coat', 'Nods at every lab'] },
-  { id: 'pd-p017', text: 'On hold with insurance, {player} says these three things', breadth: 'clinical', beep: ['“Representative”', '“Representative. Please.”', '“I went to school for this”'] },
 ];

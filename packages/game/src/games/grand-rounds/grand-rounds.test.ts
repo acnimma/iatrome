@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { mixedKinds, ring, spreadOrder } from './assign';
+import { ring, spreadOrder } from './assign';
 import { scoreFinale, scoreForfeit, scoreVotes } from './scoring';
 
 describe('ring assignment', () => {
@@ -16,29 +16,6 @@ describe('ring assignment', () => {
       }
     });
   }
-});
-
-describe('round 2 mix', () => {
-  it('gives everyone one doodle and one quip with an even count', () => {
-    const kinds = mixedKinds(6);
-    const pairs = ring(['a', 'b', 'c', 'd', 'e', 'f']);
-    for (const id of 'abcdef') {
-      const mine = pairs.map((p, i) => (p.includes(id) ? kinds[i] : null)).filter(Boolean);
-      expect(mine.sort()).toEqual(['doodle', 'quip']);
-    }
-  });
-
-  it('never gives anyone two doodles with an odd count', () => {
-    for (const n of [3, 5, 7]) {
-      const ids = Array.from({ length: n }, (_, i) => `p${i}`);
-      const kinds = mixedKinds(n);
-      const pairs = ring(ids);
-      for (const id of ids) {
-        const doodles = pairs.filter((p, i) => p.includes(id) && kinds[i] === 'doodle').length;
-        expect(doodles).toBeLessThanOrEqual(1);
-      }
-    }
-  });
 });
 
 describe('spreadOrder', () => {

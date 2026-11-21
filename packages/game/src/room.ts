@@ -534,7 +534,6 @@ function statView(room: RoomState, you: string | null): StatView {
 export function referencedDrawings(view: RoomView): string[] {
   const g = view.game;
   if (!g) return [];
-  if (g.game === 'grand-rounds') return (g.matchup?.entries ?? []).map((e) => e.drawingId).filter((x): x is string => Boolean(x));
   if (g.game === 'sketch') return [...(g.drawingId ? [g.drawingId] : []), ...(g.gallery ?? []).map((x) => x.drawingId)];
   return [];
 }

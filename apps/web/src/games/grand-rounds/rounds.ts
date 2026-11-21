@@ -1,5 +1,5 @@
 /** The show's three acts, named like a day in a teaching hospital. */
-export const ROUND_NAMES = ['Morning Rounds', 'Consults', 'The Differential'] as const;
+export const ROUND_NAMES = ['Morning Rounds', 'Consults', 'The Finale'] as const;
 
 export const ROUND_BLURBS = [
   'Two prompts each. Two answers face off. The room decides who presented better.',

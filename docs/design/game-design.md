@@ -32,9 +32,9 @@ The host is Beep, a pager with a face. Event-keyed line pools (13+ per event) ra
 
 | Round | Format | Points |
 |---|---|---|
-| 1 · Quips | Each player answers 2 prompts; every prompt goes to exactly 2 players (ring). | ×1 |
-| 2 · Quips & Doodles | Same ring, alternating quips and drawings. Doodles replay stroke by stroke. | ×2 |
-| 3 · The Differential | Pairs list three answers, revealed line by line. Odd player out faces Beep. | ×3 |
+| 1 · Quips | Each player answers 2 prompts; every prompt goes to exactly 2 players (ring). About 60 seconds, or until everyone has submitted. | ×1 |
+| 2 · Quips | Same ring, new prompts. | ×2 |
+| 3 · The Finale | One open-ended quip that everyone answers (plus Beep); everyone votes, three votes each, never for their own. | ×3 |
 
 **Inside jokes** (always on): ~40% of prompts name a player in the room, like “Why is Sam in the ER at 3 a.m.?”, never one of the two people answering it.
 

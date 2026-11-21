@@ -3,8 +3,7 @@
 import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useRef, useState } from 'react';
 import { type EntryView, GRAND_ROUNDS, type GrandRoundsView, type MatchupView, type RoomView, duelReadTiming, duelRevealTiming, finaleRevealTiming } from '@iatrome/game/client';
-import { useDrawing, useRoom } from '@/realtime/use-room';
-import { DrawingView } from '@/components/drawing/DrawingView';
+import { useRoom } from '@/realtime/use-room';
 import { jelly } from '@/components/ui/jelly';
 import { Avatar } from '@/components/ui/Avatar';
 import { TimerRing } from '@/components/ui/TimerRing';
@@ -60,7 +59,7 @@ function Writing({ view, game }: { view: RoomView; game: GrandRoundsView }) {
     if (done.size > locked.current) play('lockin');
     locked.current = done.size;
   }, [done.size]);
-  const title = game.round === 2 ? 'Write your differential' : game.round === 1 ? 'Write & draw on your devices' : 'Answer on your devices';
+  const title = game.round === 2 ? 'One last quip: everyone answers' : 'Answer on your devices';
   return (
     <div className={styles.writing}>
       <TimerRing phase={game.phase} pausedAt={view.pausedAt} size={150} ticks />
@@ -99,7 +98,7 @@ function Matchup({ view, game, matchup, onPhone = false }: { view: RoomView; gam
   const people = usePeople(view);
   const result = phase === 'results' ? matchup.result : null;
   const [a, b] = matchup.entries;
-  const read = duelReadTiming(matchup.prompt, a.text, b?.text ?? null, matchup.kind === 'doodle' ? 'doodle' : 'quip');
+  const read = duelReadTiming(matchup.prompt, a.text, b?.text ?? null);
   const reveal = duelRevealTiming(result?.playerVotes.length ?? 0, Boolean(result?.consensus));
   useMatchupShow(matchup, phase, elapsed, read, onPhone);
 
@@ -111,8 +110,8 @@ function Matchup({ view, game, matchup, onPhone = false }: { view: RoomView; gam
     <div className={`${styles.matchup} ${onPhone ? styles.onPhone : ''}`}>
       <div className={styles.matchupTop}>
         <Pill>
-          <Icon name={matchup.kind === 'doodle' ? 'pencil' : matchup.kind === 'differential' ? 'list' : 'speech'} size={20} />
-          {matchup.finale ? 'The Differential · everyone’s answer' : `${matchup.kind === 'doodle' ? 'Doodle' : 'Quip'} · ${matchup.index + 1} of ${matchup.total}`}
+          <Icon name="speech" size={20} />
+          {matchup.finale ? 'The finale · everyone’s answer' : `Quip · ${matchup.index + 1} of ${matchup.total}`}
         </Pill>
         {phase === 'vote' && <TimerRing phase={game.phase} pausedAt={view.pausedAt} size={72} ticks />}
       </div>
@@ -178,7 +177,7 @@ function Matchup({ view, game, matchup, onPhone = false }: { view: RoomView; gam
 /** Two to a row up to four lists, then three, then four. */
 const boardColumns = (n: number) => (n <= 4 ? 2 : n <= 6 || n === 9 ? 3 : 4);
 
-/** The finale: everyone's list, revealed fewest votes first so the winner lands last. */
+/** The finale: everyone's answer, revealed fewest votes first so the winner lands last. */
 function FinaleBoard({ view, matchup, phase, elapsed, shownAt }: { view: RoomView; matchup: MatchupView; phase: string; elapsed: number; shownAt: (side: number) => number }) {
   const result = phase === 'results' ? matchup.result : null;
   const votesFor = (side: number) => result?.playerVotes.filter((v) => v.side === side).length ?? 0;
@@ -256,7 +255,7 @@ function AnswerCard({
       animate={{ y: 0, opacity: 1, rotate: 0 }}
       transition={{ type: 'spring', stiffness: 260, damping: 20 }}
     >
-      <AnswerContent entry={entry} kind={matchup.kind} replay={phase === 'present'} typedFrom={phase === 'present' && typeAt !== undefined ? elapsed - typeAt : Infinity} />
+      <AnswerContent entry={entry} typedFrom={phase === 'present' && typeAt !== undefined ? elapsed - typeAt : Infinity} />
 
       {result && !waiting && (
         <div className={styles.reveal}>
@@ -306,28 +305,13 @@ function AnswerCard({
   );
 }
 
-function AnswerContent({ entry, kind, replay, typedFrom = Infinity }: { entry: EntryView; kind: MatchupView['kind']; replay: boolean; typedFrom?: number }) {
-  const drawing = useDrawing(entry.drawingId);
+function AnswerContent({ entry, typedFrom = Infinity }: { entry: EntryView; replay?: boolean; typedFrom?: number }) {
   if (entry.hidden)
     return (
       <p className={styles.missing}>
         <Icon name="eye-closed" size={44} /> Hidden by the host
       </p>
     );
-  if (kind === 'doodle')
-    return entry.drawingId ? <DrawingView drawing={drawing} replayMs={replay ? 2_200 : undefined} className={styles.doodle} /> : <p className={styles.missing}>No drawing</p>;
-  if (kind === 'differential') {
-    if (!entry.items) return <p className={styles.missing}>No answer</p>;
-    return (
-      <ol className={styles.list}>
-        {entry.items.map((item, i) => (
-          <motion.li key={i} initial={replay ? { x: -20, opacity: 0 } : false} animate={{ x: 0, opacity: 1 }} transition={{ delay: replay ? 0.25 + i * 0.55 : 0 }}>
-            {item || '…'}
-          </motion.li>
-        ))}
-      </ol>
-    );
-  }
   return entry.text ? (
     <p className={styles.quip}>
       <Narrated text={entry.text} startAt={0} elapsed={typedFrom} />

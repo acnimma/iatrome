@@ -1,13 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
   curbsideGeneric,
-  differentials,
   dilemmas,
-  doodles,
   hostEvents,
   hostLines,
   hostEventVars,
-  playerDifferentials,
   playerQuips,
   quips,
   sketchTerms,
@@ -15,11 +12,11 @@ import {
 } from './index';
 import { quips as quipsNormal } from './packs/quips';
 import { quipsPro } from './packs/quips-pro';
-import { playerDifferentials as playerDifferentialsNormal, playerQuips as playerQuipsNormal } from './packs/player-prompts';
-import { playerDifferentialsPro, playerQuipsPro } from './packs/player-prompts-pro';
+import { playerQuips as playerQuipsNormal } from './packs/player-prompts';
+import { playerQuipsPro } from './packs/player-prompts-pro';
 import { showHostLines } from './packs/host-lines-show';
 
-const packs = { quips, playerQuips, playerDifferentials, doodles, differentials, dilemmas, sketchTerms, trivia };
+const packs = { quips, playerQuips, dilemmas, sketchTerms, trivia };
 
 describe('every pack', () => {
   for (const [name, pack] of Object.entries(packs)) {
@@ -37,9 +34,6 @@ describe('Normal and Pro mode', () => {
   const minimum: Record<keyof typeof packs, [number, number]> = {
     quips: [180, 100],
     playerQuips: [80, 40],
-    playerDifferentials: [20, 12],
-    doodles: [100, 45],
-    differentials: [50, 35],
     dilemmas: [100, 55],
     sketchTerms: [180, 100],
     trivia: [110, 100],
@@ -63,18 +57,13 @@ describe('no em dashes', () => {
 describe('Grand Rounds', () => {
   it('has enough prompts for many games without repeats', () => {
     expect(quips.length).toBeGreaterThanOrEqual(280);
-    expect(doodles.length).toBeGreaterThanOrEqual(100);
-    expect(differentials.length).toBeGreaterThanOrEqual(60);
   });
   it('fits on screen', () => {
     for (const q of quips) expect(q.text.length, q.id).toBeLessThanOrEqual(110);
-    for (const d of doodles) expect(d.text.length, d.id).toBeLessThanOrEqual(90);
-    for (const d of differentials) expect(d.text.length, d.id).toBeLessThanOrEqual(90);
   });
   it('curbside consults fit in an answer (60 chars)', () => {
     for (const q of quips) for (const c of q.curbside) expect(c.length, q.id).toBeLessThanOrEqual(60);
     for (const c of curbsideGeneric) expect(c.length).toBeLessThanOrEqual(60);
-    for (const d of differentials) for (const b of d.beep) expect(b.length, d.id).toBeLessThanOrEqual(40);
   });
 });
 
@@ -86,9 +75,6 @@ describe('prompts are short and one sentence', () => {
   const cases: [string, { id: string; text: string; breadth?: string }[], number, number][] = [
     ['quips', quips, 11, 13],
     ['inside-joke quips', playerQuips, 11, 13],
-    ['doodles', doodles, 10, 11],
-    ['differentials', differentials, 12, 13],
-    ['inside-joke differentials', playerDifferentials, 12, 13],
   ];
   for (const [name, pack, normal, pro] of cases)
     it(`${name}: at most ${normal} words (${pro} in Pro), one sentence`, () => {
@@ -119,8 +105,6 @@ describe('prompts do not lean on one frame', () => {
     quipsPro,
     playerQuips: playerQuipsNormal,
     playerQuipsPro,
-    playerDifferentials: playerDifferentialsNormal,
-    playerDifferentialsPro,
     allQuips: quips,
   };
   for (const [name, pack] of Object.entries(sources))
@@ -138,15 +122,14 @@ describe('prompts do not lean on one frame', () => {
 
 describe('Inside jokes', () => {
   it('name exactly one player, and fit on screen once the name is in', () => {
-    for (const p of [...playerQuips, ...playerDifferentials]) {
+    for (const p of playerQuips) {
       expect(p.text.match(/\{player\}/g)?.length, p.id).toBe(1);
       expect(p.text.replace('{player}', 'Maximilianus').length, p.id).toBeLessThanOrEqual(110);
     }
     for (const q of playerQuips) for (const c of q.curbside) expect(c.length, q.id).toBeLessThanOrEqual(60);
-    for (const d of playerDifferentials) for (const b of d.beep) expect(b.length, d.id).toBeLessThanOrEqual(40);
   });
   it('keeps {player} out of the general packs', () => {
-    for (const p of [...quips, ...differentials, ...doodles]) expect(p.text, p.id).not.toContain('{player}');
+    for (const p of quips) expect(p.text, p.id).not.toContain('{player}');
   });
 });
 
@@ -160,7 +143,7 @@ describe('Sketch', () => {
   });
 });
 
-describe('Survive the Shift', () => {
+describe('Trivia (the tie-breaker)', () => {
   it('has well-formed, sourced questions', () => {
     expect(trivia.length).toBeGreaterThanOrEqual(100);
     for (const q of trivia) {

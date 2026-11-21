@@ -2,14 +2,12 @@
 
 import { motion } from 'motion/react';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { type Drawing, type GrandRoundsView, LIMITS, type MatchupView, type RoomView, type TaskView, duelRevealTiming, finaleRevealTiming } from '@iatrome/game/client';
-import { useDrawing, useRoom } from '@/realtime/use-room';
+import { type GrandRoundsView, LIMITS, type MatchupView, type RoomView, type TaskView, duelRevealTiming, finaleRevealTiming } from '@iatrome/game/client';
+import { useRoom } from '@/realtime/use-room';
 import { Button } from '@/components/ui/Button';
 import { AnswerBox, TextInput } from '@/components/ui/Field';
-import { DrawPad } from '@/components/drawing/DrawPad';
 import { useAfter } from '@/components/ui/Later';
 import { Confetti } from '@/components/ui/Confetti';
-import { DrawingView } from '@/components/drawing/DrawingView';
 import { Choice, PhoneMessage, PhonePrompt, PhoneStack } from '@/components/controller/Phone';
 import { ReactionBar, Scoreboard, nameOf, usePeople } from '@/components/room/RoomBits';
 import { StatButton, StatChip } from '@/components/room/Stat';
@@ -97,7 +95,7 @@ function WriteTasks({ view, game }: { view: RoomView; game: GrandRoundsView }) {
           ))}
         </span>
       </div>
-      <PhonePrompt label={task.kind === 'doodle' ? 'Draw this' : task.kind === 'differential' ? 'List three' : 'Finish this'} prompt={task.prompt} phase={game.phase} pausedAt={view.pausedAt} />
+      <PhonePrompt label="Finish this" prompt={task.prompt} phase={game.phase} pausedAt={view.pausedAt} />
       {view.stat.used === task.matchupId ? (
         <p className={styles.taskNav}>
           <StatChip /> Your Stat is on this prompt.
@@ -105,9 +103,7 @@ function WriteTasks({ view, game }: { view: RoomView; game: GrandRoundsView }) {
       ) : (
         <StatButton view={view} target={task.matchupId} label="Stat this prompt ×2" />
       )}
-      {task.kind === 'quip' && <QuipTask task={task} onSkip={open.length > 1 ? () => setIndex((i) => (i + 1) % open.length) : undefined} />}
-      {task.kind === 'doodle' && <DoodleTask task={task} />}
-      {task.kind === 'differential' && <ListTask task={task} />}
+      <QuipTask task={task} onSkip={open.length > 1 ? () => setIndex((i) => (i + 1) % open.length) : undefined} />
     </motion.div>
   );
 }
@@ -179,80 +175,6 @@ function QuipTask({ task, onSkip }: { task: TaskView; onSkip?: () => void }) {
   );
 }
 
-function DoodleTask({ task }: { task: TaskView }) {
-  const room = useRoom();
-  const drawing = useRef<Drawing>({ strokes: [] });
-  const [count, setCount] = useState(0);
-  const send = (final: boolean) => room.command({ type: 'doodle', matchupId: task.matchupId, drawing: drawing.current, final });
-  // Autosave every few seconds of drawing, so nothing is lost if the timer runs out.
-  useEffect(() => {
-    if (!count) return;
-    const t = setTimeout(() => send(false), 2500);
-    return () => clearTimeout(t);
-  }, [count]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  return (
-    <div className={styles.task}>
-      <DrawPad
-        noUndo
-        onChange={(d) => {
-          drawing.current = d;
-          setCount((c) => c + 1);
-        }}
-      />
-      <Button
-        size="lg"
-        block
-        disabled={!drawing.current.strokes.length}
-        onClick={() => {
-          haptic('success');
-          send(true);
-        }}
-      >
-        Lock in my masterpiece
-      </Button>
-    </div>
-  );
-}
-
-function ListTask({ task }: { task: TaskView }) {
-  const room = useRoom();
-  const initial = Array.isArray(task.draft) ? task.draft : [];
-  const [items, setItems] = useState<string[]>([initial[0] ?? '', initial[1] ?? '', initial[2] ?? '']);
-  const send = (final: boolean) => room.command({ type: 'list', matchupId: task.matchupId, items, final });
-  useDraftSaver(send, [items.join('\u0000')]);
-  const complete = items.every((s) => s.trim());
-
-  return (
-    <form
-      className={styles.task}
-      onSubmit={(e) => {
-        e.preventDefault();
-        if (!complete) return;
-        haptic('success');
-        send(true);
-      }}
-    >
-      <div className={styles.listInputs}>
-        {items.map((value, i) => (
-          <TextInput
-            key={i}
-            value={value}
-            maxLength={LIMITS.differentialItem}
-            placeholder={['First…', 'Second…', 'And the punchline…'][i]}
-            onChange={(e) => setItems((all) => all.map((x, j) => (j === i ? e.target.value : x)))}
-            autoFocus={i === 0}
-            enterKeyHint={i < 2 ? 'next' : 'send'}
-          />
-        ))}
-      </div>
-      <Button size="lg" block type="submit" disabled={!complete}>
-        Lock in my differential
-      </Button>
-    </form>
-  );
-}
-
 // ── Voting ───────────────────────────────────────────────────────────────────
 
 function MatchupPhone({ view, game, matchup }: { view: RoomView; game: GrandRoundsView; matchup: MatchupView }) {
@@ -281,7 +203,7 @@ function MatchupPhone({ view, game, matchup }: { view: RoomView; game: GrandRoun
   if (phase === 'present') {
     if (matchup.finale)
       return (
-        <PhoneMessage icon="eye" title="Read everyone’s list">
+        <PhoneMessage icon="eye" title="Read everyone’s answers">
           Then pick your favourite. Yours doesn’t count.
         </PhoneMessage>
       );
@@ -313,7 +235,7 @@ function MatchupPhone({ view, game, matchup }: { view: RoomView; game: GrandRoun
     }
     if (!matchup.canVote)
       return <PhoneMessage icon="popcorn" title="Everyone’s voting" />;
-    const options = sides.filter((side) => !matchup.entries[side].hidden && (matchup.entries[side].text || matchup.entries[side].items || matchup.entries[side].drawingId));
+    const options = sides.filter((side) => !matchup.entries[side].hidden && matchup.entries[side].text);
     if (matchup.finale) return <FinaleVote matchup={matchup} game={game} view={view} options={options} />;
     return (
       <PhoneStack>
@@ -370,24 +292,7 @@ function MatchupPhone({ view, game, matchup }: { view: RoomView; game: GrandRoun
 }
 
 function VoteContent({ matchup, side }: { matchup: MatchupView; side: number }) {
-  const entry = matchup.entries[side];
-  const drawing = useDrawing(entry.drawingId);
-  const list = useMemo(() => entry.items ?? [], [entry.items]);
-  if (matchup.kind === 'doodle')
-    return (
-      <span className={styles.voteChoice}>
-        <DrawingView drawing={drawing} className={styles.voteDoodle} />
-      </span>
-    );
-  if (matchup.kind === 'differential')
-    return (
-      <ol className={styles.voteList}>
-        {list.map((item, i) => (
-          <li key={i}>{item}</li>
-        ))}
-      </ol>
-    );
-  return <span>{entry.text}</span>;
+  return <span>{matchup.entries[side].text}</span>;
 }
 
 /** The finale vote: three votes each, stack them on one list or spread them out. */

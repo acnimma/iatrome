@@ -32,7 +32,7 @@ export const showHostLines: Record<ShowHostEvent, string[]> = {
     'Unanimous. I’m naming a sign after {name}. Very rare. Mostly found at parties.',
     'Pathognomonic. Every alarm I own just went off. In celebration, {name}.',
     '{name} wrote something pathognomonic. The other answer has been ruled out.',
-    'Every vote. No differential needed. {name}, that’s the diagnosis.',
+    'Every vote. No second opinion needed. {name}, that’s the diagnosis.',
     'Pathognomonic. I’m printing this strip. {name}, sign here.',
     'People wait whole careers to see something pathognomonic. {name} just wrote one.',
     'Every single vote for {name}. My display just went to three digits.',

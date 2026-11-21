@@ -40,13 +40,6 @@ async function act(phone: Page, i: number) {
     await tryClick(phone.getByRole('button', { name: /Lock it in|Rest my case/ }));
     return;
   }
-  const list = phone.getByPlaceholder('First…');
-  if (await list.count()) {
-    const inputs = phone.locator('form input');
-    for (let k = 0; k < 3; k++) await inputs.nth(k).fill(`item ${i}-${k}`, quick).catch(() => {});
-    await tryClick(phone.getByRole('button', { name: /differential/ }));
-    return;
-  }
   const canvas = phone.getByLabel('Drawing canvas');
   if (await canvas.count()) {
     // Real touch events, like a finger on a phone.

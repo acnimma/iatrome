@@ -11,14 +11,6 @@ export function ring(playerIds: readonly string[]): [string, string][] {
   return playerIds.map((id, i) => [id, playerIds[(i + 1) % n]]);
 }
 
-/**
- * Round 2 alternates doodles and quips so each player gets one of each. With an odd
- * count, the wrap-around prompt is a quip (one player gets two quips instead of two doodles).
- */
-export function mixedKinds(n: number): ('quip' | 'doodle')[] {
-  return Array.from({ length: n }, (_, i) => (i % 2 === 0 && !(n % 2 === 1 && i === n - 1) ? 'doodle' : 'quip'));
-}
-
 /** Order matchups so nobody appears in two reveals back to back where avoidable. */
 export function spreadOrder<T extends { playerIds: readonly string[] }>(items: T[]): T[] {
   const left = items.slice();
