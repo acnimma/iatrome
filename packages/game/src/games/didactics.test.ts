@@ -130,4 +130,34 @@ describe('Didactics Mode', () => {
     until(room, clock, 'reveal');
     expect(g.teamScores).toEqual(before);
   });
+
+  it('plays a whole game with any number of players, odd ones included', () => {
+    for (const n of [2, 3, 5, 7, 9, 11, 13, 17]) {
+      const { room, ids, clock } = setup(n);
+      const g = state(room);
+      const sizes = g.teams.map((t) => t.members.length);
+      expect(g.teams.length).toBeGreaterThanOrEqual(2);
+      expect(Math.max(...sizes) - Math.min(...sizes)).toBeLessThanOrEqual(1);
+      expect(sizes.reduce((a, b) => a + b)).toBe(n);
+      for (let i = 0; i < 2000 && room.game; i++) {
+        const phase = state(room).phase.name;
+        if (phase === 'question') {
+          const answer = state(room).questions[state(room).index].answer;
+          ids.forEach((id) => playerCommand(room, id, { type: 'pick-option', option: answer }, clock.now));
+        }
+        step(room, clock);
+      }
+      expect(room.game, `${n} players finish`).toBeNull();
+    }
+  });
+
+  it('scores uneven teams by share, so a bigger team has no edge', () => {
+    const { room, ids, clock } = setup(3);
+    const g = until(room, clock, 'question');
+    const answer = g.questions[0].answer;
+    ids.forEach((id) => playerCommand(room, id, { type: 'pick-option', option: answer }, clock.now));
+    until(room, clock, 'reveal');
+    const points = Object.values(g.last!.perTeam).map((t) => t.points);
+    expect(new Set(points).size).toBe(1);
+  });
 });
