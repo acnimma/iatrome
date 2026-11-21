@@ -103,9 +103,21 @@ const E5 = 659.25;
 const G5 = 783.99;
 const C6 = 1046.5;
 
+/**
+ * A phone sitting next to a big screen leaves the show to the screen: only the sounds of tapping and
+ * submitting get through. Phones on their own (no big screen) play everything.
+ */
+let besideScreen = false;
+const CLICKS = new Set<Sfx>(['pop', 'lockin', 'vote', 'switch', 'chime']);
+
+export function setPhoneBesideScreen(on: boolean) {
+  besideScreen = on;
+}
+
 /** `pitch` varies a sound per source, e.g. each reaction emoji boings a little differently. */
 export function play(sfx: Sfx, pitch = 0) {
   if (isMuted() || !context()) return;
+  if (besideScreen && !CLICKS.has(sfx)) return;
   switch (sfx) {
     case 'pulse': {
       // The iatrome countdown: a heartbeat (lub-dub) under rising monitor blips. `pitch` is the seconds left,

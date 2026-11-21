@@ -124,6 +124,7 @@ export function ReactionBar() {
           whileTap={{ scale: 1.35 }}
           onClick={() => {
             haptic('tap');
+            play('pop');
             room.react(i);
           }}
           aria-label={`React: ${reaction.replace('react-', '')}`}

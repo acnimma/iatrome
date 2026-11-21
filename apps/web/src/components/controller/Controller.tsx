@@ -17,7 +17,7 @@ import { DidacticsController } from '@/games/didactics/DidacticsController';
 import { EdgePage } from '@/components/home/EdgePage';
 import { JoinForm } from './JoinForm';
 import { ReactionLayer } from '@/components/room/RoomBits';
-import { play, unlockAudio } from '@/lib/sound';
+import { play, setPhoneBesideScreen, unlockAudio } from '@/lib/sound';
 import { BeepBanner, PhoneMessage, SoundHint } from './Phone';
 import { HostMenu, useIsHost } from './PhoneHost';
 import { StatCalls, StatOnThis } from '@/components/room/Stat';
@@ -80,6 +80,11 @@ function Stalled() {
 
 /** Sound on the phone, same as the laptop: someone joins, a round opens, the answers land. */
 function usePhoneSounds(view: RoomView) {
+  // With a big screen, this phone only clicks and submits; the screen does the rest.
+  useEffect(() => {
+    setPhoneBesideScreen(Boolean(view.screen));
+    return () => setPhoneBesideScreen(false);
+  }, [view.screen]);
   const people = useRef(view.people.length);
   const seen = useRef('');
   useEffect(() => {
