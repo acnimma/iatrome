@@ -97,6 +97,7 @@ export function ControllerLobby({ view }: { view: RoomView }) {
         <Avatar avatar={me.avatar} size={view.screen ? 112 : 84} />
         <span className={styles.tapHint}>{picking ? 'Pick one' : 'Tap to change'}</span>
       </motion.button>
+      <p className={styles.myName}>{me.name}</p>
 
       {picking ? (
         <div className={styles.picker} role="radiogroup" aria-label="Avatar">
@@ -143,7 +144,10 @@ export function ControllerLobby({ view }: { view: RoomView }) {
         {players
           .filter((p) => p.id !== me.id)
           .map((p) => (
-            <Avatar key={p.id} avatar={p.avatar} size={34} />
+            <div key={p.id} className={styles.other}>
+              <Avatar avatar={p.avatar} size={34} />
+              <span className={styles.otherName}>{p.name}</span>
+            </div>
           ))}
       </div>
 

@@ -170,7 +170,7 @@ export const POISON = {
 } as const;
 
 export const DIDACTICS = {
-  minPlayers: 4,
+  minPlayers: 2,
   maxPlayers: 40,
   intro: 6_000,
   teams: 8_000,
