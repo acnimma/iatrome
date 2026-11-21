@@ -1,6 +1,8 @@
 'use client';
 
 import { motion } from 'motion/react';
+import { useEffect } from 'react';
+import { play } from '@/lib/sound';
 import type { Phase, RoomView, SurviveView } from '@iatrome/game/client';
 import { useRoom } from '@/realtime/use-room';
 import { AnswerCard, Choice, PhoneMessage, PhoneStack } from '@/components/controller/Phone';
@@ -24,6 +26,13 @@ export function SurviveController({ view, game }: { view: RoomView; game: Surviv
   const playing = me in game.coffees;
   const out = me in game.clockedOut;
   const leading = game.handicap.includes(me);
+  // Your own answer, as it lands.
+  const revealing = game.phase.name === 'reveal';
+  useEffect(() => {
+    if (!revealing || game.myAnswer === null) return;
+    const t = setTimeout(() => play(game.myAnswer === game.answer ? 'ding' : 'wrong'), 450);
+    return () => clearTimeout(t);
+  }, [revealing, game.number]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (game.phase.name === 'intro')
     return (

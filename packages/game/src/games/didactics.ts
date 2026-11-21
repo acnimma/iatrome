@@ -1,5 +1,6 @@
 import { type TriviaQuestion, trivia } from '@iatrome/content';
 import { DIDACTICS as DC } from '../constants';
+import { cleanText, comparable } from '../text';
 import type { GameResult, Highlight, Phase } from '../types';
 import { type ActionOutcome, type BaseGameState, type GameContext, type GameModule, questionTime, sawtooth, setPhase, statted, tidy } from './context';
 
@@ -66,7 +67,7 @@ export interface DidacticsState extends BaseGameState {
 }
 
 /** One action: pick an answer, or (a captain, during the wager) pick a share of DC.wagers. */
-export type DidacticsAction = { type: 'pick-option'; option: number };
+export type DidacticsAction = { type: 'pick-option'; option: number } | { type: 'name-team'; name: string };
 
 export interface DidacticsView {
   game: 'didactics';
@@ -163,6 +164,7 @@ export const didactics: GameModule<DidacticsState, DidacticsAction, DidacticsVie
 
   act(state, ctx, playerId, action): ActionOutcome | void {
     if (!state.playerIds.includes(playerId)) return;
+    if (action.type === 'name-team') return nameTeam(state, playerId, action.name);
     if (!Number.isInteger(action.option) || action.option < 0 || action.option > 3) return;
     const phase = state.phase.name;
 
@@ -306,6 +308,16 @@ export const didactics: GameModule<DidacticsState, DidacticsAction, DidacticsVie
     return { key: `q${state.index}`, revealed: state.phase.name === 'reveal' };
   },
 };
+
+/** Any teammate can rename their team while the teams are shown; the last name sticks. */
+function nameTeam(state: DidacticsState, playerId: string, raw: string): ActionOutcome | void {
+  if (state.phase.name !== 'teams') return { error: 'Teams are locked in.' };
+  const team = teamOf(state, playerId);
+  const name = cleanText(String(raw), DC.maxTeamName);
+  if (!team || !comparable(name)) return { error: 'Give your team a name.' };
+  if (state.teams.some((t) => t.id !== team.id && comparable(t.name) === comparable(name))) return { error: 'Another team has that name.' };
+  team.name = name;
+}
 
 /** About five a team, at least two teams, at most eight. */
 export const teamCount = (players: number) => Math.max(2, Math.min(DC.maxTeams, Math.ceil(players / DC.perTeam)));

@@ -1,7 +1,7 @@
 'use client';
 
 import { AnimatePresence, motion } from 'motion/react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import QRCode from 'qrcode';
 import { type PersonView, REACTIONS, type RoomView, gameInfo, type GameId } from '@iatrome/game/client';
 import { useRoom } from '@/realtime/use-room';
@@ -9,6 +9,7 @@ import { Avatar } from '@/components/ui/Avatar';
 import { useAfter } from '@/components/ui/Later';
 import { Icon } from '@/components/icons/Icon';
 import { haptic } from '@/lib/haptics';
+import { play } from '@/lib/sound';
 import styles from './RoomBits.module.css';
 
 // ── People ───────────────────────────────────────────────────────────────────
@@ -51,36 +52,59 @@ export function JoinQr({ url }: { url: string }) {
 
 // ── Reactions ────────────────────────────────────────────────────────────────
 
-type Floater = { id: number; e: number; x: number; avatar: number | null };
+type Floater = { id: number; e: number; x: number; y: number; size: number; tilt: number; delay: number };
 
-/** Emoji reactions floating up the stage. */
-export function ReactionLayer({ view }: { view: RoomView }) {
+/** Emoji per tap, and the most on screen at once, so a spam storm stays smooth. */
+const BURST = 6;
+const MAX_FLOATERS = 70;
+const LIFETIME = 2200;
+
+/**
+ * Reactions from anyone in the room, spammed across the whole screen: every tap throws a burst of
+ * big emoji at random spots, on the stage and on every phone, and they pile up when people mash.
+ */
+export function ReactionLayer() {
   const room = useRoom();
-  const people = usePeople(view);
   const [floaters, setFloaters] = useState<Floater[]>([]);
+  const lastBoing = useRef(0);
   useEffect(
     () =>
       room.onReaction((r) => {
-        const f = { id: r.id, e: r.e, x: 8 + Math.random() * 84, avatar: people.get(r.from)?.avatar ?? null };
-        setFloaters((all) => [...all.slice(-24), f]);
-        setTimeout(() => setFloaters((all) => all.filter((x) => x.id !== f.id)), 2600);
+        const now = performance.now();
+        if (now - lastBoing.current > 70) {
+          lastBoing.current = now;
+          play('boing', r.e);
+        }
+        const calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const burst: Floater[] = Array.from({ length: calm ? 1 : BURST }, (_, k) => ({
+          id: r.id * 100 + k,
+          e: r.e,
+          x: 4 + Math.random() * 92,
+          y: 6 + Math.random() * 88,
+          size: 56 + Math.random() * 84,
+          tilt: (Math.random() - 0.5) * 50,
+          delay: k * 0.04,
+        }));
+        setFloaters((all) => [...all, ...burst].slice(-MAX_FLOATERS));
+        const ids = new Set(burst.map((f) => f.id));
+        setTimeout(() => setFloaters((all) => all.filter((x) => !ids.has(x.id))), LIFETIME + 400);
       }),
-    [room, people],
+    [room],
   );
   return (
     <div className={styles.reactions} aria-hidden>
       <AnimatePresence>
         {floaters.map((f) => (
-          <motion.span
-            key={f.id}
-            className={styles.floater}
-            style={{ left: `${f.x}%` }}
-            initial={{ y: 0, opacity: 0, scale: 0.4 }}
-            animate={{ y: -420, opacity: [0, 1, 1, 0], scale: [0.4, 1.3, 1, 1], rotate: [0, -8, 8, 0] }}
-            transition={{ duration: 2.5, ease: 'easeOut' }}
-          >
-            <Icon name={REACTIONS[f.e]} size={64} />
-          </motion.span>
+          <span key={f.id} className={styles.floater} style={{ left: `${f.x}%`, top: `${f.y}%` }}>
+            <motion.span
+              style={{ display: 'block', lineHeight: 0 }}
+              initial={{ opacity: 0, scale: 0.2, rotate: f.tilt }}
+              animate={{ opacity: [0, 1, 1, 0], scale: [0.2, 1.25, 1, 0.9], y: [0, 0, -30, -60] }}
+              transition={{ duration: LIFETIME / 1000, delay: f.delay, ease: 'easeOut', times: [0, 0.15, 0.7, 1] }}
+            >
+              <Icon name={REACTIONS[f.e]} size={f.size} />
+            </motion.span>
+          </span>
         ))}
       </AnimatePresence>
     </div>

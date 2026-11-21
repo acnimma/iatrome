@@ -1,7 +1,11 @@
 'use client';
 
 import { DIDACTICS, type DidacticsView, type RoomView } from '@iatrome/game/client';
+import { useEffect, useRef } from 'react';
+import { play } from '@/lib/sound';
 import { useRoom } from '@/realtime/use-room';
+import { Button } from '@/components/ui/Button';
+import { TextInput } from '@/components/ui/Field';
 import { Avatar } from '@/components/ui/Avatar';
 import { AnswerCard, Choice, PhoneMessage, PhonePrompt, PhoneStack } from '@/components/controller/Phone';
 import { ReactionBar, nameOf, usePeople } from '@/components/room/RoomBits';
@@ -17,6 +21,13 @@ export function DidacticsController({ view, game }: { view: RoomView; game: Dida
   const people = usePeople(view);
   const team = game.teams.find((t) => t.id === game.myTeam) ?? null;
   const tone = team ? teamTone(team.color) : 'var(--card)';
+  // Your own answer, as it lands.
+  const revealing = game.phase.name === 'reveal';
+  useEffect(() => {
+    if (!revealing || game.myAnswer === null) return;
+    const t = setTimeout(() => play(game.myAnswer === game.answer ? 'ding' : 'wrong'), 450);
+    return () => clearTimeout(t);
+  }, [revealing, game.number]); // eslint-disable-line react-hooks/exhaustive-deps
   const badge = team && (
     <div className={styles.myTeam} style={{ '--tone': tone } as React.CSSProperties}>
       {team.name}
@@ -43,6 +54,7 @@ export function DidacticsController({ view, game }: { view: RoomView; game: Dida
               })}
             </div>
           </div>
+          <TeamNamer key={team.name} current={team.name} />
         </PhoneStack>
       ) : null;
     case 'lightning':
@@ -71,6 +83,7 @@ export function DidacticsController({ view, game }: { view: RoomView; game: Dida
               onClick={() => {
                 if (!game.canPick || game.myAnswer === i) return;
                 haptic('success');
+                if (game.phase.name === 'huddle') play('switch');
                 room.command({ type: 'pick-option', option: i });
               }}
             >
@@ -188,5 +201,29 @@ function Wager({ view, game, badge }: { view: RoomView; game: DidacticsView; bad
         </Choice>
       ))}
     </PhoneStack>
+  );
+}
+
+/** Rename your team while the teams are shown. Anyone on it can; the last name sticks. */
+function TeamNamer({ current }: { current: string }) {
+  const room = useRoom();
+  const input = useRef<HTMLInputElement>(null);
+  return (
+    <form
+      className={styles.teamNamer}
+      onSubmit={(e) => {
+        e.preventDefault();
+        const name = input.current?.value.trim();
+        if (!name || name === current) return;
+        haptic('success');
+        play('chime');
+        room.command({ type: 'name-team', name });
+      }}
+    >
+      <TextInput ref={input} label="Team name" hint="Your team can rename itself until the teams lock." defaultValue={current} maxLength={DIDACTICS.maxTeamName} enterKeyHint="done" />
+      <Button type="submit" tone="pearl" block>
+        Rename team
+      </Button>
+    </form>
   );
 }

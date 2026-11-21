@@ -41,7 +41,7 @@ export interface InitRequest {
   settings?: Partial<RoomSettings>;
 }
 
-const REACTION_COOLDOWN = 350;
+const REACTION_COOLDOWN = 150;
 
 /**
  * Abuse limits per room. Real play never comes close: a phone sends a few messages a second

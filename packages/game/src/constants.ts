@@ -173,11 +173,14 @@ export const DIDACTICS = {
   minPlayers: 2,
   maxPlayers: 40,
   intro: 6_000,
-  teams: 8_000,
+  /** Team reveal: long enough to give your team a name of its own. */
+  teams: 20_000,
+  maxTeamName: 24,
   question: 20_000,
   /** Once everyone has answered (or time is up), teams see their split and can switch once. */
-  huddle: 7_000,
-  reveal: 7_000,
+  huddle: 20_000,
+  /** The answer, the split and the fact stay up this long. */
+  reveal: 10_000,
   standings: 7_000,
   questions: 12,
   /** Show the team standings after every this many questions. */

@@ -59,16 +59,17 @@
 /* ── Reactions ───────────────────────────────────────── */
 .reactions {
   position: fixed;
-  inset: auto 0 0;
-  height: 0;
+  inset: 0;
+  overflow: hidden;
   pointer-events: none;
-  z-index: 40;
+  z-index: 60;
 }
 
 .floater {
   position: absolute;
-  bottom: 40px;
-  font-size: clamp(2rem, 4vw, 3.4rem);
+  display: block;
+  line-height: 0;
+  transform: translate(-50%, -50%);
   filter: drop-shadow(0 6px 10px rgb(31 42 77 / 0.25));
 }
 

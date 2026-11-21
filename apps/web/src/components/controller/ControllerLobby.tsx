@@ -212,6 +212,7 @@ export function ControllerResults({ view, result }: { view: RoomView; result: Ga
   const mine = result.standings.find((s) => s.playerId === view.you?.id);
   const myTeam = result.teams?.find((t) => t.members.includes(view.you?.id ?? ''));
   const isVip = view.vip === view.you?.id;
+  const isHost = useIsHost(view.code);
   // With a big screen, let the podium land before the phone gives it away.
   const revealed = useAfter(view.screen ? REVEAL.podium : 0, result);
   const ordinal = (n: number) => `${n}${['th', 'st', 'nd', 'rd'][n % 100 > 10 && n % 100 < 14 ? 0 : n % 10] ?? 'th'}`;
@@ -243,6 +244,12 @@ export function ControllerResults({ view, result }: { view: RoomView; result: Ga
             track('game_started', { game: view.settings.game, screen: view.screen ? 'big' : 'phones', again: true });
           }}>
           Play again
+        </Button>
+      )}
+      {/* Same room, same code: the phones-only host goes back to the lobby to pick another game or crowd. */}
+      {isHost && !view.screen && (
+        <Button tone="pearl" size="lg" block onClick={() => room.host({ type: 'lobby' })}>
+          Pick another game
         </Button>
       )}
     </div>

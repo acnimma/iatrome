@@ -1,7 +1,7 @@
 'use client';
 
 import { AnimatePresence, motion } from 'motion/react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { RoomView } from '@iatrome/game/client';
 import { RoomContext, useRoom, useRoomConnection, useSnapshot } from '@/realtime/use-room';
 import type { Snapshot } from '@/realtime/room-client';
@@ -16,6 +16,8 @@ import { PoisonController } from '@/games/poison/PoisonController';
 import { DidacticsController } from '@/games/didactics/DidacticsController';
 import { EdgePage } from '@/components/home/EdgePage';
 import { JoinForm } from './JoinForm';
+import { ReactionLayer } from '@/components/room/RoomBits';
+import { play } from '@/lib/sound';
 import { BeepBanner, PhoneMessage } from './Phone';
 import { HostMenu, useIsHost } from './PhoneHost';
 import { StatCalls, StatOnThis } from '@/components/room/Stat';
@@ -85,8 +87,18 @@ function InRoom({ view, reconnecting }: { view: RoomView; reconnecting: boolean 
   // Beep keeps quiet on the phone while a timed question or drawing is open: the screen is for answering.
   const phase = view.game?.phase;
   const heads = view.stage === 'playing' && phase && phase.endsAt !== null && QUIET_PHASES.has(phase.name) && !watching;
+  // Curtain up when a game starts, a flourish when it ends.
+  const stage = useRef(view.stage);
+  useEffect(() => {
+    if (stage.current !== view.stage) {
+      if (view.stage === 'playing') play('start');
+      if (view.stage === 'over') play('win');
+    }
+    stage.current = view.stage;
+  }, [view.stage]);
   return (
     <>
+      <ReactionLayer />
       <header className={styles.header}>
         {me && <Avatar avatar={me.avatar} size={36} />}
         <span className={styles.me}>{me?.name}</span>

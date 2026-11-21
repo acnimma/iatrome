@@ -17,6 +17,14 @@
   text-align: center;
 }
 
+.subheading {
+  margin: -4px 0 0;
+  font-size: clamp(1rem, 1.8vw, 1.3rem);
+  font-weight: 700;
+  color: var(--ink-soft);
+  text-align: center;
+}
+
 .teams {
   display: grid;
   grid-template-columns: repeat(var(--cols, 2), minmax(0, 1fr));
@@ -633,4 +641,12 @@
 .wagerGrid[data-many] .teamName {
   padding: 4px 12px;
   font-size: 1.05rem;
+}
+
+.teamNamer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  margin-top: 8px;
 }

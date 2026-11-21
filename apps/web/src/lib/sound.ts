@@ -3,7 +3,7 @@
  * Browsers only allow audio after a user gesture; call `unlockAudio()` from a click.
  */
 
-export type Sfx = 'pop' | 'tick' | 'whoosh' | 'reveal' | 'vote' | 'win' | 'consensus' | 'buzz' | 'drumroll' | 'lose' | 'correct' | 'beat' | 'pathognomonic' | 'lockin' | 'applause' | 'cheer';
+export type Sfx = 'pop' | 'tick' | 'whoosh' | 'reveal' | 'vote' | 'win' | 'consensus' | 'buzz' | 'drumroll' | 'lose' | 'correct' | 'beat' | 'pathognomonic' | 'lockin' | 'applause' | 'cheer' | 'boing' | 'start' | 'ding' | 'wrong' | 'switch' | 'chime' | 'coin';
 
 const MUTE_KEY = 'iatrome:muted';
 let audio: AudioContext | null = null;
@@ -89,9 +89,47 @@ const E5 = 659.25;
 const G5 = 783.99;
 const C6 = 1046.5;
 
-export function play(sfx: Sfx) {
+/** `pitch` varies a sound per source, e.g. each reaction emoji boings a little differently. */
+export function play(sfx: Sfx, pitch = 0) {
   if (isMuted() || !context()) return;
   switch (sfx) {
+    case 'boing': {
+      // A rubbery spring: a quick climb that settles, higher for later emoji.
+      const base = 300 * 2 ** (pitch / 8);
+      tone(base, 0, 0.16, { slide: 2.4, gain: 0.2 });
+      tone(base * 2, 0.05, 0.1, { type: 'triangle', gain: 0.08, slide: 1.3 });
+      return;
+    }
+    case 'start':
+      // Curtain up: a rising run and a sparkle.
+      [C5, E5, G5, C6].forEach((f, i) => tone(f, i * 0.07, 0.22, { type: 'triangle', gain: 0.2 }));
+      tone(C6 * 1.5, 0.3, 0.45, { type: 'triangle', gain: 0.18 });
+      noise(0.28, 0.5, { from: 3000, to: 9000, gain: 0.05 });
+      return;
+    case 'ding':
+      // Right answer: a bright bell.
+      tone(C6, 0, 0.5, { gain: 0.22 });
+      tone(C6 * 2, 0, 0.35, { gain: 0.08 });
+      return;
+    case 'wrong':
+      // Wrong answer: a deflating wah-wah.
+      tone(G5 * 0.6, 0, 0.22, { type: 'sawtooth', gain: 0.1, slide: 0.9 });
+      tone(G5 * 0.5, 0.22, 0.5, { type: 'sawtooth', gain: 0.1, slide: 0.75 });
+      return;
+    case 'switch':
+      // Changing your mind: two quick ticks.
+      tone(700, 0, 0.05, { type: 'square', gain: 0.07 });
+      tone(520, 0.07, 0.07, { type: 'square', gain: 0.07 });
+      return;
+    case 'chime':
+      tone(E5, 0, 0.3, { type: 'triangle', gain: 0.18 });
+      tone(G5, 0.1, 0.4, { type: 'triangle', gain: 0.18 });
+      return;
+    case 'coin':
+      // Points landing: a short upward blip pair.
+      tone(988, 0, 0.07, { type: 'square', gain: 0.07 });
+      tone(1319, 0.07, 0.25, { type: 'square', gain: 0.07 });
+      return;
     case 'pop':
       tone(420, 0, 0.12, { slide: 2.2, gain: 0.25 });
       return;

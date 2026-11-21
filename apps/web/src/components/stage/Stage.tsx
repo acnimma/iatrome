@@ -61,7 +61,7 @@ export function Stage({ code }: { code: string }) {
     <RoomContext.Provider value={client}>
       <div className={styles.stage} style={{ '--z': zoom } as React.CSSProperties} onPointerDown={unlockAudio}>
         <StageScreen view={snap.view} prefs={prefs} />
-        <ReactionLayer view={snap.view} />
+        <ReactionLayer />
         <HostControls view={snap.view} prefs={prefs} onPrefs={updatePrefs} />
         {snap.status === 'reconnecting' && <div className={styles.banner}>Reconnecting…</div>}
         {snap.feedback?.error && <Toast key={snap.feedback.at} text={snap.feedback.error} />}
@@ -233,7 +233,8 @@ function useStageSounds(view: RoomView) {
         setTimeout(() => play('win'), REVEAL.podium - 200);
         setTimeout(() => play('cheer'), REVEAL.podium);
       }
-      else if (view.game && ['intro', 'scores'].includes(view.game.phase.name)) play('whoosh');
+      else if (view.game && view.game.phase.name === 'intro') play('start');
+      else if (view.game && view.game.phase.name === 'scores') play('whoosh');
     }
     phase.current = key;
   }, [view.stage, view.game]);

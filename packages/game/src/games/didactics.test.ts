@@ -160,4 +160,22 @@ describe('Didactics Mode', () => {
     const points = Object.values(g.last!.perTeam).map((t) => t.points);
     expect(new Set(points).size).toBe(1);
   });
+
+  it('lets a team rename itself while teams are shown, and only then', () => {
+    const { room, ids, clock } = setup(4);
+    const g = until(room, clock, 'teams');
+    const team = g.teams[0];
+    const mate = team.members[0];
+    const other = g.teams[1];
+    expect(playerCommand(room, mate, { type: 'name-team', name: '  The   Residents  ' }, clock.now)).toBeUndefined();
+    expect(team.name).toBe('The Residents');
+    expect(viewOf(room, mate, clock.now).teams.find((t) => t.id === team.id)?.name).toBe('The Residents');
+    expect(playerCommand(room, other.members[0], { type: 'name-team', name: 'the residents' }, clock.now)).toHaveProperty('error');
+    expect(playerCommand(room, mate, { type: 'name-team', name: '   ' }, clock.now)).toHaveProperty('error');
+    expect(playerCommand(room, mate, { type: 'name-team', name: 'x'.repeat(80) }, clock.now)).toBeUndefined();
+    expect(team.name).toHaveLength(DIDACTICS.maxTeamName);
+    expect(ids).toContain(mate);
+    until(room, clock, 'question');
+    expect(playerCommand(room, mate, { type: 'name-team', name: 'Too Late' }, clock.now)).toHaveProperty('error');
+  });
 });

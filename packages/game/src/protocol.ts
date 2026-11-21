@@ -38,6 +38,8 @@ const playerCommand = z.discriminatedUnion('type', [
   z.object({ type: z.literal('draw'), op: drawOp }),
   // Survive the Shift
   z.object({ type: z.literal('pick-option'), option: z.number().int().min(0).max(3) }),
+  // Didactics Mode: rename your team while teams are revealed
+  z.object({ type: z.literal('name-team'), name: text(40) }),
   // Pick Your Poison
   z.object({ type: z.literal('pick'), side: ab }),
   z.object({ type: z.literal('predict'), side: ab }),

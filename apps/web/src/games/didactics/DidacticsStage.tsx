@@ -19,9 +19,15 @@ export function DidacticsStage({ view, game }: { view: RoomView; game: Didactics
   useEffect(() => {
     if (phase === 'reveal') {
       play('reveal');
+      const anyRight = Object.values(game.last?.perTeam ?? {}).some((t) => t.right > 0);
+      setTimeout(() => play(anyRight ? 'ding' : 'wrong'), 450);
       if (game.number === game.total) play('cheer');
     }
-    if (phase === 'teams' || phase === 'standings' || phase === 'lightning' || phase === 'wager') play('whoosh');
+    if (phase === 'teams' || phase === 'lightning' || phase === 'wager') play('whoosh');
+    if (phase === 'standings') {
+      play('whoosh');
+      setTimeout(() => play('coin'), 350);
+    }
     if (phase === 'huddle') play('pop');
   }, [phase, game.number]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -50,6 +56,7 @@ function Teams({ view, game }: { view: RoomView; game: DidacticsView }) {
   return (
     <div className={styles.stage}>
       <h2 className={styles.heading}>Meet your teams</h2>
+      <p className={styles.subheading}>Rename your team on your phone.</p>
       <div className={styles.teams} style={{ '--cols': columns(game.teams.length) } as React.CSSProperties} data-many={game.teams.length > 4 || undefined}>
         {game.teams.map((team, i) => (
           <motion.section
