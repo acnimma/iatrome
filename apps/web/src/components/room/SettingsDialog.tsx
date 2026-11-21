@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { useEffect } from 'react';
 import type { RoomSettings } from '@iatrome/game/client';
 import { Button } from '@/components/ui/Button';
-import { CROWD_LABEL, GamePicker, ModePicker, TimeToggle } from './GameSettings';
+import { CROWD_LABEL, GamePicker, ModePicker, TeamsToggle, TimeToggle } from './GameSettings';
 import styles from './SettingsDialog.module.css';
 
 interface Props {
@@ -53,6 +53,12 @@ export function SettingsDialog({ open, settings, onChange, onClose }: Props) {
               <h3 className={styles.label}>Timers</h3>
               <TimeToggle settings={settings} onChange={onChange} />
             </section>
+            {settings.game === 'didactics' && (
+              <section className={styles.section}>
+                <h3 className={styles.label}>Team trivia</h3>
+                <TeamsToggle settings={settings} onChange={onChange} />
+              </section>
+            )}
             <Button autoFocus size="lg" block onClick={onClose}>
               Done
             </Button>

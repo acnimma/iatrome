@@ -11,7 +11,7 @@ import { teamTone } from './teams';
 import { ANSWER_TONES, AnswerLetter, LETTERS } from '@/components/room/answers';
 import { jelly } from '@/components/ui/jelly';
 import { REVEAL_BEAT, useAfter } from '@/components/ui/Later';
-import { calloutText, nextUp, pctLabel, swingText } from './copy';
+import { bonusText, calloutText, nextUp, pctLabel, swingText } from './copy';
 import styles from './Didactics.module.css';
 
 export function DidacticsStage({ view, game }: { view: RoomView; game: DidacticsView }) {
@@ -32,7 +32,17 @@ export function DidacticsStage({ view, game }: { view: RoomView; game: Didactics
   }, [phase, game.number]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (phase === 'intro')
-    return <IntroCard eyebrow="Up next" title="Didactics Mode" body="Random teams. Everyone answers on their phone or laptop, then your team huddles. Your team scores when you get it right." />;
+    return (
+      <IntroCard
+        eyebrow="Up next"
+        title="Didactics Mode"
+        body={
+          game.solo
+            ? 'Everyone for themselves. Answer on your phone or laptop. Streaks and the fastest right answer earn bonus points.'
+            : 'Random teams. Everyone answers on their phone or laptop, then your team huddles. Your team scores when you get it right.'
+        }
+      />
+    );
   if (phase === 'teams') return <Teams view={view} game={game} />;
   if (phase === 'standings') return <Standings game={game} />;
   if (phase === 'lightning')
@@ -40,7 +50,7 @@ export function DidacticsStage({ view, game }: { view: RoomView; game: Didactics
       <IntroCard
         eyebrow={`Questions ${game.number} to ${game.total - 1}`}
         title="Lightning round"
-        body={`${DIDACTICS.lightningQuestion / 1000} seconds a question. Double points. No huddle, so no committee.`}
+        body={`${DIDACTICS.lightningQuestion / 1000} seconds a question. Double points. ${game.solo ? 'Think fast.' : 'No huddle, so no committee.'}`}
         badge="×2"
       />
     );
@@ -138,6 +148,16 @@ function Question({ view, game }: { view: RoomView; game: DidacticsView }) {
           {game.fact && !game.final && <p className={styles.fact}>{game.fact}</p>}
         </motion.div>
       )}
+      {revealed && answerShown && <BonusPills view={view} game={game} />}
+      {game.solo ? (
+        <div className={styles.teamStrip}>
+          <div className={styles.teamChip} style={{ '--tone': 'var(--card)' } as React.CSSProperties}>
+            <span className={styles.chipProgress}>
+              {answered.size} of {game.teams.length} answered
+            </span>
+          </div>
+        </div>
+      ) : (
       <div className={styles.teamStrip} data-many={game.teams.length > 4 || undefined}>
         {game.teams.map((team) => {
           const r = game.last?.perTeam[team.id];
@@ -168,6 +188,31 @@ function Question({ view, game }: { view: RoomView; game: DidacticsView }) {
           );
         })}
       </div>
+      )}
+    </div>
+  );
+}
+
+/** Who earned a streak or first-answer bonus on this question: the loudest few. */
+function BonusPills({ view, game }: { view: RoomView; game: DidacticsView }) {
+  const people = usePeople(view);
+  const earned = Object.entries(game.last?.bonus ?? {})
+    .sort((a, b) => b[1].points - a[1].points)
+    .slice(0, 5);
+  if (!earned.length) return null;
+  return (
+    <div className={styles.bonusRow}>
+      {earned.map(([id, b], i) => (
+        <motion.span
+          key={id}
+          className={`${styles.bonusPill} ${b.first ? styles.bonusFirst : ''}`}
+          initial={{ scale: 0, rotate: -8 }}
+          animate={{ scale: 1, rotate: 0 }}
+          transition={{ delay: 0.5 + i * 0.12, type: 'spring', stiffness: 460, damping: 14 }}
+        >
+          <strong>{nameOf(people, id)}</strong> {bonusText(b)}
+        </motion.span>
+      ))}
     </div>
   );
 }
@@ -186,8 +231,10 @@ function Wager({ view, game }: { view: RoomView; game: DidacticsView }) {
           <TimerRing phase={game.phase} pausedAt={view.pausedAt} size={84} ticks />
         </span>
       </div>
-      <h2 className={styles.heading}>Captains, place your bets</h2>
-      <p className={styles.wagerRules}>Nothing, a quarter, half or everything. The team’s majority answer decides it. Anyone can still win.</p>
+      <h2 className={styles.heading}>{game.solo ? 'Place your bets' : 'Captains, place your bets'}</h2>
+      <p className={styles.wagerRules}>
+        {game.solo ? 'Nothing, a quarter, half or everything. Get the last question right and it pays. Anyone can still win.' : 'Nothing, a quarter, half or everything. The team’s majority answer decides it. Anyone can still win.'}
+      </p>
       <div className={styles.wagerGrid} style={{ '--cols': columns(ranked.length) } as React.CSSProperties} data-many={ranked.length > 4 || undefined}>
         {ranked.map((team, i) => {
           const w = game.wager?.teams[team.id];
@@ -203,7 +250,7 @@ function Wager({ view, game }: { view: RoomView; game: DidacticsView }) {
             >
               <h3 className={styles.teamName}>{team.name}</h3>
               <CountUp className={styles.wagerScore} value={team.score} />
-              {captain && (
+              {captain && !game.solo && (
                 <span className={styles.captain}>
                   <Avatar avatar={captain.avatar} size={ranked.length > 4 ? 30 : 40} />
                   <span>
@@ -224,7 +271,9 @@ function Wager({ view, game }: { view: RoomView; game: DidacticsView }) {
 }
 
 function Standings({ game }: { game: DidacticsView }) {
-  const ranked = game.teams.slice().sort((a, b) => b.score - a.score);
+  const everyone = game.teams.slice().sort((a, b) => b.score - a.score);
+  // A big free-for-all would run off the screen: show the leaders.
+  const ranked = game.solo ? everyone.slice(0, 8) : everyone;
   const top = Math.max(1, ranked[0]?.score ?? 1);
   const next = nextUp(game);
   return (

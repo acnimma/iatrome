@@ -44,13 +44,13 @@ Scoring per matchup: a 1,000-point pool split by vote share, +100 to the winner,
 
 The drawer picks one of three terms (easy/medium/hard) and draws live: strokes stream to every phone and the stage. Guessers race: 500 → 100 points by speed; the artist earns 75 per correct guess. Letter hints unlock at 45% and 70% of the time. “So close!” for near misses.
 
-### Survive the Shift (2–20)
+### Didactics Mode (2–40, ~12 min)
 
-Multiple choice, easiest first. Two coffees each; a wrong or missing answer costs one; zero = clocked out (keep playing as a ghost for half points). If every survivor misses, nobody loses a coffee. Last one on shift wins. Every reveal shows a sourced “chart note”.
+Trivia for big groups, built for a family party. By default players are split into random teams (at least two, about five a team; teams can rename themselves). A **Teams** setting turns that off, and everyone plays for themselves. Players get 30 seconds to answer (45 with More time). Streaks (right again and again) and the fastest right answer earn bonus points. Everyone answers each question on their phone; a team scores by the share of its members who got it right (1,000 × share), so small teams aren’t punished. Standings every three questions; the last three are a double-points lightning round. Late arrivals join the smallest team mid-game. Team podium plus an MVP.
 
-### Didactics Mode (4–40, ~12 min)
+### The secret tie-breaker
 
-Team trivia for big groups, built for a family party. Players are split into random teams (2 teams up to 7 players, 3 up to 15, 4 up to 40). Everyone answers each question on their phone; a team scores by the share of its members who got it right (1,000 × share), so small teams aren’t punished. Standings every three questions; the last three are a double-points lightning round. Late arrivals join the smallest team mid-game. Team podium plus an MVP.
+Not a game anyone picks. When any game ends with players level for first (and someone scored), only the tied players get a sudden-death trivia question on their phones; the fastest right answer wins and takes first, the other leaders drop to second. Nobody right means another question, up to five, after which the tie stands.
 
 ### Pick Your Poison (3–20)
 

@@ -1,5 +1,5 @@
-import { DIDACTICS, GRAND_ROUNDS, POISON, SKETCH, SURVIVE } from '../constants';
-import type { GameId } from '../types';
+import { DIDACTICS, GRAND_ROUNDS, POISON, SKETCH } from '../constants';
+import type { PlayableGameId } from '../types';
 
 export interface GameInfo {
   title: string;
@@ -12,7 +12,7 @@ export interface GameInfo {
 }
 
 /** Display info for each game, safe to import on the client (no content packs). */
-export const gameInfo: Record<GameId, GameInfo> = {
+export const gameInfo: Record<PlayableGameId, GameInfo> = {
   'grand-rounds': {
     title: 'Grand Rounds',
     tagline: 'Funny answers, head to head',
@@ -28,14 +28,6 @@ export const gameInfo: Record<GameId, GameInfo> = {
     minutes: 10,
     min: SKETCH.minPlayers,
     max: SKETCH.maxPlayers,
-  },
-  survive: {
-    title: 'Survive the Shift',
-    tagline: 'Trivia, last one standing',
-    howTo: 'Wrong answers cost a coffee. Run out and you clock out.',
-    minutes: 8,
-    min: SURVIVE.minPlayers,
-    max: SURVIVE.maxPlayers,
   },
   poison: {
     title: 'Pick Your Poison',

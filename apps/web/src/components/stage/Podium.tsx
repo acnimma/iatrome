@@ -19,9 +19,9 @@ import { Icon } from '@/components/icons/Icon';
 const WINNER_AT = REVEAL.podium / 1000;
 /** Left to right 2nd, 1st, 3rd, like every podium since 1896. Heights in design pixels (stage is 1440x900). */
 const PLACES = [
-  { place: 2, step: 185, avatar: 92, tone: 'blue' as const, at: 1.9 },
-  { place: 1, step: 255, avatar: 116, tone: 'gold' as const, at: WINNER_AT },
-  { place: 3, step: 140, avatar: 84, tone: 'rose' as const, at: 1.0 },
+  { place: 2, step: 165, avatar: 92, tone: 'blue' as const, at: 1.9 },
+  { place: 1, step: 230, avatar: 116, tone: 'gold' as const, at: WINNER_AT },
+  { place: 3, step: 125, avatar: 84, tone: 'rose' as const, at: 1.0 },
 ];
 
 /** Final standings: a proper podium (winner called last), then everyone else and the night's highlights. */
@@ -32,13 +32,16 @@ export function Podium({ view, result }: { view: RoomView; result: GameResult })
   const byRank = (rank: number) => result.standings.filter((s) => s.rank === rank);
   const rest = result.standings.filter((s) => s.rank > 3);
   const after = WINNER_AT + 0.9;
+  const champs = byRank(1).map((s) => s.name);
 
   return (
     <div className={styles.podium}>
+      <Vibes at={WINNER_AT} />
       <Later ms={REVEAL.podium}>
         <Confetti pieces={220} />
       </Later>
       <span className={styles.eyebrow}>{gameInfo[result.game].title} · final results</span>
+      {champs.length > 0 && <Headline at={WINNER_AT} text={`${champs.join(' & ')} ${champs.length > 1 ? 'take' : 'takes'} it!`} />}
       <div className={styles.stage}>
         <aside className={styles.side}>
           {result.highlights.filter((_, i) => i % 2 === 0).map((h, i) => (
@@ -60,6 +63,7 @@ export function Podium({ view, result }: { view: RoomView; result: GameResult })
               <div key={place} className={`${styles.column} ${place === 1 ? styles.first : ''} ${winners.length > 1 ? styles.tied : ''}`}>
                 <div className={styles.winners}>
                   {place === 1 && winners.length > 0 && <Drumroll until={at} />}
+                  {place === 1 && winners.length > 0 && <Twinkles at={at} />}
                   {winners.map((w, j) => (
                     <motion.div
                       key={w.playerId}
@@ -68,7 +72,9 @@ export function Podium({ view, result }: { view: RoomView; result: GameResult })
                       animate={{ y: 0, opacity: 1, scale: 1 }}
                       transition={{ delay: at + j * 0.15, type: 'spring', stiffness: place === 1 ? 260 : 320, damping: place === 1 ? 11 : 15 }}
                     >
-                      <Avatar avatar={w.avatar} size={Math.round(avatar * (winners.length > 2 ? 0.56 : winners.length > 1 ? 0.72 : 1))} />
+                      <span className={place === 1 ? styles.bounceAvatar : styles.floatAvatar} style={{ animationDelay: `${at + 0.6 + j * 0.2}s` }}>
+                        <Avatar avatar={w.avatar} size={Math.round(avatar * (winners.length > 2 ? 0.56 : winners.length > 1 ? 0.72 : 1))} />
+                      </span>
                       <span className={styles.name}>{w.name}</span>
                       {w.note ? <span className={styles.score}>{w.note}</span> : <CountUp className={styles.score} value={w.score} duration={1400} />}
                     </motion.div>
@@ -80,6 +86,7 @@ export function Podium({ view, result }: { view: RoomView; result: GameResult })
                   animate={{ height: step }}
                   transition={{ delay: 0.15 + i * 0.12, duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
                 >
+                  <span className={styles.shine} aria-hidden />
                   <span className={styles.rank}>{place}</span>
                   <span className={styles.medal}>
                     <Icon name={place === 1 ? 'trophy' : 'medal'} size={place === 1 ? 52 : 40} />
@@ -141,6 +148,68 @@ function Highlight({ h, people, delay, tilt }: { h: GameResult['highlights'][num
   );
 }
 
+/**
+ * The party behind the podium: slow light rays and a few drifting jelly orbs that swell
+ * when the winner is called. Pure decoration, never in the way.
+ */
+function Vibes({ at }: { at: number }) {
+  return (
+    <div className={styles.vibes} aria-hidden>
+      <span className={`${styles.orb} ${styles.orbA}`} />
+      <span className={`${styles.orb} ${styles.orbB}`} />
+      <span className={`${styles.orb} ${styles.orbC}`} />
+      <motion.span className={styles.rays} initial={{ opacity: 0, scale: 0.7 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay: at - 0.1, duration: 1.2, ease: [0.22, 1, 0.36, 1] }} />
+    </div>
+  );
+}
+
+/** The winner's name, big and jelly, one letter at a time springing in when they are called. */
+function Headline({ at, text }: { at: number; text: string }) {
+  return (
+    <h2 className={styles.headline} aria-label={text}>
+      {Array.from(text).map((ch, i) => (
+        <motion.span
+          key={i}
+          aria-hidden
+          className={styles.headlineChar}
+          initial={{ y: -80, opacity: 0, scaleY: 1.5, scaleX: 0.6 }}
+          animate={{ y: 0, opacity: 1, scaleY: 1, scaleX: 1 }}
+          transition={{ delay: at + i * 0.035, type: 'spring', stiffness: 380, damping: 11 }}
+        >
+          {ch === ' ' ? '\u00a0' : ch}
+        </motion.span>
+      ))}
+    </h2>
+  );
+}
+
+/** Sparkles twinkling around the winner. */
+function Twinkles({ at }: { at: number }) {
+  const spots = [
+    { x: -88, y: -150, size: 38, d: 0 },
+    { x: 92, y: -120, size: 28, d: 0.35 },
+    { x: -70, y: -40, size: 24, d: 0.7 },
+    { x: 80, y: -210, size: 32, d: 0.2 },
+  ];
+  return (
+    <>
+      {spots.map((s, i) => (
+        <motion.span
+          key={i}
+          className={styles.twinkle}
+          aria-hidden
+          style={{ left: `calc(50% + ${s.x}px)`, top: `calc(50% + ${s.y}px)` }}
+          initial={{ scale: 0, rotate: -30, opacity: 0 }}
+          animate={{ scale: [0, 1.2, 0.8, 1.1, 0.8], rotate: [-30, 0, 15, 0, 15], opacity: [0, 1, 1, 1, 1] }}
+          transition={{ delay: at + 0.3 + s.d, duration: 2.4, repeat: Infinity, repeatDelay: 0.4, ease: 'easeInOut' }}
+        >
+          <Icon name="sparkles" size={s.size} />
+        </motion.span>
+      ))}
+    </>
+  );
+}
+
 /** The empty top spot before the winner is called: a pulsing question mark, not a hole. */
 function Drumroll({ until }: { until: number }) {
   return (
@@ -173,13 +242,12 @@ function TeamPodium({ view, result }: { view: RoomView; result: GameResult }) {
   const top = Math.max(1, teams[0]?.score ?? 1);
   return (
     <div className={styles.podium}>
+      <Vibes at={REVEAL.podium / 1000} />
       <Later ms={REVEAL.podium}>
-        <Confetti />
+        <Confetti pieces={160} />
       </Later>
       <span className={styles.eyebrow}>{gameInfo[result.game].title} · final results</span>
-      <motion.h2 className={styles.teamWinner} initial={{ scale: 0.6, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: 'spring', stiffness: 260, damping: 14, delay: REVEAL.podium / 1000 }}>
-        {teams.filter((t) => t.rank === 1).map((t) => t.name).join(' & ')} win!
-      </motion.h2>
+      <Headline at={REVEAL.podium / 1000} text={`${teams.filter((t) => t.rank === 1).map((t) => t.name).join(' & ')} win!`} />
       <ol className={`${styles.teamList} ${teams.length > 5 ? styles.teamListMany : ''}`}>
         {teams.map((team, i) => (
           <motion.li

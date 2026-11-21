@@ -650,3 +650,36 @@
   width: 100%;
   margin-top: 8px;
 }
+
+/* Bonus points: who was first, who is on a streak. */
+.bonusRow {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.bonusPill {
+  padding: 6px 16px;
+  border: var(--outline);
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--royal-gold) 45%, var(--card));
+  box-shadow: var(--gloss);
+  font-size: clamp(0.9rem, 1.5vw, 1.15rem);
+  font-weight: 700;
+}
+
+.bonusFirst {
+  background: color-mix(in srgb, var(--cool-sky) 45%, var(--card));
+}
+
+.streakChip,
+.bonusLine {
+  align-self: center;
+  padding: 6px 16px;
+  border: var(--outline);
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--royal-gold) 45%, var(--card));
+  box-shadow: var(--gloss);
+  font-weight: 900;
+}

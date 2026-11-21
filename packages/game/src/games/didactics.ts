@@ -2,7 +2,7 @@ import { type TriviaQuestion, trivia } from '@iatrome/content';
 import { DIDACTICS as DC } from '../constants';
 import { cleanText, comparable } from '../text';
 import type { GameResult, Highlight, Phase } from '../types';
-import { type ActionOutcome, type BaseGameState, type GameContext, type GameModule, questionTime, sawtooth, setPhase, statted, tidy } from './context';
+import { type ActionOutcome, type BaseGameState, type GameContext, type GameModule, sawtooth, setPhase, statted, tidy } from './context';
 
 /**
  * Didactics Mode: team trivia for big groups (up to 40). Random teams of about five;
@@ -43,6 +43,8 @@ interface TeamResult {
   right: number;
   of: number;
   points: number;
+  /** Streak and first-answer bonuses earned by this team's players, already in `points`. */
+  bonus?: number;
   /** The final question only: what the captain bet and how it went. */
   wager?: { pct: number; amount: number; swing: number };
 }
@@ -63,7 +65,21 @@ export interface DidacticsState extends BaseGameState {
   talkedOut: Record<string, number>;
   talkedIn: Record<string, number>;
   wager: Record<string, TeamWager> | null;
-  last: { perTeam: Record<string, TeamResult> } | null;
+  /** No teams: everyone is a team of one. */
+  solo: boolean;
+  /** Right answers in a row, per player. */
+  streak: Record<string, number>;
+  /** Longest streak and first-to-answer count, for the awards. */
+  bestStreak: Record<string, number>;
+  firsts: Record<string, number>;
+  last: { perTeam: Record<string, TeamResult>; bonus: Record<string, Bonus> } | null;
+}
+
+/** Extra points a player earned on a question: a streak, being first, or both. */
+export interface Bonus {
+  streak: number;
+  first: boolean;
+  points: number;
 }
 
 /** One action: pick an answer, or (a captain, during the wager) pick a share of DC.wagers. */
@@ -89,6 +105,10 @@ export interface DidacticsView {
   switches: number;
   teams: (Team & { score: number })[];
   last: DidacticsState['last'];
+  /** No teams: everyone plays for themselves. */
+  solo: boolean;
+  /** Your right answers in a row. */
+  myStreak: number;
   myTeam: string | null;
   myAnswer: number | null;
   mySwitched: boolean;
@@ -127,10 +147,17 @@ export const didactics: GameModule<DidacticsState, DidacticsAction, DidacticsVie
   maxPlayers: DC.maxPlayers,
 
   start(ctx, playerIds) {
-    const count = teamCount(playerIds.length);
-    const names = ctx.rng.shuffle(TEAM_NAMES);
-    const teams: Team[] = names.slice(0, count).map((name, i) => ({ id: `t${i}`, name, color: i, members: [] }));
-    ctx.rng.shuffle(playerIds).forEach((id, i) => teams[i % count].members.push(id));
+    const solo = ctx.room.settings.teams === false;
+    let teams: Team[];
+    if (solo) {
+      // No teams: everyone is a team of one, so scoring and the final wager work unchanged.
+      teams = playerIds.map((id, i) => ({ id: `t${i}`, name: ctx.person(id)?.name ?? 'Player', color: i, members: [id] }));
+    } else {
+      const count = teamCount(playerIds.length);
+      const names = ctx.rng.shuffle(TEAM_NAMES);
+      teams = names.slice(0, count).map((name, i) => ({ id: `t${i}`, name, color: i, members: [] }));
+      ctx.rng.shuffle(playerIds).forEach((id, i) => teams[i % count].members.push(id));
+    }
     const state: DidacticsState = {
       game: 'didactics',
       playerIds,
@@ -147,6 +174,10 @@ export const didactics: GameModule<DidacticsState, DidacticsAction, DidacticsVie
       talkedOut: {},
       talkedIn: {},
       wager: null,
+      solo,
+      streak: {},
+      bestStreak: {},
+      firsts: {},
       last: null,
     };
     ctx.say('didacticsIntro');
@@ -156,8 +187,14 @@ export const didactics: GameModule<DidacticsState, DidacticsAction, DidacticsVie
 
   addPlayer(state, _ctx, playerId) {
     if (state.playerIds.includes(playerId)) return;
-    const smallest = state.teams.reduce((a, b) => (b.members.length < a.members.length ? b : a));
-    smallest.members.push(playerId);
+    if (state.solo) {
+      const id = `t${state.teams.length}`;
+      state.teams.push({ id, name: _ctx.person(playerId)?.name ?? 'Player', color: state.teams.length, members: [playerId] });
+      state.teamScores[id] = 0;
+    } else {
+      const smallest = state.teams.reduce((a, b) => (b.members.length < a.members.length ? b : a));
+      smallest.members.push(playerId);
+    }
     state.playerIds.push(playerId);
     state.scores[playerId] = 0;
   },
@@ -202,7 +239,8 @@ export const didactics: GameModule<DidacticsState, DidacticsAction, DidacticsVie
   timeout(state, ctx) {
     switch (state.phase.name) {
       case 'intro':
-        setPhase(state, ctx, 'teams', DC.teams);
+        if (state.solo) ask(state, ctx);
+        else setPhase(state, ctx, 'teams', DC.teams);
         return;
       case 'teams':
         ask(state, ctx);
@@ -256,7 +294,7 @@ export const didactics: GameModule<DidacticsState, DidacticsAction, DidacticsVie
         const p = ctx.person(id)!;
         return { playerId: id, name: p.name, avatar: p.avatar, score: state.scores[id], rank: rankOf.get(teamOf(state, id)!.id)! };
       }),
-      teams: ranked.map((t) => ({ name: t.name, color: t.color, score: state.teamScores[t.id], rank: rankOf.get(t.id)!, members: t.members.filter((id) => ctx.person(id)) })),
+      teams: state.solo ? undefined : ranked.map((t) => ({ name: t.name, color: t.color, score: state.teamScores[t.id], rank: rankOf.get(t.id)!, members: t.members.filter((id) => ctx.person(id)) })),
       highlights: highlights(state, ctx, players),
     };
   },
@@ -289,6 +327,8 @@ export const didactics: GameModule<DidacticsState, DidacticsAction, DidacticsVie
       switches: Object.values(state.answers).filter((a) => a.switched).length,
       teams: state.teams.map((t) => ({ ...t, score: state.teamScores[t.id] })),
       last: revealed ? state.last : null,
+      solo: state.solo,
+      myStreak: me ? (state.streak[me] ?? 0) : 0,
       myTeam: myTeam?.id ?? null,
       myAnswer: mine?.option ?? null,
       mySwitched: Boolean(mine?.switched),
@@ -311,6 +351,7 @@ export const didactics: GameModule<DidacticsState, DidacticsAction, DidacticsVie
 
 /** Any teammate can rename their team while the teams are shown; the last name sticks. */
 function nameTeam(state: DidacticsState, playerId: string, raw: string): ActionOutcome | void {
+  if (state.solo) return { error: 'Everyone plays for themselves.' };
   if (state.phase.name !== 'teams') return { error: 'Teams are locked in.' };
   const team = teamOf(state, playerId);
   const name = cleanText(String(raw), DC.maxTeamName);
@@ -338,13 +379,12 @@ function clockLeft(state: DidacticsState, ctx: GameContext) {
 function ask(state: DidacticsState, ctx: GameContext) {
   state.answers = {};
   state.last = null;
-  const q = state.questions[state.index];
-  setPhase(state, ctx, 'question', questionTime(isLightning(state) ? DC.lightningQuestion : DC.question, q.question, q.options), 'input');
+  setPhase(state, ctx, 'question', isLightning(state) ? DC.lightningQuestion : DC.question, 'input');
 }
 
 /** Everyone's in (or time's up): huddle, except in the lightning round, which goes straight to the answer. */
 function closeAnswers(state: DidacticsState, ctx: GameContext) {
-  if (isLightning(state)) {
+  if (isLightning(state) || state.solo) {
     reveal(state, ctx);
     return;
   }
@@ -407,6 +447,27 @@ function reveal(state: DidacticsState, ctx: GameContext) {
     state.scores[id] += statted(state, id, round, tidy((DC.base + DC.speedBonus * a.speed) * multiplier));
   }
 
+  // Bonuses: right again and again (a streak), and the first to lock in a right answer.
+  const bonus: Record<string, Bonus> = {};
+  const answeredFirst = state.playerIds
+    .filter((id) => state.answers[id] && !state.answers[id].switched && state.answers[id].option === q.answer)
+    .sort((a, b) => state.answers[a].at - state.answers[b].at)[0];
+  const first = Object.keys(state.answers).length >= 2 ? answeredFirst : undefined;
+  for (const id of state.playerIds) {
+    const right = state.answers[id]?.option === q.answer;
+    const streak = right ? (state.streak[id] ?? 0) + 1 : 0;
+    state.streak[id] = streak;
+    if (!right) continue;
+    state.bestStreak[id] = Math.max(state.bestStreak[id] ?? 0, streak);
+    const streakPoints = streak >= 2 ? Math.min(streak - 1, DC.streakCap) * DC.streakBonus : 0;
+    const firstPoints = id === first ? DC.firstBonus : 0;
+    if (id === first) bump(state.firsts, id);
+    const points = tidy((streakPoints + firstPoints) * multiplier);
+    if (!points) continue;
+    state.scores[id] += points;
+    bonus[id] = { streak, first: id === first, points };
+  }
+
   for (const team of state.teams) {
     // Count everyone still here; a teammate who never answers counts as a miss.
     const present = ctx.connectedPlayers(team.members);
@@ -416,8 +477,9 @@ function reveal(state: DidacticsState, ctx: GameContext) {
     if (present.length >= 3 && right * 3 <= present.length) rightIds.forEach((id) => bump(state.carry, id));
     // A Stat makes its caller's right answer count twice for the team.
     const counted = rightIds.reduce((n, id) => n + statted(state, id, round, 1), 0);
-    const points = present.length ? tidy((DC.pool * counted * multiplier) / present.length) : 0;
-    const result: TeamResult = { right, of: present.length, points };
+    const bonusPoints = team.members.reduce((n, id) => n + (bonus[id]?.points ?? 0), 0);
+    const points = (present.length ? tidy((DC.pool * counted * multiplier) / present.length) : 0) + bonusPoints;
+    const result: TeamResult = { right, of: present.length, points, ...(bonusPoints ? { bonus: bonusPoints } : {}) };
 
     const bet = isFinal(state) ? state.wager?.[team.id] : undefined;
     if (bet) {
@@ -433,7 +495,7 @@ function reveal(state: DidacticsState, ctx: GameContext) {
     perTeam[team.id] = result;
   }
 
-  state.last = { perTeam };
+  state.last = { perTeam, bonus };
   const best = Math.max(...Object.values(perTeam).map((t) => (t.of ? t.right / t.of : 0)));
   if (best === 0) ctx.say('didacticsStumped');
   setPhase(state, ctx, 'reveal', isFinal(state) ? DC.finalReveal : DC.reveal);
@@ -451,13 +513,19 @@ function highlights(state: DidacticsState, ctx: GameContext, players: string[]):
   const mvp = players.slice().sort((a, b) => (state.correct[b] ?? 0) - (state.correct[a] ?? 0) || state.scores[b] - state.scores[a])[0];
   if (mvp) out.push({ title: 'MVP', playerId: mvp, detail: `${state.correct[mvp] ?? 0} of ${state.questions.length} right` });
 
-  const carry = most(state.carry, 2);
+  const fire = most(state.bestStreak, 3);
+  if (fire) out.push({ title: 'On Fire', playerId: fire.id, detail: `${fire.n} right in a row` });
+
+  const quick = most(state.firsts, 2);
+  if (quick) out.push({ title: 'Quickest Draw', playerId: quick.id, detail: `First to a right answer ${times(quick.n)}` });
+
+  const carry = state.solo ? null : most(state.carry, 2);
   if (carry) out.push({ title: 'Team Carry', playerId: carry.id, detail: `Right while the team wasn’t, ${times(carry.n)}` });
 
   const confident = most(state.fastWrong, 3);
   if (confident) out.push({ title: 'Most Confidently Wrong', playerId: confident.id, detail: `${confident.n} wrong answers, all of them fast` });
 
-  const talkedOut = most(state.talkedOut, 1);
+  const talkedOut = state.solo ? null : most(state.talkedOut, 1);
   if (talkedOut) out.push({ title: 'Talked Out of It', playerId: talkedOut.id, detail: `Switched off the right answer ${times(talkedOut.n)}` });
 
   const finalTeams = state.last?.perTeam ?? {};
@@ -466,7 +534,7 @@ function highlights(state: DidacticsState, ctx: GameContext, players: string[]):
     const won = (finalTeams[roller[0]].wager?.swing ?? 0) > 0;
     out.push({ title: 'High Roller', playerId: roller[1].captain, detail: `Bet everything on the final. ${won ? 'It worked.' : 'It did not.'}` });
   } else {
-    const convert = most(state.talkedIn, 2);
+    const convert = state.solo ? null : most(state.talkedIn, 2);
     if (convert) out.push({ title: 'Peer Reviewed', playerId: convert.id, detail: `The huddle fixed their answer ${times(convert.n)}` });
   }
   return out.slice(0, 5);

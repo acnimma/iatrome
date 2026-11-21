@@ -157,7 +157,7 @@ describe('Didactics Mode', () => {
     const answer = g.questions[0].answer;
     ids.forEach((id) => playerCommand(room, id, { type: 'pick-option', option: answer }, clock.now));
     until(room, clock, 'reveal');
-    const points = Object.values(g.last!.perTeam).map((t) => t.points);
+    const points = Object.values(g.last!.perTeam).map((t) => t.points - (t.bonus ?? 0));
     expect(new Set(points).size).toBe(1);
   });
 
@@ -177,5 +177,63 @@ describe('Didactics Mode', () => {
     expect(ids).toContain(mate);
     until(room, clock, 'question');
     expect(playerCommand(room, mate, { type: 'name-team', name: 'Too Late' }, clock.now)).toHaveProperty('error');
+  });
+
+  it('plays without teams: everyone is a team of one, no team reveal, no huddle', () => {
+    const clock = { now: START };
+    const room = createRoom({ code: 'ABCDEF', seed: 5, now: clock.now, settings: { game: 'didactics', teams: false } });
+    const ids = Array.from({ length: 3 }, (_, i) => {
+      const r = join(room, { deviceId: `d${i}`, name: `Player ${i + 1}`, now: clock.now });
+      if (!r.ok) throw new Error(r.error);
+      return r.person.id;
+    });
+    hostCommand(room, { type: 'start' }, clock.now);
+    const g = state(room);
+    expect(g.solo).toBe(true);
+    expect(g.teams.map((t) => t.members)).toEqual(ids.map((id) => [id]));
+    for (let i = 0; i < 2000 && room.game; i++) {
+      expect(state(room).phase.name).not.toBe('teams');
+      expect(state(room).phase.name).not.toBe('huddle');
+      if (state(room).phase.name === 'question') ids.forEach((id) => playerCommand(room, id, { type: 'pick-option', option: state(room).questions[state(room).index].answer }, clock.now));
+      step(room, clock);
+    }
+    expect(room.game).toBeNull();
+    expect(room.result?.teams).toBeUndefined();
+    expect(room.result?.standings).toHaveLength(3);
+  });
+
+  it('pays streak and first-answer bonuses', () => {
+    const { room, ids, clock } = setup(3);
+    const g = until(room, clock, 'question');
+    const answer = () => state(room).questions[state(room).index].answer;
+    // Everyone right, one at a time: the first in gets the first-answer bonus.
+    ids.forEach((id) => {
+      clock.now += 100;
+      playerCommand(room, id, { type: 'pick-option', option: answer() }, clock.now);
+    });
+    until(room, clock, 'reveal');
+    expect(g.last?.bonus[ids[0]]).toMatchObject({ first: true, streak: 1, points: DIDACTICS.firstBonus });
+    expect(g.last?.bonus[ids[1]]).toBeUndefined();
+    // Second question: still right, so a streak of 2 pays a bonus.
+    until(room, clock, 'question');
+    ids.forEach((id) => {
+      clock.now += 100;
+      playerCommand(room, id, { type: 'pick-option', option: answer() }, clock.now);
+    });
+    until(room, clock, 'reveal');
+    expect(g.last?.bonus[ids[1]]).toMatchObject({ streak: 2, points: DIDACTICS.streakBonus });
+    expect(viewOf(room, ids[1], clock.now).myStreak).toBe(2);
+  });
+
+  it('gives 30 seconds to answer, 45 with more time', () => {
+    const { room, clock } = setup(2);
+    const g = until(room, clock, 'question');
+    expect(g.phase.endsAt! - g.phase.startedAt).toBe(30_000);
+    const extended = createRoom({ code: 'ABCDEF', seed: 5, now: START, settings: { game: 'didactics', extendedTimers: true } });
+    ['Ann', 'Bob'].forEach((d) => join(extended, { deviceId: d, name: d, now: START }));
+    hostCommand(extended, { type: 'start' }, START);
+    const c2 = { now: START };
+    const g2 = until(extended, c2, 'question');
+    expect(g2.phase.endsAt! - g2.phase.startedAt).toBe(45_000);
   });
 });

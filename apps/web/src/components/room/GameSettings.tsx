@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'motion/react';
-import { type ContentMode, type GameId, type RoomSettings, gameInfo } from '@iatrome/game/client';
+import { type ContentMode, type PlayableGameId as GameId, type RoomSettings, gameInfo } from '@iatrome/game/client';
 import { Icon } from '@/components/icons/Icon';
 import type { IconName } from '@/components/icons/icons';
 import { Segmented } from '@/components/ui/Segmented';
@@ -13,7 +13,6 @@ export const GAME_ICONS: Record<GameId, IconName> = {
   didactics: 'game-didactics',
   'grand-rounds': 'game-rounds',
   sketch: 'game-sketch',
-  survive: 'game-survive',
   poison: 'game-poison',
 };
 
@@ -21,12 +20,11 @@ const GAME_TONES: Record<GameId, string> = {
   didactics: 'var(--royal-gold)',
   'grand-rounds': 'var(--rose-kiss)',
   sketch: 'var(--cool-sky)',
-  survive: 'var(--royal-gold)',
   poison: 'var(--sky-blue)',
 };
 
 /** The flagship first, then the big-group party game. */
-const ORDER: GameId[] = ['grand-rounds', 'didactics', 'sketch', 'survive', 'poison'];
+const ORDER: GameId[] = ['grand-rounds', 'didactics', 'sketch', 'poison'];
 
 /** Pick a game: a list on phones and in dialogs, a row of tiles when `tiles` and there's room. */
 export function GamePicker({ value, onChange, compact, tiles }: { value: GameId; onChange: (g: GameId) => void; compact?: boolean; tiles?: boolean }) {
@@ -103,6 +101,11 @@ export function ModePicker({ value, onChange }: { value: ContentMode; onChange: 
       <p className={styles.blurb}>{MODES.find((m) => m.id === value)?.blurb}</p>
     </div>
   );
+}
+
+/** Team trivia only: play in teams, or everyone for themselves. */
+export function TeamsToggle({ settings, onChange }: { settings: RoomSettings; onChange: (patch: Partial<RoomSettings>) => void }) {
+  return <Toggle label="Teams" hint="Off, everyone plays for themselves." checked={settings.teams} onChange={(teams) => onChange({ teams })} />;
 }
 
 export function TimeToggle({ settings, onChange }: { settings: RoomSettings; onChange: (patch: Partial<RoomSettings>) => void }) {

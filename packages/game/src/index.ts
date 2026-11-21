@@ -10,6 +10,6 @@ export type { Viewer } from './games/context';
 export type { GrandRoundsView, MatchupView, EntryView, TaskView, MatchupResult, MatchupKind } from './games/grand-rounds';
 export { duelReadTiming, duelRevealTiming, finaleRevealTiming } from './games/grand-rounds/timing';
 export type { SketchView } from './games/sketch';
-export type { SurviveView } from './games/survive';
+export type { TiebreakView } from './games/tiebreak';
 export type { PoisonView } from './games/poison';
-export type { DidacticsView, Team } from './games/didactics';
+export type { Bonus, DidacticsView, Team } from './games/didactics';

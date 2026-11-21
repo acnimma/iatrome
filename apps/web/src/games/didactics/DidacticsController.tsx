@@ -13,7 +13,7 @@ import { StatButton } from '@/components/room/Stat';
 import { haptic } from '@/lib/haptics';
 import { teamTone } from './teams';
 import { ANSWER_TONES, AnswerLetter, LETTERS } from '@/components/room/answers';
-import { calloutText, nextUp, pctLabel, swingText } from './copy';
+import { bonusText, calloutText, nextUp, pctLabel, swingText } from './copy';
 import styles from './Didactics.module.css';
 
 export function DidacticsController({ view, game }: { view: RoomView; game: DidacticsView }) {
@@ -28,17 +28,25 @@ export function DidacticsController({ view, game }: { view: RoomView; game: Dida
     const t = setTimeout(() => play(game.myAnswer === game.answer ? 'ding' : 'wrong'), 450);
     return () => clearTimeout(t);
   }, [revealing, game.number]); // eslint-disable-line react-hooks/exhaustive-deps
+  const streakChip = game.myStreak >= 2 && <div className={styles.streakChip}>{game.myStreak} in a row</div>;
   const badge = team && (
-    <div className={styles.myTeam} style={{ '--tone': tone } as React.CSSProperties}>
-      {team.name}
-    </div>
+    <>
+      {!game.solo && (
+        <div className={styles.myTeam} style={{ '--tone': tone } as React.CSSProperties}>
+          {team.name}
+        </div>
+      )}
+      {streakChip}
+    </>
   );
 
   switch (game.phase.name) {
     case 'intro':
       return (
         <PhoneMessage icon="game-didactics" title="Didactics Mode">
-          You’ll be put on a team. Answer on your phone, then huddle: you see your team’s split and can switch once.
+          {game.solo
+            ? 'Everyone for themselves. Streaks and the fastest right answer earn bonus points.'
+            : 'You’ll be put on a team. Answer on your phone, then huddle: you see your team’s split and can switch once.'}
         </PhoneMessage>
       );
     case 'teams':
@@ -120,8 +128,9 @@ export function DidacticsController({ view, game }: { view: RoomView; game: Dida
           {badge}
           <PhoneMessage icon={right ? 'target' : game.myAnswer === null ? 'sleep' : 'sweat'} title={right ? 'You got it!' : game.myAnswer === null ? 'No answer' : 'Not quite'}>
             The answer was {LETTERS[game.answer ?? 0]}: {game.options[game.answer ?? 0]}
-            {result ? `. Your team: ${result.right} of ${result.of} right, +${result.points}.` : '.'}
+            {result ? (game.solo ? `. +${result.points}.` : `. Your team: ${result.right} of ${result.of} right, +${result.points}.`) : '.'}
           </PhoneMessage>
+          {view.you && game.last?.bonus[view.you.id] && <p className={styles.bonusLine}>{bonusText(game.last.bonus[view.you.id])}</p>}
           {result?.wager && (
             <p className={`${styles.swingLine} ${result.wager.swing < 0 ? styles.swingDown : ''}`}>
               {pctLabel(result.wager.pct)} wagered: {swingText(result.wager.swing)}
@@ -140,7 +149,7 @@ export function DidacticsController({ view, game }: { view: RoomView; game: Dida
       return (
         <PhoneStack>
           {badge}
-          <PhoneMessage icon={place === 1 ? 'trophy' : 'list'} title={place === 1 ? 'Your team is winning' : place ? `Your team is #${place}` : 'Scores are up'}>
+          <PhoneMessage icon={place === 1 ? 'trophy' : 'list'} title={place === 1 ? (game.solo ? 'You’re winning' : 'Your team is winning') : place ? (game.solo ? `You’re #${place}` : `Your team is #${place}`) : 'Scores are up'}>
             {team ? `${team.score.toLocaleString()} points so far.` : view.screen ? 'Check the big screen.' : ''}
             {next ? ` Next: ${next}.` : ''}
           </PhoneMessage>
@@ -186,10 +195,10 @@ function Wager({ view, game, badge }: { view: RoomView; game: DidacticsView; bad
     <PhoneStack>
       {badge}
       <div className={styles.wagerHead}>
-        <span className={styles.wagerLabel}>You’re the captain</span>
+        <span className={styles.wagerLabel}>{game.solo ? 'Place your bet' : 'You’re the captain'}</span>
         <h2 className={styles.wagerTitle}>Bet on the final</h2>
         <p>
-          It’s {hard}. Your team’s majority answer decides it. Right adds the bet, wrong takes it away.
+          {game.solo ? `It’s ${hard}. Right adds the bet, wrong takes it away.` : `It’s ${hard}. Your team’s majority answer decides it. Right adds the bet, wrong takes it away.`}
         </p>
       </div>
       {(game.wager?.options ?? []).map((pct, i) => (

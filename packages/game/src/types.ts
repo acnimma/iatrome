@@ -2,16 +2,22 @@ import type { HostEvent } from '@iatrome/content';
 import type { RngState } from './rng';
 import type { GameState } from './games/registry';
 
-export type GameId = 'grand-rounds' | 'sketch' | 'survive' | 'poison' | 'didactics';
+/** The games a host can pick. */
+export type PlayableGameId = 'grand-rounds' | 'sketch' | 'poison' | 'didactics';
+
+/** Every game the room can run: the pickable ones, plus the secret tie-breaker (never picked, only triggered). */
+export type GameId = PlayableGameId | 'tiebreak';
 
 /** Normal: anyone can play, no healthcare knowledge needed. Pro: for people who work in healthcare. */
 export type ContentMode = 'normal' | 'pro';
 
 export interface RoomSettings {
-  game: GameId;
+  game: PlayableGameId;
   mode: ContentMode;
   /** ×1.5 on writing, drawing and voting timers. Handy on Zoom or with slower typers. */
   extendedTimers: boolean;
+  /** Team trivia plays in teams; off, everyone plays for themselves. */
+  teams: boolean;
   /** Dev/test only: multiplies every timer (e.g. 0.05 for end-to-end tests). */
   speed: number;
 }
@@ -20,6 +26,7 @@ export const defaultSettings: RoomSettings = {
   game: 'grand-rounds',
   mode: 'normal',
   extendedTimers: false,
+  teams: true,
   speed: 1,
 };
 
@@ -71,7 +78,7 @@ export interface TeamStanding {
 }
 
 export interface GameResult {
-  game: GameId;
+  game: PlayableGameId;
   standings: Standing[];
   /** Team games rank teams first. */
   teams?: TeamStanding[];

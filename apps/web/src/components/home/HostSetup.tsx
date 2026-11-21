@@ -10,7 +10,7 @@ import { rememberAutoJoin } from '@/realtime/auto-join';
 import { BackButton } from '@/components/ui/BackButton';
 import { Button } from '@/components/ui/Button';
 import { TextInput } from '@/components/ui/Field';
-import { CROWD_LABEL, GamePicker, ModePicker, type ScreenChoice, ScreenPicker, TimeToggle } from '@/components/room/GameSettings';
+import { CROWD_LABEL, GamePicker, ModePicker, type ScreenChoice, ScreenPicker, TeamsToggle, TimeToggle } from '@/components/room/GameSettings';
 import { unlockAudio } from '@/lib/sound';
 import { track } from '@vercel/analytics';
 import styles from './HostSetup.module.css';
@@ -118,6 +118,7 @@ export function HostSetup() {
         <div className={styles.go}>
           <div className={styles.time}>
             <TimeToggle settings={settings} onChange={(patch) => setSettings((s) => ({ ...s, ...patch }))} />
+            {settings.game === 'didactics' && <TeamsToggle settings={settings} onChange={(patch) => setSettings((s) => ({ ...s, ...patch }))} />}
           </div>
           {error && (
             <p className={styles.error} role="alert">

@@ -11,7 +11,7 @@ import { ReactionLayer, RoomCode } from '@/components/room/RoomBits';
 import { type Mood, audioLocked, isMuted, play, setMuted, startMusic, stopMusic, unlockAudio } from '@/lib/sound';
 import { GrandRoundsStage } from '@/games/grand-rounds/GrandRoundsStage';
 import { SketchStage } from '@/games/sketch/SketchStage';
-import { SurviveStage } from '@/games/survive/SurviveStage';
+import { TiebreakStage } from '@/games/tiebreak/TiebreakStage';
 import { PoisonStage } from '@/games/poison/PoisonStage';
 import { DidacticsStage } from '@/games/didactics/DidacticsStage';
 import { StageLobby } from './StageLobby';
@@ -136,8 +136,8 @@ function StageGame({ view }: { view: RoomView }) {
       return <GrandRoundsStage view={view} game={view.game} />;
     case 'sketch':
       return <SketchStage view={view} game={view.game} />;
-    case 'survive':
-      return <SurviveStage view={view} game={view.game} />;
+    case 'tiebreak':
+      return <TiebreakStage view={view} game={view.game} />;
     case 'poison':
       return <PoisonStage view={view} game={view.game} />;
     case 'didactics':

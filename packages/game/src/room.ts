@@ -1,12 +1,14 @@
 import { type HostEvent, hostLines } from '@iatrome/content';
 import { EXTENDED_TIMERS_FACTOR, REVEAL, ROOM, STAT } from './constants';
 import type { ActionOutcome, GameContext, Viewer } from './games/context';
+import { startTiebreak } from './games/tiebreak';
 import { type GameAction, type GameView, games } from './games/registry';
 import { createRng } from './rng';
 import { cleanText, comparable } from './text';
 import {
   AVATARS,
   type GameId,
+  type PlayableGameId,
   type GameResult,
   type HostLine,
   type Person,
@@ -257,10 +259,29 @@ function promoteAudience(room: RoomState) {
   }
 }
 
+/** Players level for first place, when that is a real tie (someone scored, and more than one leader). */
+function tiedLeaders(result: GameResult): string[] {
+  if (result.teams) {
+    const top = result.teams.filter((t) => t.rank === 1);
+    return top.length > 1 && top[0].score > 0 ? top.flatMap((t) => t.members) : [];
+  }
+  const top = result.standings.filter((s) => s.rank === 1);
+  return top.length > 1 && top[0].score > 0 ? top.map((s) => s.playerId) : [];
+}
+
 function checkFinished(room: RoomState, now: number) {
   if (!room.game) return;
   const result = games[room.game.game].result(room.game, context(room, now));
   if (!result) return;
+  // A tie for first is settled by sudden-death trivia before anyone is crowned (never twice).
+  if (room.game.game !== 'tiebreak') {
+    const ctx = context(room, now);
+    const tied = ctx.connectedPlayers(tiedLeaders(result));
+    if (tied.length >= 2) {
+      room.game = startTiebreak(ctx, result, tied);
+      return;
+    }
+  }
   room.result = result;
   room.stats = grantStats(result);
   room.stage = 'over';
@@ -406,11 +427,13 @@ function say(room: RoomState, now: number, event: HostEvent, vars: Record<string
 // ── Settings ─────────────────────────────────────────────────────────────────
 
 function sanitizeSettings(s: RoomSettings, devMode: boolean): RoomSettings {
-  const gameIds = Object.keys(games) as GameId[];
+  // The tie-breaker is internal: it can't be picked, only triggered.
+  const gameIds = (Object.keys(games) as GameId[]).filter((id): id is PlayableGameId => id !== 'tiebreak');
   return {
     game: gameIds.includes(s.game) ? s.game : defaultSettings.game,
     mode: s.mode === 'pro' ? 'pro' : 'normal',
     extendedTimers: Boolean(s.extendedTimers),
+    teams: s.teams !== false,
     speed: devMode && typeof s.speed === 'number' && s.speed >= 0.02 && s.speed <= 1 ? s.speed : 1,
   };
 }

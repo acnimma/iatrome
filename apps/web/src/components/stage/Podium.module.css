@@ -56,7 +56,7 @@
   grid-template-columns: 250px 300px 250px;
   align-items: end;
   gap: 14px;
-  height: 480px;
+  height: 440px;
 }
 
 .column {
@@ -332,4 +332,171 @@
   height: 100%;
   border-radius: inherit;
   background: var(--tone);
+}
+
+
+/* ── Vibes ───────────────────────────────────────────── */
+.podium {
+  position: relative;
+  isolation: isolate;
+}
+
+.vibes {
+  position: absolute;
+  inset: -60px -80px;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* Slow golden light rays, fanned out from behind the winner. */
+.rays {
+  position: absolute;
+  left: 50%;
+  top: 56%;
+  width: 1500px;
+  height: 1500px;
+  margin: -750px 0 0 -750px;
+  border-radius: 50%;
+  background: repeating-conic-gradient(from 0deg, color-mix(in srgb, var(--royal-gold) 26%, transparent) 0deg 9deg, transparent 9deg 22deg);
+  mask-image: radial-gradient(closest-side, #000 18%, transparent 72%);
+  -webkit-mask-image: radial-gradient(closest-side, #000 18%, transparent 72%);
+  animation: spinRays 48s linear infinite;
+}
+
+@keyframes spinRays {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Soft jelly orbs drifting like a lava lamp. */
+.orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(46px);
+  opacity: 0.5;
+  animation: drift 14s ease-in-out infinite alternate;
+}
+
+.orbA {
+  left: 4%;
+  top: 14%;
+  width: 360px;
+  height: 360px;
+  background: var(--cool-sky);
+}
+
+.orbB {
+  right: 2%;
+  top: 40%;
+  width: 420px;
+  height: 420px;
+  background: var(--rose-kiss);
+  animation-duration: 18s;
+  animation-delay: -6s;
+}
+
+.orbC {
+  left: 36%;
+  bottom: -6%;
+  width: 380px;
+  height: 300px;
+  background: var(--royal-gold);
+  animation-duration: 16s;
+  animation-delay: -3s;
+}
+
+@keyframes drift {
+  from {
+    transform: translate(-30px, 10px) scale(0.92);
+  }
+  to {
+    transform: translate(40px, -36px) scale(1.12);
+  }
+}
+
+/* The headline: jelly letters, big. */
+.headline {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 1200px;
+  margin: 0;
+  font-family: var(--font-play);
+  font-size: clamp(2.6rem, 5.4vw, 4.4rem);
+  font-weight: 400;
+  line-height: 1.05;
+  text-align: center;
+  color: var(--ink);
+  text-shadow: var(--play-raised);
+}
+
+.headlineChar {
+  display: inline-block;
+  transform-origin: 50% 100%;
+}
+
+/* The winner idles like a jelly: a squish and a hop, forever. */
+.bounceAvatar,
+.floatAvatar {
+  display: inline-block;
+  transform-origin: 50% 100%;
+  animation: squish 2.2s ease-in-out infinite;
+}
+
+.floatAvatar {
+  animation-duration: 3.2s;
+}
+
+@keyframes squish {
+  0%,
+  100% {
+    transform: translateY(0) scale(1, 1);
+  }
+  35% {
+    transform: translateY(-10px) scale(0.96, 1.06);
+  }
+  55% {
+    transform: translateY(0) scale(1.06, 0.94);
+  }
+}
+
+.twinkle {
+  position: absolute;
+  z-index: 3;
+  display: block;
+  line-height: 0;
+  pointer-events: none;
+  filter: drop-shadow(0 0 10px color-mix(in srgb, var(--royal-gold) 70%, transparent));
+}
+
+/* A glossy sweep that glides across each step, again and again. */
+.shine {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(115deg, transparent 38%, rgb(255 255 255 / 0.45) 50%, transparent 62%);
+  transform: translateX(-120%);
+  animation: sweep 4.5s ease-in-out 2.5s infinite;
+}
+
+@keyframes sweep {
+  0%,
+  60% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(120%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rays,
+  .orb,
+  .bounceAvatar,
+  .floatAvatar,
+  .shine {
+    animation: none;
+  }
 }

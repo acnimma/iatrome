@@ -73,12 +73,12 @@ async function act(phone: Page, i: number) {
   if (n) await choices.nth(i % n).click({ timeout: 1000 }).catch(() => {});
 }
 
-for (const game of ['grand-rounds', 'sketch', 'survive', 'poison', 'didactics']) {
+for (const game of ['grand-rounds', 'sketch', 'poison', 'didactics']) {
   test(`${game}: a full game from lobby to podium`, async ({ browser }) => {
     const errors: string[] = [];
     const { code, stage } = await openRoom(browser, game);
     stage.on('pageerror', (e) => errors.push(`stage: ${e.message}`));
-    await expect(stage.getByText('Grab your phone and go to')).toBeVisible();
+    await expect(stage.getByText('Grab a phone or laptop and go to')).toBeVisible();
 
     const phones = [];
     for (const [i, name] of (game === 'didactics' ? ['Ana', 'Ben', 'Cy', 'Dee'] : ['Ana', 'Ben', 'Cy']).entries()) {
@@ -140,8 +140,9 @@ test('phones only: host from a phone, play with no big screen', async ({ browser
   const errors: string[] = [];
   host.on('pageerror', (e) => errors.push(e.message));
   await host.goto('/host');
-  await expect(host.getByRole('radio', { name: /Just phones/ })).toHaveAttribute('aria-checked', 'true');
-  await host.getByRole('radio', { name: /Survive the Shift/ }).click();
+  await expect(host.getByRole('radio', { name: 'Off' })).toHaveAttribute('aria-checked', 'true');
+  await host.getByRole('radio', { name: /Didactics Mode/ }).click();
+  await host.getByRole('switch', { name: /Teams/ }).click();
   // The host types their name in setup and walks straight into the lobby.
   await host.getByLabel('Your name').fill('Ana');
   await host.getByRole('button', { name: 'Create room' }).click();
@@ -157,7 +158,7 @@ test('phones only: host from a phone, play with no big screen', async ({ browser
   await host.keyboard.press('Escape');
 
   await host.getByRole('button', { name: /Start/ }).click();
-  await expect(host.getByText(/Question 1/)).toBeVisible();
+  await expect(host.getByText(/Question 1/)).toBeVisible({ timeout: 20_000 });
   await host.locator('[data-choice]').first().click();
   await friend.locator('[data-choice]').nth(1).click();
   // No big screen, so the phones show the answer and the fact themselves.

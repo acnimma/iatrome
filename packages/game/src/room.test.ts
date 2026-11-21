@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { advance, createRoom, hostCommand, join, nextWake, playerCommand, setConnected, viewFor } from './room';
-import type { GameId, RoomSettings, RoomState } from './types';
+import type { PlayableGameId as GameId, RoomSettings, RoomState } from './types';
 
 const START = 1_700_000_000_000;
 
@@ -45,7 +45,7 @@ function actFor(room: RoomState, id: string, now: number, i: number) {
         playerCommand(room, id, { type: 'guess', text: state.term.answer }, now);
       return;
     }
-    case 'survive':
+    case 'tiebreak':
       if (g.phase.name === 'question' && g.myAnswer === null) playerCommand(room, id, { type: 'pick-option', option: i % 4 }, now);
       return;
     case 'didactics':
@@ -75,7 +75,6 @@ describe('full games', () => {
     ['grand-rounds', 5],
     ['grand-rounds', 8],
     ['sketch', 4],
-    ['survive', 6],
     ['poison', 5],
     ['didactics', 4],
     ['didactics', 12],
@@ -94,7 +93,7 @@ describe('full games', () => {
   }
 
   it('finishes every game even when nobody does anything', () => {
-    for (const game of ['grand-rounds', 'sketch', 'survive', 'poison', 'didactics'] as GameId[]) {
+    for (const game of ['grand-rounds', 'sketch', 'poison', 'didactics'] as GameId[]) {
       const { room, ids, clock } = setup(4, { game });
       hostCommand(room, { type: 'start' }, clock.now);
       playToEnd(room, ids, clock, false);
@@ -247,7 +246,7 @@ describe('Didactics Mode', () => {
     expect(room.game?.phase.name).toBe('huddle');
     step(room, clock);
     expect(room.game?.phase.name).toBe('reveal');
-    for (const t of game.teams) expect(game.last?.perTeam[t.id].points).toBe(1000);
+    for (const t of game.teams) expect(game.last!.perTeam[t.id].points - (game.last!.perTeam[t.id].bonus ?? 0)).toBe(1000);
   });
 });
 
@@ -273,7 +272,7 @@ describe('joining and moderation', () => {
   });
 
   it('keeps going when a player drops out mid-game', () => {
-    const { room, ids, clock } = setup(4, { game: 'survive' });
+    const { room, ids, clock } = setup(4, { game: 'didactics' });
     hostCommand(room, { type: 'start' }, clock.now);
     setConnected(room, ids[3], false, clock.now);
     playToEnd(room, ids.slice(0, 3), clock);
@@ -310,7 +309,7 @@ describe('Stats (carried into the next game, double one round)', () => {
   }
 
   it('go to the top three, plus last place in bigger groups', () => {
-    const { room } = finished(6, 'survive');
+    const { room } = finished(6, 'didactics');
     const grants = Object.values(room.stats ?? {});
     expect(grants.filter((g) => g === 'top')).toHaveLength(3);
     expect(grants.filter((g) => g === 'mercy')).toHaveLength(1);
@@ -320,12 +319,12 @@ describe('Stats (carried into the next game, double one round)', () => {
   });
 
   it('are scarcer in small groups so they still mean something', () => {
-    const { room } = finished(3, 'survive');
+    const { room } = finished(3, 'didactics');
     expect(Object.keys(room.stats ?? {})).toHaveLength(1);
   });
 
   it('double the caller’s points for that round, once', () => {
-    const { room, clock } = finished(6, 'survive');
+    const { room, clock } = finished(6, 'didactics');
     const holder = Object.keys(room.stats!).find((id) => room.stats![id] === 'top')!;
     const other = room.people.find((p) => !room.stats![p.id])!.id;
     expect(playerCommand(room, other, { type: 'stat' }, clock.now)).toEqual({ error: 'No game running.' });
@@ -339,13 +338,14 @@ describe('Stats (carried into the next game, double one round)', () => {
     expect(playerCommand(room, holder, { type: 'stat' }, clock.now)).toEqual({ error: 'You don’t have a Stat to call.' });
 
     const g = room.game;
-    if (g?.game !== 'survive') throw new Error('expected survive');
+    if (g?.game !== 'didactics') throw new Error('expected didactics');
     const answer = g.questions[g.index].answer;
     playerCommand(room, holder, { type: 'pick-option', option: answer }, clock.now);
     playerCommand(room, other, { type: 'pick-option', option: answer }, clock.now);
-    while (room.game?.phase.name === 'question') step(room, clock);
-    const last = room.game?.game === 'survive' ? room.game.last : null;
-    expect(last?.points[holder]).toBe(2 * last!.points[other]);
+    while ((room.game?.phase.name as string) !== 'reveal') step(room, clock);
+    // Bonuses (first in, streaks) aren't doubled; the answer's own points are.
+    const base = (id: string) => g.scores[id] - (g.last?.bonus[id]?.points ?? 0);
+    expect(base(holder)).toBe(2 * base(other));
     expect(viewFor(room, { kind: 'player', id: other }, clock.now).stat.calls).toEqual([holder]);
   });
 
@@ -380,44 +380,6 @@ describe('Stats (carried into the next game, double one round)', () => {
 });
 
 describe('polish rules', () => {
-  it('Survive: a phone that dropped out doesn’t lose a coffee for a question it never saw', () => {
-    const { room, ids, clock } = setup(3, { game: 'survive' });
-    hostCommand(room, { type: 'start' }, clock.now);
-    while (room.game?.phase.name !== 'question') step(room, clock);
-    setConnected(room, ids[2], false, clock.now);
-    const s = room.game?.game === 'survive' ? room.game : null;
-    playerCommand(room, ids[1], { type: 'pick-option', option: s!.questions[s!.index].answer }, clock.now);
-    while (room.game?.phase.name === 'question') step(room, clock);
-    const g = room.game;
-    if (g?.game !== 'survive') throw new Error('expected survive');
-    expect(g.coffees[ids[2]]).toBe(2);
-    expect(g.coffees[ids[0]]).toBe(1); // present, didn't answer
-  });
-
-  it('Survive: two right in a row as a ghost puts you back on shift, as often as you earn it', () => {
-    const { room, ids, clock } = setup(3, { game: 'survive' });
-    hostCommand(room, { type: 'start' }, clock.now);
-    const g = () => (room.game?.game === 'survive' ? room.game : null)!;
-    const answerRight = () => {
-      while (room.game?.phase.name !== 'question') step(room, clock);
-      const answer = g().questions[g().index].answer;
-      for (const id of ids) playerCommand(room, id, { type: 'pick-option', option: answer }, clock.now);
-      while (room.game?.phase.name === 'question') step(room, clock);
-    };
-    while (room.game?.phase.name !== 'question') step(room, clock);
-    for (let comeback = 0; comeback < 2; comeback++) {
-      g().coffees[ids[0]] = 0;
-      g().clockedOut[ids[0]] = g().index;
-      answerRight();
-      expect(ids[0] in g().clockedOut).toBe(true);
-      answerRight();
-      expect(ids[0] in g().clockedOut).toBe(false);
-      expect(g().coffees[ids[0]]).toBe(1);
-      expect(g().last?.revived).toEqual([ids[0]]);
-      expect(room.hostLine?.event).toBe('ghostRevive');
-    }
-  });
-
   it('Sketch: wakes the server for hint letters even when nobody guesses', () => {
     const { room, ids, clock } = setup(3, { game: 'sketch' });
     hostCommand(room, { type: 'start' }, clock.now);
@@ -427,5 +389,86 @@ describe('polish rules', () => {
     const { startedAt, endsAt } = room.game!.phase;
     expect(nextWake(room, clock.now)).toBe(startedAt + 0.45 * (endsAt! - startedAt));
     void ids;
+  });
+});
+
+describe('the secret tie-breaker', () => {
+  /** A solo Didactics game on its last reveal with everyone level: the next tick ends it in a tie. */
+  function levelAtTheEnd(n = 3) {
+    const { room, ids, clock } = setup(n, { game: 'didactics', teams: false });
+    hostCommand(room, { type: 'start' }, clock.now);
+    const g = room.game as unknown as { teamScores: Record<string, number>; scores: Record<string, number>; index: number; questions: unknown[]; phase: { name: string; startedAt: number; endsAt: number | null } };
+    g.index = g.questions.length - 1;
+    g.phase = { name: 'reveal', startedAt: clock.now, endsAt: clock.now };
+    for (const id of Object.keys(g.teamScores)) g.teamScores[id] = 500;
+    for (const id of ids) g.scores[id] = 500;
+    clock.now += 1;
+    advance(room, clock.now);
+    return { room, ids, clock };
+  }
+
+  const tiebreak = (room: RoomState) => {
+    if (room.game?.game !== 'tiebreak') throw new Error('expected a tie-breaker');
+    return room.game;
+  };
+
+  it('hands a tie for first to sudden-death trivia instead of the podium', () => {
+    const { room, ids } = levelAtTheEnd();
+    expect(room.stage).toBe('playing');
+    expect(tiebreak(room).playerIds).toEqual(expect.arrayContaining(ids));
+    expect(viewFor(room, { kind: 'player', id: ids[0] }, START).game).toMatchObject({ game: 'tiebreak', inIt: true });
+  });
+
+  it('crowns the fastest right answer and moves the other leaders to second', () => {
+    const { room, ids, clock } = levelAtTheEnd();
+    while (tiebreak(room).phase.name !== 'question') step(room, clock);
+    const g = tiebreak(room);
+    const right = g.questions[g.index].answer;
+    clock.now += 10;
+    playerCommand(room, ids[1], { type: 'pick-option', option: right }, clock.now);
+    clock.now += 50;
+    playerCommand(room, ids[2], { type: 'pick-option', option: right }, clock.now);
+    playerCommand(room, ids[0], { type: 'pick-option', option: (right + 1) % 4 }, clock.now);
+    expect(g.phase.name).toBe('reveal');
+    expect(viewFor(room, { kind: 'stage' }, clock.now).game).toMatchObject({ winner: ids[1], right: [ids[1], ids[2]] });
+    for (let i = 0; i < 50 && room.stage === 'playing'; i++) step(room, clock);
+    expect(room.stage).toBe('over');
+    const rank = (id: string) => room.result!.standings.find((s) => s.playerId === id)!.rank;
+    expect(rank(ids[1])).toBe(1);
+    expect(rank(ids[0])).toBe(2);
+    expect(rank(ids[2])).toBe(2);
+    expect(room.result!.standings[0].playerId).toBe(ids[1]);
+    expect(room.result!.highlights[0]).toMatchObject({ title: 'Sudden Death', playerId: ids[1] });
+    expect(room.hostLine?.event).toBe('winner');
+  });
+
+  it('asks again when nobody is right, then lets the tie stand', () => {
+    const { room, ids, clock } = levelAtTheEnd();
+    let asked = 0;
+    for (let i = 0; i < 400 && room.stage === 'playing'; i++) {
+      const g = tiebreak(room);
+      if (g.phase.name === 'question' && !(ids[0] in g.answers)) {
+        asked += 1;
+        for (const id of ids) playerCommand(room, id, { type: 'pick-option', option: (g.questions[g.index].answer + 1) % 4 }, clock.now);
+      }
+      step(room, clock);
+    }
+    expect(asked).toBe(5);
+    expect(room.stage).toBe('over');
+    expect(room.result!.standings.every((s) => s.rank === 1)).toBe(true);
+    expect(room.result!.highlights.some((h) => h.title === 'Sudden Death')).toBe(false);
+  });
+
+  it('never fires when nobody scored, or when there is one clear leader', () => {
+    const { room, ids, clock } = setup(3, { game: 'didactics', teams: false });
+    hostCommand(room, { type: 'start' }, clock.now);
+    playToEnd(room, ids, clock, false);
+    expect(room.stage).toBe('over');
+  });
+
+  it('can’t be picked as a game', () => {
+    const { room } = setup(3, { game: 'didactics' });
+    hostCommand(room, { type: 'settings', settings: { game: 'tiebreak' as never } }, START);
+    expect(room.settings.game).not.toBe('tiebreak');
   });
 });

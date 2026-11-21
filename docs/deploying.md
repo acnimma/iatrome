@@ -77,7 +77,7 @@ The game server refuses new rooms once **25 are open at once** or **300 have bee
 
 1. Open `https://iatrome.com/host` on a laptop → Create room.
 2. Join from two phones on mobile data (not Wi-Fi) via the QR code.
-3. There are no bots: you need 3 real people for Grand Rounds, 2 for Survive the Shift.
+3. There are no bots: you need 3 real people for Grand Rounds, 2 for Didactics Mode.
 
 ## Costs & limits (free tiers)
 

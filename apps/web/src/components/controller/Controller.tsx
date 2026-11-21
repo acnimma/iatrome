@@ -11,7 +11,7 @@ import { haptic } from '@/lib/haptics';
 import { Icon } from '@/components/icons/Icon';
 import { GrandRoundsController } from '@/games/grand-rounds/GrandRoundsController';
 import { SketchController } from '@/games/sketch/SketchController';
-import { SurviveController } from '@/games/survive/SurviveController';
+import { TiebreakController } from '@/games/tiebreak/TiebreakController';
 import { PoisonController } from '@/games/poison/PoisonController';
 import { DidacticsController } from '@/games/didactics/DidacticsController';
 import { EdgePage } from '@/components/home/EdgePage';
@@ -153,8 +153,8 @@ function ControllerGame({ view }: { view: RoomView }) {
       return <GrandRoundsController view={view} game={view.game} />;
     case 'sketch':
       return <SketchController view={view} game={view.game} />;
-    case 'survive':
-      return <SurviveController view={view} game={view.game} />;
+    case 'tiebreak':
+      return <TiebreakController view={view} game={view.game} />;
     case 'poison':
       return <PoisonController view={view} game={view.game} />;
     case 'didactics':

@@ -3,7 +3,7 @@
 import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import QRCode from 'qrcode';
-import { type PersonView, REACTIONS, type RoomView, gameInfo, type GameId } from '@iatrome/game/client';
+import { type PersonView, REACTIONS, type RoomView, gameInfo, type PlayableGameId as GameId } from '@iatrome/game/client';
 import { useRoom } from '@/realtime/use-room';
 import { Avatar } from '@/components/ui/Avatar';
 import { useAfter } from '@/components/ui/Later';

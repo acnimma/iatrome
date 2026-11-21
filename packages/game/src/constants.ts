@@ -109,34 +109,13 @@ export const SKETCH = {
   flagShare: 0.5,
 } as const;
 
-export const SURVIVE = {
-  minPlayers: 2,
-  maxPlayers: 20,
-  intro: 4_500,
+/** The secret tie-breaker: when the top of any game ends level, the tied players race on trivia. */
+export const TIEBREAK = {
+  intro: 5_000,
   question: 15_000,
-  reveal: 6_500,
-  /** Extra reveal time when someone clocks out, so they get their moment on stage. */
-  outScene: 3_000,
-  /** Beep's clock-out line lands with the scene, after the answer. */
-  outLineDelay: 1_800,
-  /** The Sign-out title card before the final chase. */
-  chaseIntro: 6_000,
-  coffees: 2,
-  /** Short and tense beats long and grinding: Trivia Murder Party runs about 7–9. Everyone plays all of them. */
-  maxQuestions: 12,
-  /** Sign-out, the final chase: the last questions climb through these multipliers, ghosts at full value. */
-  chaseFactors: [2, 2, 3] as readonly number[],
-  /** Correct answers score base + up to speedBonus for answering fast (the leader gets no speed bonus in the chase). */
-  base: 100,
-  speedBonus: 100,
-  /** Paid to everyone still on shift after each question: staying on shift is worth something. */
-  shiftPay: 50,
-  /** Clocked-out players keep answering for a share of the points (full value in the chase). */
-  ghostFactor: 0.5,
-  /** This many right in a row as a ghost puts you back on shift with one coffee. As often as you earn it. */
-  ghostRevive: 2,
-  /** Mercy (every survivor missed, nobody loses a coffee) needs at least this many on shift, and never applies in the chase. */
-  mercyFrom: 3,
+  reveal: 6_000,
+  /** Nobody right? Another question, up to this many; after that the tie stands. */
+  maxQuestions: 5,
 } as const;
 
 /** Long questions (Pro vignettes) get extra reading time: per character past `free`, capped. */
@@ -176,7 +155,8 @@ export const DIDACTICS = {
   /** Team reveal: long enough to give your team a name of its own. */
   teams: 20_000,
   maxTeamName: 24,
-  question: 20_000,
+  /** Answer time: 30 seconds (45 with More time). Long questions get no extra reading time. */
+  question: 30_000,
   /** Once everyone has answered (or time is up), teams see their split and can switch once. */
   huddle: 20_000,
   /** The answer, the split and the fact stay up this long. */
@@ -204,6 +184,11 @@ export const DIDACTICS = {
   /** Individual points (for the MVP): base + up to speedBonus for a fast right answer. */
   base: 100,
   speedBonus: 100,
+  /** On a streak: right again after a right answer earns this much per answer in a row (from the second), up to `streakCap` steps. */
+  streakBonus: 40,
+  streakCap: 4,
+  /** The first to lock in a right answer (needs at least two answering). */
+  firstBonus: 120,
 } as const;
 
 /** Reveal choreography the server times Beep's lines (and phones) around, in ms. */
