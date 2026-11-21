@@ -174,7 +174,9 @@ export function ControllerLobby({ view }: { view: RoomView }) {
           >
             {needed > 0 ? `Waiting for ${needed} more player${needed === 1 ? '' : 's'}` : 'Everybody’s in. Start!'}
           </Button>
-          <p className={styles.vipNote}>{needed > 0 ? `${info.title} needs at least ${info.min}. Send them the code.` : 'You’re the VIP, so you start the game.'}</p>
+          <p className={styles.vipNote}>
+            {needed > 0 ? `${players.length} of ${info.min} in. ${info.title} needs at least ${info.min} players. Share the code above.` : 'You’re the VIP, so you start the game.'}
+          </p>
         </div>
       )}
     </div>
