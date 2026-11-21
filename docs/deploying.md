@@ -21,7 +21,7 @@ Two pieces deploy separately — both on Cloudflare:
 Live server: `https://iatrome-realtime.iatrome-realtime.workers.dev`. The site uses it automatically on any non-local hostname (`apps/web/src/realtime/config.ts`), so `NEXT_PUBLIC_REALTIME_HOST` is only needed to point somewhere else.
 
 Allowed site origins are set in `apps/realtime/wrangler.jsonc` (`ALLOWED_ORIGINS`):
-`https://iatrome.com`, `https://www.iatrome.com`, `https://iatrome.iatrome-realtime.workers.dev`, and `https://*-iatrome.iatrome-realtime.workers.dev` (Workers preview URLs). Change them there if your domain differs, then redeploy.
+`https://iatrome.com` and `https://www.iatrome.com`. Change them there if your domain differs, then redeploy.
 
 ## 2. Site → Cloudflare Workers (OpenNext)
 
@@ -33,11 +33,11 @@ That builds with OpenNext (`@opennextjs/cloudflare`) and deploys the `iatrome` W
 
 Config lives in `apps/web/wrangler.jsonc` and `apps/web/open-next.config.ts`. Preview locally in the Workers runtime with `npm run preview -w @iatrome/web`.
 
-**Build-time environment variables** (pass when you build/deploy, or set in Cloudflare Workers CI):
+**Build-time environment variables.** Every `NEXT_PUBLIC_*` value (realtime host, site URL, the ads flag, and the AdSense client and slot IDs) is baked into the client bundle at build time — set them wherever the build runs (the deploy script, Wrangler CI, or your local shell), not only as Worker runtime secrets.
 
 | Name | Value |
 |---|---|
-| `NEXT_PUBLIC_SITE_URL` | `https://iatrome.com` (already set in the deploy script) |
+| `NEXT_PUBLIC_SITE_URL` | `https://iatrome.com` (already set in the deploy script; also the code fallback in `layout.tsx`) |
 | `NEXT_PUBLIC_REALTIME_HOST` | `iatrome-realtime.<your-subdomain>.workers.dev` (no `https://`) — only if not using the default |
 | `NEXT_PUBLIC_ADS_ENABLED` | `true` to turn ads on (off by default; nothing loads without it) |
 | `NEXT_PUBLIC_ADSENSE_CLIENT` | Your AdSense publisher id, `ca-pub-…` |
@@ -49,7 +49,7 @@ The ad frame picks the banner that fits the screen (728x90 on laptops and TVs, 4
 
 Redeploy after changing them (they’re baked in at build time).
 
-Workers preview URLs look like `https://<alias>-iatrome.iatrome-realtime.workers.dev` and are already on the realtime allow-list.
+Workers preview URLs look like `https://<alias>-iatrome.iatrome-realtime.workers.dev`. Add them to `ALLOWED_ORIGINS` only if you need preview hosts to open rooms.
 
 ## 3. Domain → Cloudflare / Namecheap DNS
 
