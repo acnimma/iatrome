@@ -60,7 +60,7 @@ function Writing({ view, game }: { view: RoomView; game: GrandRoundsView }) {
     if (done.size > locked.current) play('lockin');
     locked.current = done.size;
   }, [done.size]);
-  const title = game.round === 2 ? 'Write your differential' : game.round === 1 ? 'Write & draw on your phones' : 'Answer on your phones';
+  const title = game.round === 2 ? 'Write your differential' : game.round === 1 ? 'Write & draw on your devices' : 'Answer on your devices';
   return (
     <div className={styles.writing}>
       <TimerRing phase={game.phase} pausedAt={view.pausedAt} size={150} ticks />
@@ -144,7 +144,7 @@ function Matchup({ view, game, matchup, onPhone = false }: { view: RoomView; gam
       <div className={styles.footer}>
         {phase === 'vote' && (
           <motion.div className={styles.votePrompt} initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }}>
-            <strong>{matchup.finale ? `Vote on your phones · ${matchup.picksPerVoter} votes each, stack them if you like` : 'Vote on your phones'}</strong>
+            <strong>{matchup.finale ? `Vote on your devices · ${matchup.picksPerVoter} votes each, stack them if you like` : 'Vote on your devices'}</strong>
             <span className={styles.pips}>
               {Array.from({ length: Math.max(matchup.votersExpected, matchup.votesIn) }, (_, i) => (
                 <motion.span key={i} className={i < matchup.votesIn ? styles.pipOn : styles.pip} animate={i < matchup.votesIn ? { scale: [1, 1.5, 1] } : {}} />

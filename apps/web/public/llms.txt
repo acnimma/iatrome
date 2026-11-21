@@ -1,6 +1,6 @@
 # iatrome
 
-> iatrome (pronounced EYE-uh-trohm, /ˈaɪ.ə.troʊm/) is a free multiplayer party game about bodies, doctors, hospitals and the long, strange history of medicine. Everyone plays on their phone in a browser. A shared screen (a TV, a laptop, a video call) makes it better, but it's optional. No app, no account, no download. It makes fun of medicine, never of patients.
+> iatrome (pronounced EYE-uh-trohm, /ˈaɪ.ə.troʊm/) is a free multiplayer party game about bodies, doctors, hospitals and the long, strange history of medicine. Everyone plays on a phone or laptop in a browser. A shared screen (a TV, a laptop, a video call) makes it better, but it's optional. No app, no account, no download. It makes fun of medicine, never of patients.
 
 The name comes from the Greek *iatros*, physician. The humor is dry: questionable historical cures, bureaucracy, bodily betrayals, and the gap between what doctors say and what they mean.
 

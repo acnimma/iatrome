@@ -81,14 +81,14 @@ export function HostSetup() {
 
         <div className={styles.settings}>
           <section className={styles.setting}>
-            <h2 className={styles.label}>Screen</h2>
+            <h2 className={styles.label}>Shared screen</h2>
             <ScreenPicker value={screen} onChange={setScreen} />
             {screen === 'phones' && (
               <div className={styles.hostName}>
                 <TextInput
                   ref={nameRef}
                   label="Your name"
-                  hint="You host from your phone and play too."
+                  hint="You host from your own device and play too."
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   maxLength={ROOM.maxNameLength}

@@ -26,7 +26,7 @@ export function DidacticsStage({ view, game }: { view: RoomView; game: Didactics
   }, [phase, game.number]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (phase === 'intro')
-    return <IntroCard eyebrow="Up next" title="Didactics Mode" body="Random teams. Everyone answers on their phone, then your team huddles. Your team scores when you get it right." />;
+    return <IntroCard eyebrow="Up next" title="Didactics Mode" body="Random teams. Everyone answers on their phone or laptop, then your team huddles. Your team scores when you get it right." />;
   if (phase === 'teams') return <Teams view={view} game={game} />;
   if (phase === 'standings') return <Standings game={game} />;
   if (phase === 'lightning')

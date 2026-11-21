@@ -76,17 +76,17 @@ const MODES = [
 ] as const satisfies readonly { id: ContentMode; title: string; blurb: string }[];
 
 const SCREENS = [
-  { id: 'big', title: 'Big screen', blurb: 'Open this on a TV, laptop or video call.' },
-  { id: 'phones', title: 'Just phones', blurb: 'No TV needed. Everyone plays on their own phone.' },
+  { id: 'big', title: 'On', blurb: 'Open this on a TV, laptop or video call. Everyone joins from a phone or laptop.' },
+  { id: 'phones', title: 'Off', blurb: 'No shared screen needed. Everyone plays from their own phone or laptop.' },
 ] as const;
 
 export type ScreenChoice = (typeof SCREENS)[number]['id'];
 
-/** Where everyone will be looking. Phones-only rooms skip the stage entirely. */
+/** Shared screen on or off. Off skips the stage entirely: everyone plays from their own phone or laptop. */
 export function ScreenPicker({ value, onChange }: { value: ScreenChoice; onChange: (v: ScreenChoice) => void }) {
   return (
     <div className={styles.choice}>
-      <Segmented label="Where everyone looks" options={SCREENS} value={value} onChange={onChange} />
+      <Segmented label="Shared screen" options={SCREENS} value={value} onChange={onChange} />
       <p className={styles.blurb}>{SCREENS.find((s) => s.id === value)?.blurb}</p>
     </div>
   );

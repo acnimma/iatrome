@@ -18,12 +18,12 @@ export const metadata: Metadata = {
   // Every tab reads "iatrome | ...": pages only supply their own part.
   title: { default: 'iatrome | medical party game', template: 'iatrome | %s' },
   description:
-    'A party game for people who speak fluent medicine. Free, played on your phones, with or without a big screen.',
+    'A party game for people who speak fluent medicine. Free, played on your phones or laptops, with or without a shared screen.',
   applicationName: 'iatrome',
   manifest: '/manifest.webmanifest',
   openGraph: {
     title: 'iatrome | medical party game',
-    description: 'A party game for people who speak fluent medicine. Free, played on your phones.',
+    description: 'A party game for people who speak fluent medicine. Free, played on your phones or laptops.',
     type: 'website',
   },
   twitter: { card: 'summary_large_image' },

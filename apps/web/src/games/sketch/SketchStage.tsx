@@ -26,7 +26,7 @@ export function SketchStage({ view, game }: { view: RoomView; game: SketchView }
       <IntroCard
         eyebrow="Up next"
         title="Sketch"
-        body={`One player draws. Everyone races to guess on their phone. Faster guesses score more.${game.laps > 1 ? ' Everyone draws twice.' : ''} Letters get flagged.`}
+        body={`One player draws. Everyone races to guess on their phone or laptop. Faster guesses score more.${game.laps > 1 ? ' Everyone draws twice.' : ''} Letters get flagged.`}
       />
     );
 
