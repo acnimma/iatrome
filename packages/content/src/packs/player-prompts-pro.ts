@@ -9,14 +9,14 @@ export const playerQuipsPro: QuipPrompt[] = [
   { id: 'pq-p004', text: '{player}’s dot phrase for everything', breadth: 'clinical', curbside: ['.itsprobablyfine', '.askmysenior'] },
   { id: 'pq-p005', text: 'The best-practice alert that fires when {player} logs in', breadth: 'clinical', curbside: ['“Are you sure? Really?”', '“Warning: user may freestyle”'] },
   { id: 'pq-p006', text: '{player}’s answer to every pimp question', breadth: 'clinical', curbside: ['“Potassium?”', '“Great question. Pass.”'] },
-  { id: 'pq-p007', text: 'The specialty {player} is destined for', breadth: 'clinical', curbside: ['Derm, for the lunch hours', 'Ortho, for the drills'] },
+  { id: 'pq-p046', text: 'What {player} writes in the plan when there is no plan', breadth: 'clinical', curbside: ['“Will discuss with attending”', '“Continue current management”'] },
   { id: 'pq-p008', text: 'What {player} writes in the “reason for consult” box', breadth: 'clinical', curbside: ['“Help.”', '“Attending wants it.”'] },
   { id: 'pq-p009', text: '{player}’s one-liner at sign-out', breadth: 'clinical', curbside: ['“They’re stable. Bye.”', '“Nothing pending.” (Everything pending.)'] },
   { id: 'pq-p010', text: 'The thing {player} says that night shift will never forgive', breadth: 'clinical', curbside: ['“Should be a quiet night”', '“I’ll leave you the admission”'] },
   { id: 'pq-p011', text: 'What {player} does during a 9-hour surgery', breadth: 'clinical', curbside: ['Reorganizes their closet, mentally', 'Holds the retractor and a grudge'] },
   { id: 'pq-p012', text: '{player}’s worst habit on rounds', breadth: 'clinical', curbside: ['Answering for the student', 'Presenting the weather'] },
   { id: 'pq-p013', text: 'How {player} survives a 28-hour call', breadth: 'clinical', curbside: ['Graham crackers and spite', 'Eleven-minute naps'] },
-  { id: 'pq-p014', text: '{player}’s advance directive, in five words', breadth: 'clinical', curbside: ['“No interns. No exceptions.”', '“Bring me back for payday”'] },
+  { id: 'pq-p047', text: '{player}’s out-of-office reply', breadth: 'clinical', curbside: ['“Gone. Page someone else.”', '“Back Monday. Probably.”'] },
   { id: 'pq-p015', text: 'What the charge nurse says when {player} is on the schedule', breadth: 'clinical', curbside: ['“Hide the cake”', '“Pray for the admissions”'] },
   { id: 'pq-p016', text: 'The first line of {player}’s honest personal statement', breadth: 'clinical', curbside: ['“I liked the TV show.”', '“My mom said so.”'] },
   { id: 'pq-p017', text: 'What {player}’s attending really thinks of them', breadth: 'clinical', curbside: ['“Means well. Talks fast.”', '“Still can’t find the fax”'] },
@@ -48,6 +48,17 @@ export const playerQuipsPro: QuipPrompt[] = [
   { id: 'pq-p043', text: '{player}’s bedside manner during a Foley', breadth: 'clinical', curbside: ['“Big breath. Bigger.”', 'Tells a long story about their cat'] },
   { id: 'pq-p044', text: 'What {player} would chart after a sponge bath', breadth: 'clinical', curbside: ['“Very thorough”', '“Patient tipped”'] },
   { id: 'pq-p045', text: 'The worst thing {player} could say during a time-out', breadth: 'clinical', curbside: ['“Wait, which side?”', '“Can I go to the bathroom?”'] },
+  // The job itself: EHR, insurance, rounds, admin, dentistry
+  { id: 'pq-p048', text: 'The prior auth {player} would deny', breadth: 'clinical', curbside: ['Lunch, for everyone', 'Their own coffee refill'] },
+  { id: 'pq-p049', text: 'What’s sitting unread in {player}’s in-basket', breadth: 'clinical', curbside: ['Results from 2023', 'A “call me” from compliance'] },
+  { id: 'pq-p050', text: 'How {player} wins a peer-to-peer call', breadth: 'clinical', curbside: ['Outlasting the hold music', 'Crying, strategically'] },
+  { id: 'pq-p051', text: '{player}’s tangent that makes rounds run long', breadth: 'clinical', curbside: ['Their gap year, in detail', 'Sodium, philosophically'] },
+  { id: 'pq-p052', text: 'How {player} presents a patient in ten seconds', breadth: 'clinical', curbside: ['“Same as yesterday, but worse”', '“Stable. Next.”'] },
+  { id: 'pq-p053', text: 'The documentation query {player} gets every week', breadth: 'clinical', curbside: ['“Please clarify ‘fine’”', '“Define ‘a bit’”'] },
+  { id: 'pq-p054', text: 'The mandatory module {player} has ignored since orientation', breadth: 'clinical', curbside: ['Fire Safety, Part 4', 'Ethics, ironically'] },
+  { id: 'pq-p055', text: 'A patient satisfaction comment about {player}', breadth: 'clinical', curbside: ['“Nice. Typed a lot.”', '“Interesting shoes”'] },
+  { id: 'pq-p056', text: '{player}’s face after an inferior alveolar block', breadth: 'clinical', curbside: ['Half asleep, half smiling', 'Drooling with dignity'] },
+  { id: 'pq-p057', text: 'What {player} writes on their own medical history form', breadth: 'clinical', curbside: ['“See previous form”', '“Allergies: mornings”'] },
 ];
 
 export const playerDifferentialsPro: DifferentialPrompt[] = [
@@ -64,5 +75,7 @@ export const playerDifferentialsPro: DifferentialPrompt[] = [
   { id: 'pd-p011', text: 'Three things {player} does to avoid a procedure', breadth: 'clinical', beep: ['Pages the senior “for teaching”', 'Watches four videos', 'Asks the nurse, who already did it'] },
   { id: 'pd-p012', text: 'Right before a procedure goes sideways, {player} says three things', breadth: 'clinical', beep: ['“Easy one”', '“Hold this”', '“Can someone page my senior? Calmly.”'] },
   { id: 'pd-p013', text: 'Three excuses {player} gives for a late note', breadth: 'clinical', beep: ['“The EHR ate it”', '“I was being thorough”', '“What note?”'] },
-  { id: 'pd-p014', text: 'In {player}’s will, the unit gets these three things', breadth: 'clinical', beep: ['Half a granola bar', 'The good scissors, finally', 'Their unread modules, all of them'] },
+  { id: 'pd-p015', text: 'Three dot phrases {player} uses daily', breadth: 'clinical', beep: ['.stable', '.seeabove', '.callmeifworse'] },
+  { id: 'pd-p016', text: 'Three ways {player} survives long rounds', breadth: 'clinical', beep: ['Unlocks knees on a timer', 'Snacks in the white coat', 'Nods at every lab'] },
+  { id: 'pd-p017', text: 'On hold with insurance, {player} says these three things', breadth: 'clinical', beep: ['“Representative”', '“Representative. Please.”', '“I went to school for this”'] },
 ];
