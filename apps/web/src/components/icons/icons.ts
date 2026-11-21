@@ -559,11 +559,11 @@ export const ICONS = {
       gloss('M10 22V18Q10 13 15 13H24'),
   ),
 
-  mail: icon(
-    `<rect x="6" y="13" width="52" height="38" rx="9" fill="${CARD}"/>` +
-      `<path d="M9 19 32 37 55 19" stroke-width="3.5"/>` +
-      `<circle cx="49" cy="17" r="6" fill="${ROSE}"/>` +
-      gloss('M11 21V20Q11 18 13 18H20'),
+  /** Feedback: a chat bubble with an exclamation mark. */
+  feedback: icon(
+    `<path d="M14 8H50A9 9 0 0 1 59 17V38A9 9 0 0 1 50 47H28L16 57 18 47H14A9 9 0 0 1 5 38V17A9 9 0 0 1 14 8Z" fill="${ROSE}"/>` +
+      `<g fill="${CARD}" stroke="none"><rect x="29" y="15" width="6" height="17" rx="3"/><circle cx="32" cy="39" r="3.4"/></g>` +
+      gloss('M10 22V18Q10 13 15 13H24'),
   ),
 
   list: icon(

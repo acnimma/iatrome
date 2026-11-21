@@ -23,7 +23,7 @@ export function SupportButton() {
       aria-label="Email support or feedback"
       title="Support and feedback"
     >
-      <Icon name="mail" size={28} />
+      <Icon name="feedback" size={30} />
     </a>
   );
 }
