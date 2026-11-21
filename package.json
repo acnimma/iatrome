@@ -16,7 +16,8 @@
     "typecheck": "npm run typecheck --workspaces --if-present",
     "e2e": "npm run e2e -w @iatrome/web",
     "brand": "npm run build -w @iatrome/brand",
-    "deploy:realtime": "npm run deploy -w @iatrome/realtime"
+    "deploy:realtime": "npm run deploy -w @iatrome/realtime",
+    "deploy:web": "npm run deploy -w @iatrome/web"
   },
   "devDependencies": {
     "concurrently": "^10.0.7"

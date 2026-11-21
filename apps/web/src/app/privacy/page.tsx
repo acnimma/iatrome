@@ -13,8 +13,8 @@ export default function PrivacyPage() {
 
       <h2>What we count</h2>
       <p>
-        Page visits and site speed, through Vercel Web Analytics and Speed Insights. They don’t use cookies and don’t
-        identify you. We see things like how many people visited and which pages loaded slowly.
+        Nothing about you as a visitor. The site doesn’t run analytics or speed tracking. Game traffic hits our
+        Cloudflare Workers game server only while you play.
       </p>
 
       <h2>What a game keeps</h2>

@@ -1,6 +1,6 @@
 /**
- * Cookie consent, for the day iatrome shows ads. Analytics (Vercel Web Analytics) are
- * cookieless and need no consent; ad cookies do, so ads only load after "all".
+ * Cookie consent, for the day iatrome shows ads. Ad cookies need consent, so ads only
+ * load after "all".
  */
 export type Consent = 'all' | 'essential';
 

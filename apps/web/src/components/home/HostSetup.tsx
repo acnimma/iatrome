@@ -13,7 +13,6 @@ import { TextInput } from '@/components/ui/Field';
 import { CROWD_LABEL, GamePicker, ModePicker, type ScreenChoice, ScreenPicker, TeamsToggle, TimeToggle } from '@/components/room/GameSettings';
 import { unlockAudio } from '@/lib/sound';
 import { AdSlot } from '@/components/ads/AdSlot';
-import { track } from '@vercel/analytics';
 import styles from './HostSetup.module.css';
 
 /** Pick a game, set a password if you like, and open a room. */
@@ -52,7 +51,6 @@ export function HostSetup() {
       if (!res.ok) throw new Error('Couldn’t open a room. Try again in a moment.');
       const { code, hostToken } = (await res.json()) as CreateRoomResponse;
       rememberHost(code, hostToken);
-      track('room_created', { game: settings.game, mode: settings.mode, screen });
       rememberPassword(code, password.trim());
       if (screen === 'phones') {
         rememberName(name.trim());

@@ -37,7 +37,7 @@ packages/
 docs/
   design/           What the game is and why
   research/         The research behind it
-  deploying.md      Going live (Cloudflare + Vercel + DNS)
+  deploying.md      Going live (Cloudflare Workers + DNS)
 tools/              Dev utilities (screenshots)
 ```
 

@@ -1,8 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import localFont from 'next/font/local';
-import { Analytics } from '@vercel/analytics/next';
-import { SpeedInsights } from '@vercel/speed-insights/next';
 import { AdScript } from '@/components/ads/AdScript';
 import { SupportButton } from '@/components/ui/SupportButton';
 import { adsEnabled } from '@/lib/consent';
@@ -13,11 +11,8 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'sw
 const dogbangy = localFont({ src: '../fonts/Dogbangy.ttf', variable: '--font-dogbangy', display: 'swap' });
 
 export const metadata: Metadata = {
-  // Link previews need absolute URLs: the env var, else the Vercel production domain, else local.
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_SITE_URL ??
-      (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : 'http://localhost:3000'),
-  ),
+  // Link previews need absolute URLs: the env var, else production.
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://iatrome.com'),
   // Every tab reads "iatrome | ...": pages only supply their own part.
   title: { default: 'iatrome | medical party game', template: 'iatrome | %s' },
   description:
@@ -47,9 +42,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <SupportButton />
         <ConsentBanner />
         <AdScript />
-        {/* Cookieless: counts visits and page speed without identifying anyone. */}
-        <Analytics />
-        <SpeedInsights />
       </body>
     </html>
   );

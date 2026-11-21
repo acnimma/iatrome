@@ -19,8 +19,8 @@
     { "name": "CONNECT_LIMITER", "namespace_id": "1002", "simple": { "limit": 40, "period": 60 } }
   ],
   "vars": {
-    // Production: the site's origins. Preview deployments on Vercel are covered by the wildcard.
-    "ALLOWED_ORIGINS": "https://iatrome.com,https://www.iatrome.com,https://*.vercel.app",
+    // Production: the site's origins. Workers preview URLs are covered by the wildcard.
+    "ALLOWED_ORIGINS": "https://iatrome.com,https://www.iatrome.com,https://iatrome.iatrome-realtime.workers.dev,https://*-iatrome.iatrome-realtime.workers.dev",
     // Hard caps across everyone: rooms open at once, and rooms created per day (UTC).
     "MAX_ROOMS": "25",
     "MAX_ROOMS_PER_DAY": "300",

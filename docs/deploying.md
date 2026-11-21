@@ -1,11 +1,11 @@
 # Going live
 
-Two pieces deploy separately:
+Two pieces deploy separately — both on Cloudflare:
 
 | Piece | Where | Why |
 |---|---|---|
-| `apps/web` (the site) | **Vercel** | Static + server-rendered pages. |
-| `apps/realtime` (the game server) | **Cloudflare Workers + Durable Objects** | Vercel functions can’t hold WebSockets open. Each room is one Durable Object with server-side timers. Free tier covers casual play. |
+| `apps/web` (the site) | **Cloudflare Workers** via OpenNext | Next.js 16 with dynamic join-code routes (`/[code]`, `/host/[code]`, `/play/[code]`) — not a static export. |
+| `apps/realtime` (the game server) | **Cloudflare Workers + Durable Objects** | Holds WebSockets open. Each room is one Durable Object with server-side timers. Free tier covers casual play. |
 
 ## 1. Game server → Cloudflare (once, ~5 minutes)
 
@@ -21,20 +21,24 @@ Two pieces deploy separately:
 Live server: `https://iatrome-realtime.iatrome-realtime.workers.dev`. The site uses it automatically on any non-local hostname (`apps/web/src/realtime/config.ts`), so `NEXT_PUBLIC_REALTIME_HOST` is only needed to point somewhere else.
 
 Allowed site origins are set in `apps/realtime/wrangler.jsonc` (`ALLOWED_ORIGINS`):
-`https://iatrome.com, https://www.iatrome.com, https://*.vercel.app`. Change them there if your domain differs, then redeploy.
+`https://iatrome.com`, `https://www.iatrome.com`, `https://iatrome.iatrome-realtime.workers.dev`, and `https://*-iatrome.iatrome-realtime.workers.dev` (Workers preview URLs). Change them there if your domain differs, then redeploy.
 
-## 2. Site → Vercel
+## 2. Site → Cloudflare Workers (OpenNext)
 
-Project settings (already done if the site is live):
-- **Root Directory:** `apps/web` (with “Include files outside the root directory” on).
-- Framework is pinned to Next.js by `apps/web/vercel.json`.
+```bash
+npm run deploy:web
+```
 
-**Environment variables** (Settings → Environment Variables, for Production and Preview):
+That builds with OpenNext (`@opennextjs/cloudflare`) and deploys the `iatrome` Worker. `NEXT_PUBLIC_SITE_URL=https://iatrome.com` is set at build time so link previews get absolute URLs.
+
+Config lives in `apps/web/wrangler.jsonc` and `apps/web/open-next.config.ts`. Preview locally in the Workers runtime with `npm run preview -w @iatrome/web`.
+
+**Build-time environment variables** (pass when you build/deploy, or set in Cloudflare Workers CI):
 
 | Name | Value |
 |---|---|
-| `NEXT_PUBLIC_REALTIME_HOST` | `iatrome-realtime.<your-subdomain>.workers.dev` (no `https://`) |
-| `NEXT_PUBLIC_SITE_URL` | `https://iatrome.com` |
+| `NEXT_PUBLIC_SITE_URL` | `https://iatrome.com` (already set in the deploy script) |
+| `NEXT_PUBLIC_REALTIME_HOST` | `iatrome-realtime.<your-subdomain>.workers.dev` (no `https://`) — only if not using the default |
 | `NEXT_PUBLIC_ADS_ENABLED` | `true` to turn ads on (off by default; nothing loads without it) |
 | `NEXT_PUBLIC_ADSENSE_CLIENT` | Your AdSense publisher id, `ca-pub-…` |
 | `NEXT_PUBLIC_ADSENSE_SLOT_HOME`, `_LOBBY`, `_FUN_FACT`, `_GAME_OVER` | One 728x90 ad unit id per placement |
@@ -43,18 +47,17 @@ Ads show on the big screen only, never during a timer: in the lobby, on every th
 
 The ad frame picks the banner that fits the screen (728x90 on laptops and TVs, 468x60 on tablets, 320x100 on phones) and reserves its space before the ad loads, so nothing shifts. Create the units in AdSense as fixed-size display ads in those sizes, and turn **Auto ads off** for the site: they place units wherever they like, including next to buttons.
 
-Redeploy after adding them (they’re baked in at build time).
+Redeploy after changing them (they’re baked in at build time).
 
-## 3. Domain → Namecheap DNS
+Workers preview URLs look like `https://<alias>-iatrome.iatrome-realtime.workers.dev` and are already on the realtime allow-list.
 
-In Vercel: **Settings → Domains → Add** `iatrome.com` and `www.iatrome.com`. Vercel shows the exact records to create: use those values. They are typically:
+## 3. Domain → Cloudflare / Namecheap DNS
 
-| Type | Host | Value |
-|---|---|---|
-| A | `@` | `76.76.21.21` |
-| CNAME | `www` | `cname.vercel-dns.com.` |
+In the Cloudflare dashboard: **Workers & Pages → iatrome → Settings → Domains & Routes → Add** `iatrome.com` and `www.iatrome.com`.
 
-In Namecheap: **Domain List → iatrome.com → Advanced DNS** → delete the default parking records (the `@` URL redirect and `www` CNAME to parkingpage) → add the records above. Propagation usually takes minutes; Vercel issues HTTPS automatically.
+If the zone is on Cloudflare DNS, records are created for you. If DNS stays at Namecheap, point the apex and `www` at the Worker as Cloudflare instructs (typically a CNAME to `iatrome.<your-subdomain>.workers.dev`, or Cloudflare’s proxied records if you move the zone).
+
+In Namecheap: **Domain List → iatrome.com → Advanced DNS** → delete parking records → add whatever Cloudflare shows. Propagation usually takes minutes; HTTPS is issued automatically.
 
 ## Abuse protection
 
@@ -75,10 +78,10 @@ What's already in place:
 
 The game server refuses new rooms once **25 are open at once** or **300 have been created today (UTC)**, whoever is asking. Players see "The hospital is full right now". Slots free when a room closes or empties, and lapse on their own after 6 hours as a safety net. Change `MAX_ROOMS` and `MAX_ROOMS_PER_DAY` in `apps/realtime/wrangler.jsonc` to raise or lower them.
 
-### Extra hardening in the Cloudflare and Vercel dashboards (optional)
+### Extra hardening in the Cloudflare dashboard (optional)
 
-- Vercel → Settings → Firewall: keep the default DDoS protection on; turn on **Attack Challenge Mode** only during an attack.
-- Cloudflare → Workers → `iatrome-realtime` → Observability: logs are on, so spikes are visible.
+- Workers → `iatrome` / `iatrome-realtime` → Observability: logs are on, so spikes are visible.
+- Turn on **Under Attack Mode** or a WAF challenge only during an attack.
 
 ## 4. Smoke test
 

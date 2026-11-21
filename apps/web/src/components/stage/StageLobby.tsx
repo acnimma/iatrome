@@ -1,6 +1,5 @@
 'use client';
 
-import { track } from '@vercel/analytics';
 import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useState } from 'react';
 import { type RoomView, gameInfo } from '@iatrome/game/client';
@@ -154,7 +153,6 @@ export function StageLobby({ view, hideCode }: { view: RoomView; hideCode: boole
             onClick={() => {
               unlockAudio();
               room.host({ type: 'start' });
-              track('game_started', { game: view.settings.game, players: players.length, screen: 'big' });
             }}
           >
             {needed > 0 ? `Waiting for ${needed} more player${needed === 1 ? '' : 's'}` : 'Everybody’s in. Start!'}

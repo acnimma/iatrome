@@ -1,6 +1,5 @@
 'use client';
 
-import { track } from '@vercel/analytics';
 import { motion } from 'motion/react';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
@@ -169,7 +168,6 @@ export function ControllerLobby({ view }: { view: RoomView }) {
             waiting={needed > 0}
             onClick={() => {
               room.command({ type: 'start' });
-              track('game_started', { game: view.settings.game, players: players.length, screen: 'phones' });
             }}
           >
             {needed > 0 ? `Waiting for ${needed} more player${needed === 1 ? '' : 's'}` : 'Everybody’s in. Start!'}
@@ -241,7 +239,6 @@ export function ControllerResults({ view, result }: { view: RoomView; result: Ga
       {isVip && !view.screen && (
         <Button size="lg" block onClick={() => {
             room.command({ type: 'start' });
-            track('game_started', { game: view.settings.game, screen: view.screen ? 'big' : 'phones', again: true });
           }}>
           Play again
         </Button>
