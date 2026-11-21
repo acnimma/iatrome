@@ -77,12 +77,14 @@
   min-height: 72px;
   padding: 14px 18px;
   border-radius: var(--radius-lg);
-  font-family: var(--font-play);
-  font-size: 1.25rem;
-  font-weight: 400;
-  letter-spacing: 0.01em;
-  line-height: 1.2;
+  /* Answers are read, not admired: plain Inter, bold, no flourishes. */
+  font-family: var(--font-body);
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  line-height: 1.25;
   text-align: center;
+  overflow-wrap: anywhere;
 }
 
 .choice:disabled {
@@ -206,7 +208,7 @@
   min-height: 60px;
   padding: 10px 12px;
   border-radius: var(--radius-md);
-  font-size: 1.05rem;
+  font-size: 1rem;
 }
 
 .choiceGrid .choice {

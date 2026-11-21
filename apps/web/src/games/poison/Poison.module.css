@@ -46,10 +46,11 @@
 }
 
 .option {
-  font-family: var(--font-play);
-  font-size: clamp(1.5rem, 2.7vw, 2.3rem);
-  font-weight: 400;
-  line-height: 1.15;
+  /* Plain Inter, bold: the two choices have to be readable from the couch. */
+  font-family: var(--font-body);
+  font-size: clamp(1.4rem, 2.5vw, 2.1rem);
+  font-weight: 800;
+  line-height: 1.2;
   letter-spacing: 0.01em;
   text-shadow: var(--play-on-jelly);
 }
