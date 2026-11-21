@@ -40,7 +40,7 @@ The host is Beep, a pager with a face. Event-keyed line pools (13+ per event) ra
 
 Scoring per matchup: a 1,000-point pool split by vote share, +100 to the winner, or **+250 for a CONSENSUS** (every voter, 2+). **DUPLICATE ORDER**: identical answers both score 0. No answer or host-hidden → the other side takes everything. **Curbside consult**: a stuck player’s ready-made answer, half points. Drafts autosave, so an answer still counts if the timer runs out.
 
-### Sketch (3–10)
+### Imaging (3–10)
 
 The drawer picks one of three terms (easy/medium/hard) and draws live: strokes stream to every phone and the stage. Guessers race: 500 → 100 points by speed; the artist earns 75 per correct guess. Letter hints unlock at 45% and 70% of the time. “So close!” for near misses.
 

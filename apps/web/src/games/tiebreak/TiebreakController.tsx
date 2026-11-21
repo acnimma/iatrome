@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import type { RoomView, TiebreakView } from '@iatrome/game/client';
 import { useRoom } from '@/realtime/use-room';
-import { Choice, PhoneMessage, PhonePrompt, PhoneStack } from '@/components/controller/Phone';
+import { Choice, Choices, PhoneMessage, PhonePrompt, PhoneStack } from '@/components/controller/Phone';
 import { ReactionBar, nameOf, usePeople } from '@/components/room/RoomBits';
 import { ANSWER_TONES, AnswerLetter } from '@/components/room/answers';
 import { haptic } from '@/lib/haptics';
@@ -60,22 +60,24 @@ export function TiebreakController({ view, game }: { view: RoomView; game: Tiebr
   return (
     <PhoneStack>
       <PhonePrompt label={game.number > 1 ? `Sudden death · round ${game.number}` : 'Sudden death · fastest right answer wins'} prompt={game.question ?? ''} phase={game.phase} pausedAt={view.pausedAt} />
-      {game.options.map((option, i) => (
-        <Choice
-          key={i}
-          tone={ANSWER_TONES[i]}
-          picked={game.myAnswer === i}
-          dimmed={!game.canPick && game.myAnswer !== i}
-          onClick={() => {
-            if (!game.canPick) return;
-            haptic('success');
-            room.command({ type: 'pick-option', option: i });
-          }}
-        >
-          <AnswerLetter index={i} />
-          <span className={styles.phoneOption}>{option}</span>
-        </Choice>
-      ))}
+      <Choices layout="grid" label="Answers">
+        {game.options.map((option, i) => (
+          <Choice
+            key={i}
+            tone={ANSWER_TONES[i]}
+            picked={game.myAnswer === i}
+            dimmed={!game.canPick && game.myAnswer !== i}
+            onClick={() => {
+              if (!game.canPick) return;
+              haptic('success');
+              room.command({ type: 'pick-option', option: i });
+            }}
+          >
+            <AnswerLetter index={i} />
+            <span className={styles.phoneOption}>{option}</span>
+          </Choice>
+        ))}
+      </Choices>
       <p className={styles.locked}>{game.myAnswer !== null ? 'Locked in. Waiting on the others.' : ''}</p>
     </PhoneStack>
   );

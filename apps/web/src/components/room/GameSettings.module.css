@@ -99,11 +99,11 @@
   display: none;
 }
 
-/* ── Tiles: one row of five when there's room ─────────── */
+/* ── Tiles: one row of four when there's room ─────────── */
 @media (min-width: 900px) {
   .tiles {
     display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 14px;
   }
 

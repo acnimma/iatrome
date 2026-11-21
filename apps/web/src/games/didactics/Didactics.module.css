@@ -297,7 +297,10 @@
 }
 
 .phoneOption {
-  font-size: 1.2rem;
+  min-width: 0;
+  font-size: 1.05rem;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
 }
 
 .locked {
@@ -314,9 +317,6 @@
 @media (max-width: 900px) {
   .teams {
     grid-template-columns: 1fr 1fr;
-  }
-  .options {
-    grid-template-columns: 1fr;
   }
 }
 

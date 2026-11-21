@@ -22,7 +22,7 @@ export const gameInfo: Record<PlayableGameId, GameInfo> = {
     max: GRAND_ROUNDS.maxPlayers,
   },
   sketch: {
-    title: 'Sketch',
+    title: 'Imaging',
     tagline: 'One draws, everyone guesses',
     howTo: 'Draw your secret word. Everyone else races to guess it.',
     minutes: 10,

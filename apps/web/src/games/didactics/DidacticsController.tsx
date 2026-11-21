@@ -7,7 +7,7 @@ import { useRoom } from '@/realtime/use-room';
 import { Button } from '@/components/ui/Button';
 import { TextInput } from '@/components/ui/Field';
 import { Avatar } from '@/components/ui/Avatar';
-import { AnswerCard, Choice, PhoneMessage, PhonePrompt, PhoneStack } from '@/components/controller/Phone';
+import { AnswerCard, Choice, Choices, PhoneMessage, PhonePrompt, PhoneStack } from '@/components/controller/Phone';
 import { ReactionBar, nameOf, usePeople } from '@/components/room/RoomBits';
 import { StatButton } from '@/components/room/Stat';
 import { haptic } from '@/lib/haptics';
@@ -82,28 +82,30 @@ export function DidacticsController({ view, game }: { view: RoomView; game: Dida
           {badge}
           <PhonePrompt label={label} prompt={game.question ?? ''} phase={game.phase} pausedAt={view.pausedAt} />
           {!huddle && <StatButton view={view} label="Call your Stat: your answer counts twice" />}
-          {game.options.map((option, i) => (
-            <Choice
-              key={i}
-              tone={ANSWER_TONES[i]}
-              picked={game.myAnswer === i}
-              dimmed={!game.canPick && game.myAnswer !== i}
-              onClick={() => {
-                if (!game.canPick || game.myAnswer === i) return;
-                haptic('success');
-                if (game.phase.name === 'huddle') play('switch');
-                room.command({ type: 'pick-option', option: i });
-              }}
-            >
-              <AnswerLetter index={i} />
-              <span className={styles.phoneOption}>{option}</span>
-              {game.teamPicks && game.teamPicks[i] > 0 && (
-                <span className={styles.teamCount} aria-label={`${game.teamPicks[i]} on your team`}>
-                  ×{game.teamPicks[i]}
-                </span>
-              )}
-            </Choice>
-          ))}
+          <Choices layout="grid" label="Answers">
+            {game.options.map((option, i) => (
+              <Choice
+                key={i}
+                tone={ANSWER_TONES[i]}
+                picked={game.myAnswer === i}
+                dimmed={!game.canPick && game.myAnswer !== i}
+                onClick={() => {
+                  if (!game.canPick || game.myAnswer === i) return;
+                  haptic('success');
+                  if (game.phase.name === 'huddle') play('switch');
+                  room.command({ type: 'pick-option', option: i });
+                }}
+              >
+                <AnswerLetter index={i} />
+                <span className={styles.phoneOption}>{option}</span>
+                {game.teamPicks && game.teamPicks[i] > 0 && (
+                  <span className={styles.teamCount} aria-label={`${game.teamPicks[i]} on your team`}>
+                    ×{game.teamPicks[i]}
+                  </span>
+                )}
+              </Choice>
+            ))}
+          </Choices>
           <p className={styles.locked}>
             {huddle
               ? game.myAnswer === null

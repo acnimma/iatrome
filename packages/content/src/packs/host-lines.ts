@@ -202,11 +202,11 @@ export const hostLines: HostLines = {
     'Tonight’s winner: the brilliant, the hilarious, the only slightly tired {name}.',
   ],
   sketchIntro: [
-    'Sketch. One of you draws, everyone else guesses. Fast. Faster.',
+    'Imaging. One of you draws, everyone else guesses. Fast. Faster.',
     'Time to draw. If your kidney looks like a bean, you’re doing it right.',
     'Your finger is the pen. Your phone is the canvas. Your dignity is optional.',
     'Think medical illustrator, but with one finger and no budget.',
-    'Welcome to Sketch. Guessers, type fast. Artists, draw faster.',
+    'Welcome to Imaging. Guessers, type fast. Artists, draw faster.',
     'Someone’s about to draw a femur. Someone’s about to guess “baguette.”',
     'It’s sketch time. Anatomy professors, please look away.',
     'One artist, many diagnosticians. Honestly, this is how consults work.',

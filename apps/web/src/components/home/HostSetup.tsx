@@ -80,61 +80,73 @@ export function HostSetup() {
         <GamePicker tiles value={settings.game} onChange={(game) => setSettings((s) => ({ ...s, game }))} />
 
         <div className={styles.settings}>
-          <section className={`${styles.setting} ${styles.screen}`}>
-            <h2 className={styles.label}>Shared screen</h2>
-            <ScreenPicker value={screen} onChange={setScreen} />
+          <section className={styles.card} aria-labelledby="card-play">
+            <h2 id="card-play" className={styles.cardTitle}>
+              How you play
+            </h2>
+            <div className={styles.field}>
+              <h3 className={styles.label}>Shared screen</h3>
+              <ScreenPicker value={screen} onChange={setScreen} />
+            </div>
+            {/* Always here, greyed out until it applies, so choosing a game or a screen never moves the page. */}
+            <div className={styles.field}>
+              <h3 className={styles.label}>Your name</h3>
+              <TextInput
+                ref={nameRef}
+                aria-label="Your name"
+                hint={screen === 'phones' ? 'You host from your own device and play too.' : 'Only when the shared screen is off.'}
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                maxLength={ROOM.maxNameLength}
+                placeholder="Dr. Nickname"
+                autoCapitalize="words"
+                disabled={screen !== 'phones'}
+              />
+            </div>
           </section>
-          <section className={`${styles.setting} ${styles.crowd}`}>
-            <h2 className={styles.label}>{CROWD_LABEL}</h2>
-            <ModePicker value={settings.mode} onChange={(mode) => setSettings((s) => ({ ...s, mode }))} />
-          </section>
-          <section className={`${styles.setting} ${styles.password}`}>
-            <h2 className={styles.label}>Password</h2>
-            <TextInput
-              aria-label="Room password (optional)"
-              hint="Optional. Strangers with the code still can’t get in."
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              maxLength={ROOM.maxPasswordLength}
-              placeholder="e.g. scrubs"
-            />
-          </section>
-          {/* Always here, greyed out until it applies, so choosing a game or a screen never moves the page. */}
-          <section className={`${styles.setting} ${styles.name}`}>
-            <h2 className={styles.label}>Your name</h2>
-            <TextInput
-              ref={nameRef}
-              aria-label="Your name"
-              hint={screen === 'phones' ? 'You host from your own device and play too.' : 'Only when the shared screen is off.'}
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              maxLength={ROOM.maxNameLength}
-              placeholder="Dr. Nickname"
-              autoCapitalize="words"
-              disabled={screen !== 'phones'}
-            />
-          </section>
-          <section className={`${styles.setting} ${styles.time}`}>
-            <h2 className={styles.label}>Timers</h2>
-            <TimeToggle settings={settings} onChange={(patch) => setSettings((s) => ({ ...s, ...patch }))} />
-          </section>
-          <section className={`${styles.setting} ${styles.teams}`}>
-            <h2 className={styles.label}>Team trivia</h2>
-            <TeamsToggle settings={settings} onChange={(patch) => setSettings((s) => ({ ...s, ...patch }))} />
-          </section>
-        </div>
 
-        <div className={styles.go}>
-          {error && (
-            <p className={styles.error} role="alert">
-              {error}
-            </p>
-          )}
-          <div className={styles.createBar}>
-            <Button size="xl" className={styles.create} onClick={create} waiting={busy}>
-              {busy ? 'Opening the room' : 'Create room'}
-            </Button>
-          </div>
+          <section className={styles.card} aria-labelledby="card-game">
+            <h2 id="card-game" className={styles.cardTitle}>
+              The game
+            </h2>
+            <div className={styles.field}>
+              <h3 className={styles.label}>{CROWD_LABEL}</h3>
+              <ModePicker value={settings.mode} onChange={(mode) => setSettings((s) => ({ ...s, mode }))} />
+            </div>
+            <div className={styles.toggles}>
+              <TimeToggle settings={settings} onChange={(patch) => setSettings((s) => ({ ...s, ...patch }))} />
+              <TeamsToggle settings={settings} onChange={(patch) => setSettings((s) => ({ ...s, ...patch }))} />
+            </div>
+          </section>
+
+          <section className={`${styles.card} ${styles.roomCard}`} aria-labelledby="card-room">
+            <h2 id="card-room" className={styles.cardTitle}>
+              The room
+            </h2>
+            <div className={styles.field}>
+              <h3 className={styles.label}>Password</h3>
+              <TextInput
+                aria-label="Room password (optional)"
+                hint="Optional. Strangers with the code still can’t get in."
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                maxLength={ROOM.maxPasswordLength}
+                placeholder="e.g. scrubs"
+              />
+            </div>
+            <div className={styles.go}>
+              {error && (
+                <p className={styles.error} role="alert">
+                  {error}
+                </p>
+              )}
+              <div className={styles.createBar}>
+                <Button size="xl" className={styles.create} onClick={create} waiting={busy}>
+                  {busy ? 'Opening the room' : 'Create room'}
+                </Button>
+              </div>
+            </div>
+          </section>
         </div>
       </motion.div>
     </main>

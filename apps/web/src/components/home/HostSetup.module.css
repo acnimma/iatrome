@@ -1,7 +1,7 @@
 /*
- * Phones: one column, top to bottom.
- * Wide screens: the five games in a row, the three settings in a row under them, and
- * "Create room" at the bottom right. All of it fits on a laptop without scrolling.
+ * Phones: one column of cards, top to bottom, with "Create room" riding along the bottom.
+ * Wide screens: the games in a row, then three equal cards (how you play, the game, the room).
+ * Nothing appears or disappears when you pick a game or a screen, so the page never moves.
  */
 .page {
   min-height: 100dvh;
@@ -13,7 +13,7 @@
 .shell {
   display: flex;
   flex-direction: column;
-  gap: 22px;
+  gap: 24px;
   width: min(1180px, 100%);
   height: fit-content;
 }
@@ -50,32 +50,56 @@
 .settings {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 16px;
 }
 
-.setting {
+/* A settings card: a quiet eyebrow, then its fields with even breathing room. */
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  min-width: 0;
+  padding: 22px 22px 24px;
+  border: var(--outline);
+  border-radius: 28px;
+  background: var(--card);
+  box-shadow: var(--gloss), var(--shadow-md);
+}
+
+.cardTitle {
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.field {
   display: flex;
   flex-direction: column;
   gap: 8px;
   min-width: 0;
 }
 
-.screen { grid-area: screen; order: 1; }
-.name { grid-area: name; order: 2; }
-.crowd { grid-area: crowd; order: 3; }
-.password { grid-area: password; order: 4; }
-.time { grid-area: time; order: 5; }
-.teams { grid-area: teams; order: 6; }
-
 .label {
   font-size: 0.95rem;
   font-weight: 800;
 }
 
+/* The two switches sit together under a hairline. */
+.toggles {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 14px;
+  border-top: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
+}
+
 .go {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
+  margin-top: auto;
 }
 
 .create {
@@ -88,6 +112,11 @@
   border-radius: var(--radius-md);
   background: color-mix(in srgb, var(--rose-kiss) 18%, var(--card));
   font-weight: 700;
+}
+
+/* Inputs hold their height whether the hint is one line or two, so rows line up across cards. */
+.field :global(label) > span:last-child {
+  min-height: 2.6em;
 }
 
 @media (min-width: 900px) {
@@ -104,48 +133,22 @@
     height: 38px;
   }
 
-  /* Two fixed rows of three, always the same: nothing appears or disappears, so nothing moves. */
   .settings {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    grid-template-areas:
-      'screen crowd password'
-      'name time teams';
-    gap: 24px 36px;
+    align-items: stretch;
+    gap: 20px;
   }
-
-  .settings > * {
-    order: 0;
-  }
-
-  .go {
-    flex-direction: row;
-    align-items: center;
-    gap: 28px;
-  }
-
-  .error {
-    flex: 1;
-  }
-
-  .createBar {
-    margin-left: auto;
-  }
-
-  .create {
-    width: auto;
-    min-width: 320px;
-  }
-}
-
-.hostName {
-  margin-top: 6px;
 }
 
 /* Phones: "Create room" rides along the bottom, so it's never two screens down. */
 @media (max-width: 899px) {
   .page {
     padding-bottom: calc(110px + env(safe-area-inset-bottom));
+  }
+
+  .go {
+    margin-top: 0;
   }
 
   .createBar {
@@ -163,9 +166,4 @@
   .create {
     width: min(560px, 100%);
   }
-}
-
-/* Inputs hold their height whether the hint is one line or two, so rows line up across the grid. */
-.setting :global(label) > span:last-child {
-  min-height: 2.6em;
 }
